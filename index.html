@@ -1318,8 +1318,18 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 // ══════════════════════════
 // INIT
 // ══════════════════════════
+// Firebase 자동 연결 (팀원들 설정 불필요)
+const FB_URL = 'https://project-appeal-korea-default-rtdb.firebaseio.com';
+const FB_KEY = 'AIzaSyDb951taCjmt1ZploAtbVZYKo8EMuhmYU8';
+const FB_PID = 'project-appeal-korea';
+
 ldb();
-if(DB.fb?.url&&DB.fb?.k&&DB.fb?.pid)iFB(DB.fb.url,DB.fb.k,DB.fb.pid);
+// 저장된 Firebase 설정 없으면 고정값으로 자동 연결
+if(!DB.fb || !DB.fb.url){
+  DB.fb={url:FB_URL,k:FB_KEY,pid:FB_PID};
+  localStorage.setItem(LKEY,JSON.stringify(DB));
+}
+iFB(FB_URL,FB_KEY,FB_PID);
 nav('season','26FW');
 </script>
 </body>
