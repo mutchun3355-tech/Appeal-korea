@@ -872,8 +872,8 @@ function rTab(tab){
         <div class="fg">
           <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
           <div class="f"><label>브랜드</label><input type="text" id="pbr" value="${s.brand||''}"></div>
-          <div class="f" style="grid-column:span 2"><label>실장님</label>
-            <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 아래서 선택"
+          <div class="f"><label>실장님</label>
+            <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 선택"
               autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)">
             <div id="mgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
           </div>
@@ -1376,7 +1376,7 @@ function mgrDropRender(q, inputId='pmgr', dropId='mgr-drop'){
       style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
       onmouseout="this.style.background='';this.style.color='var(--t0)'">
-      <span style="width:22px;height:22px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t2);flex-shrink:0">${i+1}</span>
+      <span style="font-size:13px">👤</span>
       ${m}
     </div>`).join('')+`</div>`;
 }
