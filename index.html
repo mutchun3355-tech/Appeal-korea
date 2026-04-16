@@ -94,13 +94,20 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 
 /* ── BADGES ── */
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
-.bs{background:rgba(110,115,125,.2);color:#8f95a0}
-.bq{background:rgba(47,111,168,.2);color:#6eaadd}
-.bp{background:rgba(106,79,172,.2);color:#a893e0}
-.bk{background:rgba(61,143,110,.2);color:#68c49a}
-.bsh{background:rgba(184,122,42,.2);color:#d4a85a}
-.bar{background:rgba(184,122,42,.25);color:#e0b870}
-.bd{background:rgba(61,143,110,.25);color:#4aaf87}
+/* 샘플 - 회색 */
+.bs{background:rgba(90,92,98,.25);color:#9a9da6;border:1px solid rgba(90,92,98,.3)}
+/* QC - 파란색 */
+.bq{background:rgba(37,99,175,.25);color:#60a5fa;border:1px solid rgba(37,99,175,.35)}
+/* PP - 보라색 */
+.bp{background:rgba(109,40,217,.25);color:#c084fc;border:1px solid rgba(109,40,217,.35)}
+/* 수납 - 초록색 */
+.bk{background:rgba(22,163,74,.25);color:#4ade80;border:1px solid rgba(22,163,74,.35)}
+/* 선적 - 주황색 */
+.bsh{background:rgba(234,88,12,.25);color:#fb923c;border:1px solid rgba(234,88,12,.35)}
+/* 입고예정 - 노란색 */
+.bar{background:rgba(202,138,4,.25);color:#facc15;border:1px solid rgba(202,138,4,.35)}
+/* 입고완료 - 청록색 */
+.bd{background:rgba(13,148,136,.25);color:#2dd4bf;border:1px solid rgba(13,148,136,.35)}
 
 /* ── PANEL ── */
 .pov{display:none;position:fixed;inset:0;z-index:100}
@@ -354,6 +361,21 @@ tr:hover td{background:var(--bg2);cursor:pointer}
     <div class="mhdr"><h2 id="factmt">공장 등록</h2><button class="btn sm g" onclick="cm('factm')">✕</button></div>
     <div class="mbody">
       <div class="fg">
+        <div class="f ff" style="grid-column:span 2">
+          <label>공장 아이콘 색상</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="fcolor-wrap">
+            <div onclick="selFColor('#e74c3c')" class="fcolor-btn" data-color="#e74c3c" style="width:28px;height:28px;border-radius:6px;background:#e74c3c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#e67e22')" class="fcolor-btn" data-color="#e67e22" style="width:28px;height:28px;border-radius:6px;background:#e67e22;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#f1c40f')" class="fcolor-btn" data-color="#f1c40f" style="width:28px;height:28px;border-radius:6px;background:#f1c40f;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#2ecc71')" class="fcolor-btn" data-color="#2ecc71" style="width:28px;height:28px;border-radius:6px;background:#2ecc71;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#3498db')" class="fcolor-btn" data-color="#3498db" style="width:28px;height:28px;border-radius:6px;background:#3498db;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#9b59b6')" class="fcolor-btn" data-color="#9b59b6" style="width:28px;height:28px;border-radius:6px;background:#9b59b6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#1abc9c')" class="fcolor-btn" data-color="#1abc9c" style="width:28px;height:28px;border-radius:6px;background:#1abc9c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#e91e63')" class="fcolor-btn" data-color="#e91e63" style="width:28px;height:28px;border-radius:6px;background:#e91e63;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#607d8b')" class="fcolor-btn" data-color="#607d8b" style="width:28px;height:28px;border-radius:6px;background:#607d8b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+          </div>
+          <input type="hidden" id="fcolor" value="#e74c3c">
+        </div>
         <div class="f ff"><label>공장명 *</label><input type="text" id="fn"></div>
         <div class="f"><label>영문명</label><input type="text" id="fe"></div>
         <div class="f"><label>국가</label><input type="text" id="fct"></div>
@@ -439,7 +461,20 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 // ══════════════════════════
 const LKEY = 'ak_v3';
 const SL = ['샘플','QC 진행','QC 완료','PP 진행','PP 완료','수납 진행','수납 완료','선적진행','선적완료','입고예정','입고완료'];
-const SC = {'샘플':'bs','QC 진행':'bq','QC 완료':'bq','PP 진행':'bp','PP 완료':'bp','수납 진행':'bk','수납 완료':'bk','선적진행':'bsh','선적완료':'bsh','입고예정':'bar','입고완료':'bd'};
+const SC = {
+  '샘플':'bs',
+  'QC 진행':'bq','QC 완료':'bq',
+  'PP 진행':'bp','PP 완료':'bp',
+  '수납 진행':'bk','수납 완료':'bk',
+  '선적진행':'bsh','선적완료':'bsh',
+  '입고예정':'bar','입고완료':'bd'
+};
+// 상태 그룹 (보드뷰 섹션 제목용)
+const SG = {
+  '할 일': ['샘플'],
+  '진행 중': ['QC 진행','QC 완료','PP 진행','PP 완료','수납 진행','수납 완료'],
+  '완료': ['선적진행','선적완료','입고예정','입고완료']
+};
 const DCOLS = [
   {k:'style',l:'STYLE NO.',w:130},{k:'brand',l:'브랜드',w:85},{k:'factory',l:'공장',w:95},
   {k:'qty',l:'수량',w:68},{k:'cmt',l:'CMT ($)',w:78},{k:'fob',l:'FOB ($)',w:78},
@@ -463,8 +498,8 @@ function ldb(){
   if(!DB) DB={
     managers:['박소라 실장님','이수연 실장님'],
     factories:[
-      {id:'f1',name:'화성텍스',eng:'HWASUNG TEX',country:'중국',port:'청도',addr:'중국 산동성 청도시',tel:'86-532-0001',liaison:'왕웨이'},
-      {id:'f2',name:'동흥니트',eng:'DONGHEUNG KNIT',country:'중국',port:'상해',addr:'중국 강소성 상해시',tel:'86-21-0002',liaison:'리민'},
+      {id:'f1',name:'화성텍스',eng:'HWASUNG TEX',country:'중국',port:'청도',addr:'중국 산동성 청도시',tel:'86-532-0001',liaison:'왕웨이',color:'#e74c3c'},
+      {id:'f2',name:'동흥니트',eng:'DONGHEUNG KNIT',country:'중국',port:'상해',addr:'중국 강소성 상해시',tel:'86-21-0002',liaison:'리민',color:'#3498db'},
     ],
     seasons:[{id:'25FW',name:'25FW',desc:'2025 FW',icon:'🍂'},{id:'26FW',name:'26FW',desc:'2026 FW',icon:'🍂'}],
     styles:{
@@ -481,6 +516,9 @@ function ldb(){
   };
   // migration
   if(!DB.cols) DB.cols=JSON.parse(JSON.stringify(DCOLS));
+  // 공장 color 마이그레이션
+  const defaultColors=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e91e63','#607d8b'];
+  DB.factories.forEach((f,i)=>{if(!f.color)f.color=defaultColors[i%defaultColors.length];});
   Object.values(DB.styles).flat().forEach(s=>{
     if(s.cmt===undefined)s.cmt=s.fob||0;
     if(!s.wop)s.wop=[];
@@ -615,6 +653,7 @@ function renderSeason(){
   const fm=document.getElementById('sfm')?.value||'';
   const vw=document.getElementById('svw')?.value||'table';
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
 
   let rows=all.filter(s=>{
     if(q&&!(s.style||'').toLowerCase().includes(q)&&!(s.brand||'').toLowerCase().includes(q))return false;
@@ -649,7 +688,7 @@ function renderSeason(){
     </th>`).join('');
     const tdr=s=>vc.map(c=>{
       if(c.k==='style')return`<td><span class="slink">${s.style||'-'}</span></td>`;
-      if(c.k==='factory')return`<td style="font-size:11px;color:var(--t2)">${fn(s.factory)}</td>`;
+      if(c.k==='factory')return`<td style="font-size:11px;color:var(--t2)"><span style="display:inline-flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</span></td>`;
       if(c.k==='qty')return`<td style="font-family:var(--mono)">${(s.qty||0).toLocaleString()}</td>`;
       if(c.k==='cmt')return`<td style="font-family:var(--mono)">${s.cmt?'$'+(+s.cmt).toFixed(2):'-'}</td>`;
       if(c.k==='fob')return`<td style="font-family:var(--mono)">${s.fob?'$'+(+s.fob).toFixed(2):'-'}</td>`;
@@ -699,7 +738,13 @@ function dgE(){dgSrc=null;window._dg=false;document.querySelectorAll('th').forEa
 function renderFactories(){
   return`<div class="fgrid">${DB.factories.map(f=>`
     <div class="fcard" onclick="openFactM('${f.id}')">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:14px;font-weight:600">${f.name}</div><span class="badge bs">${f.country||'-'}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:6px;background:${f.color||'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🏭</div>
+          <div style="font-size:14px;font-weight:600">${f.name}</div>
+        </div>
+        <span class="badge bs">${f.country||'-'}</span>
+      </div>
       <div style="font-size:11px;color:var(--t2);margin-bottom:8px">${f.eng||''}</div>
       <div class="fr"><span class="frl">항구</span><span>${f.port||'-'}</span></div>
       <div class="fr"><span class="frl">주소</span><span style="text-align:right;max-width:160px;word-break:break-all;white-space:normal">${f.addr||'-'}</span></div>
@@ -713,11 +758,24 @@ function openFactM(id=null){
   document.getElementById('factmt').textContent=f?'공장 수정':'공장 등록';
   ['fn','fe','fct','fp','fa','ft','fl'].forEach((el,i)=>{document.getElementById(el).value=f?[f.name,f.eng,f.country,f.port,f.addr,f.tel,f.liaison][i]||'':'';});
   document.getElementById('fdel').style.display=f?'block':'none';
+  // 색상 초기화
+  const initColor=f?.color||'#e74c3c';
+  document.getElementById('fcolor').value=initColor;
+  selFColor(initColor);
   om('factm');
+}
+function selFColor(color){
+  document.getElementById('fcolor').value=color;
+  document.querySelectorAll('.fcolor-btn').forEach(el=>{
+    const isSelected=el.dataset.color===color;
+    el.style.border=isSelected?'2px solid #fff':'2px solid transparent';
+    el.style.transform=isSelected?'scale(1.2)':'scale(1)';
+    el.style.boxShadow=isSelected?'0 0 0 2px '+color:'none';
+  });
 }
 function saveFactory(){
   const name=document.getElementById('fn').value.trim();if(!name){alert('공장명 필수');return;}
-  const d={name,eng:document.getElementById('fe').value,country:document.getElementById('fct').value,port:document.getElementById('fp').value,addr:document.getElementById('fa').value,tel:document.getElementById('ft').value,liaison:document.getElementById('fl').value};
+  const d={name,eng:document.getElementById('fe').value,country:document.getElementById('fct').value,port:document.getElementById('fp').value,addr:document.getElementById('fa').value,tel:document.getElementById('ft').value,liaison:document.getElementById('fl').value,color:document.getElementById('fcolor').value||'#e74c3c'};
   if(efid){const i=DB.factories.findIndex(f=>f.id===efid);if(i>=0)DB.factories[i]={...DB.factories[i],...d};}
   else DB.factories.push({id:'f'+Date.now(),...d});
   sdb();cm('factm');renderNav();renderContent();toast('저장됨');
@@ -730,6 +788,7 @@ function delFactory(){if(!efid||!confirm('삭제?'))return;DB.factories=DB.facto
 function renderPayments(){
   const tot=DB.payments.reduce((a,p)=>a+(p.price||0)*(p.qty||0),0);
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
   const sn=sid=>(Object.values(DB.styles).flat().find(s=>s.id===sid)||{style:'-'}).style;
   return`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
     <div class="sc"><div class="sl">총 결제 건수</div><div class="sv">${DB.payments.length}</div></div>
@@ -739,7 +798,7 @@ function renderPayments(){
   <div class="tw"><table class="fw"><thead><tr><th>결제내용</th><th>시즌</th><th>공장</th><th>스타일</th><th>단가</th><th>수량</th><th>합계</th><th>날짜</th><th>비고</th><th></th></tr></thead>
   <tbody>${DB.payments.map(p=>`<tr>
     <td style="font-weight:500">${p.title}</td><td><span class="tag">${p.season}</span></td>
-    <td style="font-size:11px">${fn(p.factory)}</td><td style="font-size:11px;color:var(--al);font-family:var(--mono)">${sn(p.styleId)}</td>
+    <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${(()=>{const f=DB.factories.find(x=>x.id===p.factory);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px">🏭</span>`:''})()}${fn(p.factory)}</span></td><td style="font-size:11px;color:var(--al);font-family:var(--mono)">${sn(p.styleId)}</td>
     <td style="font-family:var(--mono)">$${(p.price||0).toFixed(2)}</td><td style="font-family:var(--mono)">${(p.qty||0).toLocaleString()}</td>
     <td style="font-family:var(--mono);font-weight:500">$${Math.round((p.price||0)*(p.qty||0)).toLocaleString()}</td>
     <td style="font-size:11px">${p.date||'-'}</td><td style="font-size:11px;color:var(--t2)">${p.note||''}</td>
@@ -1292,7 +1351,8 @@ function mgrDropShow(inputId='pmgr', dropId='mgr-drop'){
   const inp=document.getElementById(inputId);
   const drop=document.getElementById(dropId);
   if(!inp||!drop)return;
-  mgrDropRender(inp.value, inputId, dropId);
+  // 포커스 시 항상 전체 리스트 표시 (입력값 무시)
+  mgrDropRender('', inputId, dropId);
   drop.style.display='block';
 }
 function mgrDropHide(dropId='mgr-drop'){
@@ -1712,6 +1772,7 @@ function saveMgr(){
 function doXL(){
   const wb=XLSX.utils.book_new();
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
   if(document.getElementById('xs').checked&&season){
     const rows=(DB.styles[season]||[]).map(s=>[s.style,s.brand,fn(s.factory),s.qty,s.cmt,s.fob,s.deadline,s.status,s.manager,s.note,s.updated]);
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['STYLE NO.','브랜드','공장','수량','CMT($)','FOB($)','마감일','진행상태','실장님','특이사항','업데이트'],...rows]),season);
