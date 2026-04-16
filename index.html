@@ -1580,10 +1580,46 @@ function confNewStyle(){
   (DB.styles[season]=DB.styles[season]||[]).unshift(item);
   sdb();cm('nsm');renderNav();renderContent();toast('등록됨');
 }
-function openMgr(){document.getElementById('mgrl').innerHTML=DB.managers.map((m,i)=>`<div class="mgri"><input type="text" value="${m}" id="mg${i}"><button class="btn d sm" onclick="delMgr(${i})">삭제</button></div>`).join('');om('mgrm');}
-function addMgr(){DB.managers.push('새 실장님');openMgr();}
-function delMgr(i){if(!confirm('삭제?'))return;DB.managers.splice(i,1);openMgr();}
-function saveMgr(){DB.managers=Array.from(document.querySelectorAll('[id^="mg"]')).map(el=>el.value.trim()).filter(Boolean);sdb();cm('mgrm');toast('저장됨');}
+function openMgr(){
+  document.getElementById('mgrl').innerHTML=DB.managers.map((m,i)=>`
+    <div class="mgri">
+      <input type="text" class="mgr-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="실장님 이름 입력">
+      <button class="btn d sm" onclick="delMgr(${i})">삭제</button>
+    </div>`).join('');
+  om('mgrm');
+}
+function addMgr(){
+  // 현재 입력값 먼저 저장 후 추가
+  _syncMgrInputs();
+  DB.managers.push('새 실장님');
+  openMgr();
+  // 새로 추가된 input에 포커스
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll('.mgr-inp');
+    if(inputs.length>0)inputs[inputs.length-1].focus();
+  },50);
+}
+function delMgr(i){
+  if(!confirm('삭제?'))return;
+  _syncMgrInputs();
+  DB.managers.splice(i,1);
+  openMgr();
+}
+function _syncMgrInputs(){
+  // 현재 화면의 input값을 DB.managers에 반영
+  const inputs=document.querySelectorAll('.mgr-inp');
+  inputs.forEach(el=>{
+    const i=+el.dataset.i;
+    if(i>=0&&i<DB.managers.length) DB.managers[i]=el.value.trim()||DB.managers[i];
+  });
+}
+function saveMgr(){
+  _syncMgrInputs();
+  DB.managers=DB.managers.filter(Boolean);
+  sdb();
+  cm('mgrm');
+  toast('저장됨');
+}
 
 // ══════════════════════════
 // EXCEL EXPORT
