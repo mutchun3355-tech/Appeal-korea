@@ -341,13 +341,9 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
         <div class="f"><label>진행 상태</label><select id="nsst"></select></div>
         <div class="f ff"><label>실장님</label>
-          <div style="position:relative">
-            <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
-              autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)"
-              style="width:100%;padding-right:28px">
-            <span onclick="mgrDropToggle('nsmgr','nsmgr-drop')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--t2);font-size:11px">▾</span>
-          </div>
-          <div id="nsmgr-drop" style="display:none;position:absolute;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;max-height:140px;overflow-y:auto;width:calc(100% - 32px);margin-top:2px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
+          <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
+            autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)">
+          <div id="nsmgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
         </div>
       </div>
     </div>
@@ -876,14 +872,10 @@ function rTab(tab){
         <div class="fg">
           <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
           <div class="f"><label>브랜드</label><input type="text" id="pbr" value="${s.brand||''}"></div>
-          <div class="f"><label>실장님</label>
-            <div style="position:relative">
-              <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 아래서 선택"
-                autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)"
-                style="width:100%;padding-right:28px">
-              <span onclick="mgrDropToggle()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--t2);font-size:11px">▾</span>
-            </div>
-            <div id="mgr-drop" style="display:none;position:absolute;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;max-height:160px;overflow-y:auto;width:calc(100% - 32px);margin-top:2px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
+          <div class="f" style="grid-column:span 2"><label>실장님</label>
+            <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 아래서 선택"
+              autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)">
+            <div id="mgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
           </div>
           <div class="f"><label>수량 (장)</label><input type="number" id="pqt" value="${s.qty||''}"></div>
           <div class="f"><label>CMT ($) — 임가공비</label><input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="공임 단가"></div>
@@ -1374,11 +1366,19 @@ function mgrDropRender(q, inputId='pmgr', dropId='mgr-drop'){
   const drop=document.getElementById(dropId);
   if(!drop)return;
   const list=DB.managers.filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
-  if(!list.length){drop.innerHTML='<div style="padding:8px 12px;font-size:12px;color:var(--t2)">없음</div>';return;}
-  drop.innerHTML=list.map(m=>`<div onclick="mgrDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
-    style="padding:8px 12px;font-size:12px;color:var(--t0);cursor:pointer;border-bottom:1px solid var(--b)"
-    onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"
-    >${m}</div>`).join('');
+  if(!list.length){
+    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">목록 없음</div>';
+    return;
+  }
+  // 전체 리스트를 버튼 형태로 표시 - 스크롤 없이 전부 보임
+  drop.innerHTML=`<div style="padding:6px">`+list.map((m,i)=>`
+    <div onclick="mgrDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
+      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
+      onmouseout="this.style.background='';this.style.color='var(--t0)'">
+      <span style="width:22px;height:22px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t2);flex-shrink:0">${i+1}</span>
+      ${m}
+    </div>`).join('')+`</div>`;
 }
 function mgrDropSelect(name, inputId='pmgr', dropId='mgr-drop'){
   const inp=document.getElementById(inputId);
