@@ -1001,15 +1001,36 @@ function pSelF(ri,ci){
 
 // 드래그 범위 선택 (=SUM( 등 입력 후)
 function pMouseDown(e,ri,ci){
-  const fx=document.getElementById('pfx').value;
-  const needsDrag=fx.match(/=[A-Z]+\($/i)&&pSel.r>=0;
-  if(needsDrag){
+  const fxEl=document.getElementById('pfx');
+  const fx=fxEl?fxEl.value:'';
+  const ref=colLetter(ci)+(ri+1);
+
+  // 수식 입력 중 (= 로 시작) → 클릭으로 셀 참조 삽입
+  if(fx.startsWith('=')&&pSel.r>=0){
     e.preventDefault();
-    pDragSel={active:true,startR:ri,startC:ci,endR:ri,endC:ci,formulaTarget:{r:pSel.r,c:pSel.c}};
-    pHighDrag();
-  } else {
-    pSel={r:ri,c:ci};pHighlight();
+    // 드래그 범위 지정 모드: =SUM( 처럼 함수 괄호 열린 상태
+    if(fx.match(/=[A-Z]+\($/i)||fx.match(/=[A-Z]+\([^)]*,\s*$/i)){
+      pDragSel={active:true,startR:ri,startC:ci,endR:ri,endC:ci,formulaTarget:{r:pSel.r,c:pSel.c}};
+      pHighDrag();
+      // 단일 셀 참조 미리 표시
+      const base=fx.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');
+      fxEl.value=base+ref+')';
+    } else {
+      // 단순 수식 중 클릭: 커서 위치에 셀 참조 삽입
+      const inp=pSel.r>=0?document.querySelector('#pr-'+pSel.r+' td[data-c="'+pSel.c+'"] input'):null;
+      if(inp){
+        const pos=inp.selectionStart;
+        const cur=inp.value;
+        // 마지막 셀 참조 교체 or 끝에 추가
+        const newVal=cur.replace(/[A-Z]+\d+(:[A-Z]+\d+)?$/i,'')+ref;
+        inp.value=newVal;
+        fxEl.value=newVal;
+        pCI(pSel.r,pSel.c,inp);
+      }
+    }
+    return;
   }
+  pSel={r:ri,c:ci};pHighlight();
 }
 function pMouseOver(e,ri,ci){
   if(!pDragSel.active)return;
@@ -1321,11 +1342,27 @@ function ySelF(si,ri,ci){
   ySel={si,r:ri,c:ci};
 }
 function yMD(e,si,ri,ci){
-  const fx=document.getElementById('yfx'+si)?.value||'';
-  if(fx.match(/=[A-Z]+\($/i)&&ySel.si===si&&ySel.r>=0){
+  const fxEl=document.getElementById('yfx'+si);
+  const fx=fxEl?fxEl.value:'';
+  const ref=colLetter(ci)+(ri+1);
+
+  if(fx.startsWith('=')&&ySel.si===si&&ySel.r>=0){
     e.preventDefault();
-    yDrag={active:true,si,startR:ri,startC:ci,endR:ri,endC:ci,target:{r:ySel.r,c:ySel.c}};
-    yHD(si);
+    if(fx.match(/=[A-Z]+\($/i)||fx.match(/=[A-Z]+\([^)]*,\s*$/i)){
+      yDrag={active:true,si,startR:ri,startC:ci,endR:ri,endC:ci,target:{r:ySel.r,c:ySel.c}};
+      yHD(si);
+      const base=fx.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');
+      if(fxEl)fxEl.value=base+ref+')';
+    } else {
+      const inp=document.querySelector('#yr-'+si+'-'+ySel.r+' td[data-c="'+ySel.c+'"] input');
+      if(inp){
+        const newVal=inp.value.replace(/[A-Z]+\d+(:[A-Z]+\d+)?$/i,'')+ref;
+        inp.value=newVal;
+        if(fxEl)fxEl.value=newVal;
+        yCI(si,ySel.r,ySel.c,inp);
+      }
+    }
+    return;
   }
 }
 function yMO(e,si,ri,ci){
