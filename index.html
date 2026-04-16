@@ -1083,15 +1083,50 @@ function pMoveTo(ri,ci){
 function evF(expr,ri,ci,p){
   try{
     const rows=p.rows;
-    const pR=ref=>{const m=ref.trim().match(/^([A-Z]+)(\d+)$/i);if(!m)return null;return{r:+m[2]-1,c:m[1].toUpperCase().charCodeAt(0)-65};};
-    const pRng=(a2,b2)=>{const sa=pR(a2),eb=pR(b2);if(!sa||!eb)return[];const vs=[];for(let r=sa.r;r<=eb.r;r++)for(let c=sa.c;c<=eb.c;c++){const raw2=((rows[r]||[])[c]||'').toString();const v=parseFloat(raw2.startsWith('=')?0:raw2);if(!isNaN(v))vs.push(v);}return vs;};
+    // 셀 참조 → 숫자 변환
+    const getCell=ref=>{
+      const m=ref.trim().match(/^([A-Z]+)(\d+)$/i);if(!m)return null;
+      const r=+m[2]-1,c=m[1].toUpperCase().charCodeAt(0)-65;
+      const raw=((rows[r]||[])[c]||'').toString();
+      if(raw.startsWith('='))return parseFloat(evF(raw,r,c,p))||0;
+      return parseFloat(raw)||0;
+    };
+    const pRng=(a2,b2)=>{
+      const sa=getCell(a2+' '),eb=getCell(b2+' ');
+      const ma=a2.match(/^([A-Z]+)(\d+)$/i),mb=b2.match(/^([A-Z]+)(\d+)$/i);
+      if(!ma||!mb)return[];const vs=[];
+      const r1=+ma[2]-1,c1=ma[1].toUpperCase().charCodeAt(0)-65;
+      const r2=+mb[2]-1,c2=mb[1].toUpperCase().charCodeAt(0)-65;
+      for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++){
+        const raw=((rows[r]||[])[c]||'').toString();
+        const v=raw.startsWith('=')?parseFloat(evF(raw,r,c,p))||0:parseFloat(raw)||0;
+        if(!isNaN(v))vs.push(v);
+      }return vs;
+    };
     const cl=expr.slice(1).trim().toUpperCase();
-    let m=cl.match(/^SUM\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);const r=vs.reduce((a,b)=>a+b,0);return Number.isInteger(r)?r:r.toFixed(2);}
-    m=cl.match(/^AVERAGE\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);if(!vs.length)return 0;const r=vs.reduce((a,b)=>a+b,0)/vs.length;return r.toFixed(2);}
-    m=cl.match(/^COUNT\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){return pRng(m[1],m[2]).length;}
-    m=cl.match(/^MAX\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.max(...vs):0;}
-    m=cl.match(/^MIN\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.min(...vs):0;}
-    return '#ERR';
+
+    // 함수형: SUM, AVERAGE, COUNT, MAX, MIN
+    let m=cl.match(/^SUM\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+    if(m){const vs=pRng(m[1],m[2]);const r=vs.reduce((a,b)=>a+b,0);return Number.isInteger(r)?r:+r.toFixed(4);}
+    m=cl.match(/^AVERAGE\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+    if(m){const vs=pRng(m[1],m[2]);if(!vs.length)return 0;const r=vs.reduce((a,b)=>a+b,0)/vs.length;return +r.toFixed(4);}
+    m=cl.match(/^COUNT\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+    if(m){return pRng(m[1],m[2]).length;}
+    m=cl.match(/^MAX\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+    if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.max(...vs):0;}
+    m=cl.match(/^MIN\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+    if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.min(...vs):0;}
+
+    // 일반 수식: A1+B2, A1-B2, A1*B2, A1/B2 등
+    // 셀 참조를 숫자로 치환 후 eval
+    let formula=cl.replace(/([A-Z]+\d+)/g,(ref)=>{
+      const v=getCell(ref);return isNaN(v)?0:v;
+    });
+    // 안전한 문자만 허용: 숫자, 연산자, 괄호, 소수점, 공백
+    if(!/^[\d+\-*/().\s]+$/.test(formula))return '#ERR';
+    const result=Function('"use strict";return ('+formula+')')();
+    if(!isFinite(result))return '#ERR';
+    return Number.isInteger(result)?result:+result.toFixed(4);
   }catch{return '#ERR';}
 }
 function pCI(ri,ci,el){
