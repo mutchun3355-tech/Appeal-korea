@@ -249,6 +249,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
       <div class="sync"><div class="sdot" id="sdot"></div><span id="slbl">로컬 저장</span></div>
       <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:11px;margin-top:2px">⚙ 실장님 관리</button>
       <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:11px">☁ Firebase 설정</button>
+      <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:11px;color:var(--amb)">💾 백업 & 복원</button>
     </div>
   </div>
   <div class="main">
@@ -332,7 +333,15 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <div class="f"><label>FOB ($) 선적가</label><input type="number" id="nsfob" step="0.01"></div>
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
         <div class="f"><label>진행 상태</label><select id="nsst"></select></div>
-        <div class="f ff"><label>실장님 (직접 입력)</label><input type="text" id="nsmgr" placeholder="예: 박소라 실장님"></div>
+        <div class="f ff"><label>실장님</label>
+          <div style="position:relative">
+            <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
+              autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)"
+              style="width:100%;padding-right:28px">
+            <span onclick="mgrDropToggle('nsmgr','nsmgr-drop')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--t2);font-size:11px">▾</span>
+          </div>
+          <div id="nsmgr-drop" style="display:none;position:absolute;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;max-height:140px;overflow-y:auto;width:calc(100% - 32px);margin-top:2px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
+        </div>
       </div>
     </div>
     <div class="mfoot"><button class="btn sm" onclick="cm('nsm')">취소</button><button class="btn p sm" onclick="confNewStyle()">등록</button></div>
@@ -400,6 +409,27 @@ tr:hover td{background:var(--bg2);cursor:pointer}
   </div>
 </div>
 
+<!-- ── 백업 & 복원 모달 ── -->
+<div class="mov" id="backupm">
+  <div class="modal" style="width:520px">
+    <div class="mhdr"><h2>💾 백업 & 복원</h2><button class="btn sm g" onclick="cm('backupm')">✕</button></div>
+    <div class="mbody" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:3px">자동 백업</div>
+          <div style="font-size:11px;color:var(--t2)">저장할 때마다 자동으로 스냅샷 생성 · 최근 10개 보관</div>
+        </div>
+        <button class="btn p sm" onclick="saveBackup(true)">지금 백업</button>
+      </div>
+      <div style="border-top:1px solid var(--b);padding-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">백업 목록</div>
+        <div id="backup-list"></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn sm" onclick="cm('backupm')">닫기</button></div>
+  </div>
+</div>
+
 <div class="ctx" id="ctx"></div>
 <div class="toast" id="toast"></div>
 
@@ -459,7 +489,11 @@ function ldb(){
     if(!s.prod)s.prod={cols:[{id:'c0',l:'날짜'},{id:'c1',l:'편직기'},{id:'c2',l:'생산량'},{id:'c3',l:'누계'},{id:'c4',l:'비고'}],rows:[['','','','',''],['','','','',''],['','','','','']]};
   });
 }
-function sdb(){localStorage.setItem(LKEY,JSON.stringify(DB));fbPush();}
+function sdb(){
+  localStorage.setItem(LKEY,JSON.stringify(DB));
+  fbPush();
+  saveBackup(false); // 자동 백업 (조용히)
+}
 
 // ══════════════════════════
 // FIREBASE
@@ -783,7 +817,15 @@ function rTab(tab){
         <div class="fg">
           <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
           <div class="f"><label>브랜드</label><input type="text" id="pbr" value="${s.brand||''}"></div>
-          <div class="f"><label>실장님 (직접 입력)</label><input type="text" id="pmgr" value="${s.manager||''}" placeholder="예: 박소라 실장님"></div>
+          <div class="f"><label>실장님</label>
+            <div style="position:relative">
+              <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 아래서 선택"
+                autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)"
+                style="width:100%;padding-right:28px">
+              <span onclick="mgrDropToggle()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--t2);font-size:11px">▾</span>
+            </div>
+            <div id="mgr-drop" style="display:none;position:absolute;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;max-height:160px;overflow-y:auto;width:calc(100% - 32px);margin-top:2px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
+          </div>
           <div class="f"><label>수량 (장)</label><input type="number" id="pqt" value="${s.qty||''}"></div>
           <div class="f"><label>CMT ($) — 임가공비</label><input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="공임 단가"></div>
           <div class="f"><label>FOB ($) — 선적가</label><input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="총 선적 단가"></div>
@@ -1245,6 +1287,49 @@ function saveStyle(){
 }
 function delStyle(){const s=gS(pSeas,pSid);if(!s||!confirm(`'${s.style}' 삭제?`))return;DB.styles[pSeas]=(DB.styles[pSeas]||[]).filter(x=>x.id!==pSid);sdb();closePanel();renderNav();renderContent();}
 
+// ── 실장님 드롭다운 ──
+function mgrDropShow(inputId='pmgr', dropId='mgr-drop'){
+  const inp=document.getElementById(inputId);
+  const drop=document.getElementById(dropId);
+  if(!inp||!drop)return;
+  mgrDropRender(inp.value, inputId, dropId);
+  drop.style.display='block';
+}
+function mgrDropHide(dropId='mgr-drop'){
+  const drop=document.getElementById(dropId);
+  if(drop)drop.style.display='none';
+}
+function mgrDropToggle(inputId='pmgr', dropId='mgr-drop'){
+  const drop=document.getElementById(dropId);
+  if(!drop)return;
+  if(drop.style.display==='none'){mgrDropShow(inputId,dropId);}
+  else{mgrDropHide(dropId);}
+}
+function mgrDropFilter(val, inputId='pmgr', dropId='mgr-drop'){
+  mgrDropRender(val, inputId, dropId);
+  const drop=document.getElementById(dropId);
+  if(drop)drop.style.display='block';
+}
+function mgrDropRender(q, inputId='pmgr', dropId='mgr-drop'){
+  const drop=document.getElementById(dropId);
+  if(!drop)return;
+  const list=DB.managers.filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
+  if(!list.length){drop.innerHTML='<div style="padding:8px 12px;font-size:12px;color:var(--t2)">없음</div>';return;}
+  drop.innerHTML=list.map(m=>`<div onclick="mgrDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
+    style="padding:8px 12px;font-size:12px;color:var(--t0);cursor:pointer;border-bottom:1px solid var(--b)"
+    onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''"
+    >${m}</div>`).join('');
+}
+function mgrDropSelect(name, inputId='pmgr', dropId='mgr-drop'){
+  const inp=document.getElementById(inputId);
+  if(inp){inp.value=name;inp.dispatchEvent(new Event('input'));}
+  mgrDropHide(dropId);
+  // 패널 저장도 즉시 반영
+  if(inputId==='pmgr'){
+    const s=gS(pSeas,pSid);if(s){s.manager=name;sdb();renderContent();}
+  }
+}
+
 // ── CUSTOM FIELDS ──
 function addCF(k){const s=gS(pSeas,pSid);(s[k]=s[k]||[]).push({label:'',val:''});sdb();rTab('info');}
 function uCF(k,i,f,v){const s=gS(pSeas,pSid);s[k][i][f]=v;sdb();}
@@ -1649,6 +1734,119 @@ function doXL(){
 function om(id){document.getElementById(id).classList.add('open');}
 function cm(id){document.getElementById(id).classList.remove('open');}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
+
+// ══════════════════════════
+// 백업 & 복원
+// ══════════════════════════
+const BKEY = 'ak_backups';
+const MAX_BACKUPS = 10;
+
+function saveBackup(manual=false){
+  try{
+    const backups = getBackups();
+    const now = new Date();
+    const label = manual
+      ? '수동 백업 — '+now.toLocaleString('ko-KR')
+      : now.toLocaleString('ko-KR');
+    // 같은 초에 중복 저장 방지
+    if(!manual && backups.length>0){
+      const last = new Date(backups[0].ts);
+      if(now-last < 30000) return; // 30초 이내 중복 방지
+    }
+    const snap = {
+      ts: now.toISOString(),
+      label,
+      manual,
+      data: JSON.stringify(DB)
+    };
+    backups.unshift(snap);
+    // 수동 백업은 항상 유지, 자동은 MAX_BACKUPS개로 제한
+    const manuals = backups.filter(b=>b.manual);
+    const autos = backups.filter(b=>!b.manual).slice(0, MAX_BACKUPS);
+    const trimmed = [...manuals, ...autos].sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    localStorage.setItem(BKEY, JSON.stringify(trimmed));
+    if(manual) toast('백업 완료 — '+now.toLocaleString('ko-KR'));
+  }catch(e){console.warn('backup failed',e);}
+}
+
+function getBackups(){
+  try{ return JSON.parse(localStorage.getItem(BKEY))||[]; }
+  catch{ return []; }
+}
+
+function openBackupModal(){
+  renderBackupList();
+  om('backupm');
+}
+
+function renderBackupList(){
+  const backups = getBackups();
+  const el = document.getElementById('backup-list');
+  if(!el) return;
+  if(!backups.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">백업 없음 — 저장 시 자동으로 생성돼요</div>';
+    return;
+  }
+  el.innerHTML = backups.map((b,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--b);border-radius:7px;margin-bottom:6px;background:var(--bg2)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--t0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.label}</div>
+        <div style="font-size:10px;color:var(--t2);margin-top:2px">
+          ${b.manual?'<span style="color:var(--al);font-size:10px">● 수동</span>':'<span style="color:var(--t3);font-size:10px">● 자동</span>'}
+          · ${new Date(b.ts).toLocaleString('ko-KR')}
+        </div>
+      </div>
+      <button class="btn sm" onclick="previewBackup(${i})" style="font-size:11px;flex-shrink:0">미리보기</button>
+      <button class="btn p sm" onclick="restoreBackup(${i})" style="font-size:11px;flex-shrink:0">복원</button>
+      <button class="btn d sm" onclick="deleteBackup(${i})" style="font-size:11px;flex-shrink:0">삭제</button>
+    </div>`).join('');
+}
+
+function previewBackup(i){
+  const b = getBackups()[i];
+  if(!b) return;
+  try{
+    const data = JSON.parse(b.data);
+    const styleCount = Object.values(data.styles||{}).flat().length;
+    const seasonCount = (data.seasons||[]).length;
+    const factCount = (data.factories||[]).length;
+    alert(`[ 백업 미리보기 ]
+
+날짜: ${new Date(b.ts).toLocaleString('ko-KR')}
+시즌: ${seasonCount}개
+스타일: ${styleCount}개
+공장: ${factCount}개
+결제: ${(data.payments||[]).length}건`);
+  }catch{alert('미리보기 실패');}
+}
+
+function restoreBackup(i){
+  const b = getBackups()[i];
+  if(!b) return;
+  if(!confirm(`[ ${new Date(b.ts).toLocaleString('ko-KR')} ] 시점으로 복원할까요?
+
+현재 데이터는 복원 전 자동으로 백업됩니다.`)) return;
+  try{
+    // 복원 전 현재 상태 수동 백업
+    saveBackup(true);
+    DB = JSON.parse(b.data);
+    localStorage.setItem(LKEY, JSON.stringify(DB));
+    fbPush();
+    cm('backupm');
+    renderNav();
+    renderContent();
+    toast('복원 완료!');
+  }catch{toast('복원 실패 — 데이터가 손상되었습니다');}
+}
+
+function deleteBackup(i){
+  if(!confirm('이 백업을 삭제할까요?')) return;
+  const backups = getBackups();
+  backups.splice(i,1);
+  localStorage.setItem(BKEY, JSON.stringify(backups));
+  renderBackupList();
+  toast('백업 삭제됨');
+}
 
 // ══════════════════════════
 // PANEL RESIZE
