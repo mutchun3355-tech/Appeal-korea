@@ -814,17 +814,7 @@ function rTab(tab){
       <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
     </div>`;
   } else if(tab==='yarn'){
-    const ords=s.yords||[];
-    body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">원사 발주 현황</div>
-      <div class="tw"><table class="fw"><thead><tr><th>원사명</th><th>색상</th><th>발주량</th><th>입고일</th><th></th></tr></thead>
-      <tbody>${ords.map((o,i)=>`<tr>
-        <td><input type="text" value="${o.name||''}" oninput="uYO(${i},'name',this.value)" style="background:none;border:none;width:100%;color:var(--t0)"></td>
-        <td><input type="text" value="${o.color||''}" oninput="uYO(${i},'color',this.value)" style="background:none;border:none;width:80px;color:var(--t0)"></td>
-        <td><input type="number" value="${o.qty||''}" oninput="uYO(${i},'qty',this.value)" style="background:none;border:none;width:70px;color:var(--t0)"></td>
-        <td><input type="date" value="${o.date||''}" oninput="uYO(${i},'date',this.value)" style="background:none;border:none;color:var(--t0)"></td>
-        <td><button class="btn g sm" onclick="rYO(${i})">✕</button></td>
-      </tr>`).join('')||'<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--t2)">없음</td></tr>'}</tbody></table></div>
-      <button class="btn sm" style="margin-top:8px" onclick="addYO()">+ 원사 추가</button></div>`;
+    rYarnTab(s);
   } else if(tab==='pay'){
     const list=DB.payments.filter(p=>p.styleId===pSid);
     const tot2=list.reduce((a,p)=>a+(p.price||0)*(p.qty||0),0);
@@ -1088,9 +1078,30 @@ function pCI(ri,ci,el){
   while(s.prod.rows.length<=ri)s.prod.rows.push(new Array(s.prod.cols.length).fill(''));
   while((s.prod.rows[ri]||[]).length<=ci)s.prod.rows[ri].push('');
   s.prod.rows[ri][ci]=el.value;
-  document.getElementById('pfx').value=el.value;
+  const fxEl=document.getElementById('pfx');if(fxEl)fxEl.value=el.value;
   sdb();
+  reCalcProd(s.prod);
 }
+function reCalcProd(p){
+  p.rows.forEach((row,ri)=>{
+    (row||[]).forEach((v,ci)=>{
+      if(!v||!v.toString().startsWith('='))return;
+      const result=evF(v.toString(),ri,ci,p);
+      const td=document.querySelector('#pr-'+ri+' td[data-c="'+ci+'"]');
+      if(!td||td.querySelector('input'))return;
+      if(result==='#ERR'){
+        td.className='pcel perr';
+        td.setAttribute('onclick','pSelF('+ri+','+ci+')');
+        td.innerHTML='<span style="display:block;padding:5px 7px;color:var(--red)">#ERR (클릭하여 수정)</span>';
+      } else {
+        td.className='sum pcel';
+        td.setAttribute('onclick','pSelF('+ri+','+ci+')');
+        td.innerHTML='<span style="display:block;padding:5px 7px">'+result+'</span>';
+      }
+    });
+  });
+}
+
 function pCB(ri,ci,el){
   const v=el.value;if(!v.startsWith('='))return;
   const s=gS(pSeas,pSid);s.prod.rows[ri][ci]=v;
@@ -1179,10 +1190,248 @@ function rmPh(i){const s=gS(pSeas,pSid);s.photos.splice(i,1);sdb();rTab('photos'
 function addEtc(e){const s=gS(pSeas,pSid);Array.from(e.target.files).forEach(f=>{(s.files=s.files||[]).push({name:f.name,size:f.size});});sdb();rTab('etc');}
 function rEtc(i){const s=gS(pSeas,pSid);s.files.splice(i,1);sdb();rTab('etc');}
 
-// ── YARN ──
-function addYO(){const s=gS(pSeas,pSid);(s.yords=s.yords||[]).push({name:'',color:'',qty:0,date:''});sdb();rTab('yarn');}
-function uYO(i,k,v){const s=gS(pSeas,pSid);s.yords[i][k]=v;sdb();}
-function rYO(i){const s=gS(pSeas,pSid);s.yords.splice(i,1);sdb();rTab('yarn');}
+// ── YARN TAB (전체 새 UI) ──
+function rYarnTab(s){
+  if(!s.yarnSheets) s.yarnSheets=[{
+    title:'메인 원사 발주서',
+    photos:[],
+    cols:[{id:'yc0',l:'컬러'},{id:'yc1',l:'1차 메인 발주량'},{id:'yc2',l:'1차 입고량'},{id:'yc3',l:'수식'}],
+    rows:[['','','',''],['','','',''],['','','',''],['TOTAL','','','']]
+  }];
+  const body=document.getElementById('pbody');
+  let html='';
+  s.yarnSheets.forEach((sheet,si)=>{
+    html+=`
+    <div class="ps" style="padding-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <input type="text" value="${esc(sheet.title)}" oninput="uYS(${si},'title',this.value)"
+          style="font-size:12px;font-weight:600;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b);padding:3px 0;flex:1;max-width:280px">
+        <button class="btn d sm" onclick="rmYS(${si})" style="font-size:11px;margin-left:8px">시트 삭제</button>
+      </div>
+      <!-- 파일/사진 업로드 -->
+      <div class="uz" onclick="document.getElementById('ypi${si}').click()" style="margin-bottom:8px">
+        <div class="uzt">📎 발주서 사진/파일 업로드 (클릭)</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">JPG, PNG</div>
+      </div>
+      <input type="file" id="ypi${si}" accept="image/*" multiple style="display:none" onchange="addYSPhoto(${si},event)">
+      <div id="ypg${si}" class="pgr">${(sheet.photos||[]).map((src,pi)=>`<div class="ptw"><img src="${src}" class="pth"><button class="pdel" onclick="rmYSPhoto(${si},${pi})">✕</button></div>`).join('')}</div>
+      <!-- 발주 표 -->
+      <div style="display:flex;gap:6px;margin:10px 0 6px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-right:2px">발주 현황표</span>
+        <button class="btn sm" onclick="yAC(${si})">+ 열</button>
+        <button class="btn sm" onclick="yDC(${si})">− 열</button>
+        <button class="btn sm" onclick="yAR(${si})">+ 행</button>
+        <button class="btn sm" onclick="yDR(${si})">− 행</button>
+      </div>
+      <!-- 수식바 -->
+      <div style="display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:5px 10px;margin-bottom:6px">
+        <span id="yref${si}" style="font-family:var(--mono);font-size:11px;color:var(--al);min-width:36px;font-weight:600">—</span>
+        <span style="color:var(--t3);font-size:13px">fx</span>
+        <input type="text" id="yfx${si}" placeholder="=SUM(A1:A10) 또는 직접 입력 후 드래그로 범위 지정"
+          style="flex:1;background:none;border:none;color:var(--t0);font-family:var(--mono);font-size:12px"
+          oninput="yfxInp(${si},this.value)" onkeydown="yfxKey(event,${si})">
+      </div>
+      <div class="plw">
+        <table class="plt" id="yt${si}" onmouseup="yMU(event,${si})" onmouseleave="yMU(event,${si})">
+          <thead><tr>
+            <th class="rn">#</th>
+            ${sheet.cols.map((c,ci)=>`<th oncontextmenu="yCC(event,${si},${ci})" style="min-width:85px">
+              <input type="text" value="${esc(c.l||'')}" oninput="yUL(${si},${ci},this.value)"
+                style="background:none;border:none;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;width:100%;text-align:center;color:var(--t2)">
+              <div style="font-size:9px;color:var(--al);font-family:var(--mono);font-weight:700;text-align:center;margin-top:1px">${colLetter(ci)}</div>
+            </th>`).join('')}
+          </tr></thead>
+          <tbody>
+            ${sheet.rows.map((row,ri)=>`<tr id="yr-${si}-${ri}">
+              <td class="rn" oncontextmenu="yRC(event,${si},${ri})" style="font-size:10px;font-family:var(--mono);color:var(--al);font-weight:600;cursor:context-menu">${ri+1}</td>
+              ${sheet.cols.map((c,ci)=>{
+                const v=((row||[])[ci]||'').toString();
+                const isF=v.startsWith('=');
+                const disp=isF?evF(v,ri,ci,sheet):v;
+                const isErr=isF&&disp==='#ERR';
+                if(isF&&!isErr){
+                  return`<td class="sum pcel" data-si="${si}" data-r="${ri}" data-c="${ci}"
+                    onclick="ySelF(${si},${ri},${ci})" style="cursor:pointer">
+                    <span style="display:block;padding:5px 7px">${disp}</span></td>`;
+                }
+                return`<td class="pcel ${isErr?'perr':''}" data-si="${si}" data-r="${ri}" data-c="${ci}"
+                  onmousedown="yMD(event,${si},${ri},${ci})" onmouseover="yMO(event,${si},${ri},${ci})">
+                  <input type="text" value="${esc(v)}"
+                    onfocus="yFocus(${si},${ri},${ci},this)"
+                    oninput="yCI(${si},${ri},${ci},this)"
+                    onblur="yCB(${si},${ri},${ci},this)"
+                    onkeydown="yKey(event,${si},${ri},${ci})"
+                    style="width:100%;padding:5px 7px;background:transparent;border:none;color:${isErr?'var(--red)':'var(--t0)'};font-family:var(--mono);font-size:12px">
+                </td>`;
+              }).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:10px;color:var(--t2);margin-top:5px">헤더/행번호 우클릭 → 추가/삭제 · =SUM( 입력 후 드래그로 범위 지정</div>
+    </div>`;
+  });
+  html+=`<div style="padding:12px 16px"><button class="btn sm" onclick="addYS()" style="width:100%">+ 발주서 시트 추가</button></div>`;
+  body.innerHTML=html;
+}
+
+// 현재 선택 (시트별)
+let ySel={si:-1,r:-1,c:-1};
+let yDrag={active:false,si:-1,startR:-1,startC:-1,endR:-1,endC:-1,target:null};
+
+function yFocus(si,ri,ci,el){
+  ySel={si,r:ri,c:ci};
+  const ref=colLetter(ci)+(ri+1);
+  const refEl=document.getElementById('yref'+si);if(refEl)refEl.textContent=ref;
+  const s=gS(pSeas,pSid);
+  const raw=((s.yarnSheets[si]?.rows[ri])||[])[ci]||'';
+  const fxEl=document.getElementById('yfx'+si);if(fxEl)fxEl.value=raw;
+  el.value=raw;
+  yHighlight(si,ri,ci);
+}
+function yHighlight(si,ri,ci){
+  document.querySelectorAll(`.pcel[data-si="${si}"]`).forEach(td=>{
+    td.style.outline=(+td.dataset.r===ri&&+td.dataset.c===ci)?'2px solid var(--al)':'';
+  });
+}
+function yfxInp(si,v){
+  if(ySel.si!==si||ySel.r<0)return;
+  const inp=document.querySelector(`#yr-${si}-${ySel.r} td[data-c="${ySel.c}"] input`);
+  if(inp){inp.value=v;inp.dispatchEvent(new Event('input'));}
+}
+function yfxKey(e,si){
+  if(e.key==='Enter'&&ySel.si===si&&ySel.r>=0){
+    const inp=document.querySelector(`#yr-${si}-${ySel.r} td[data-c="${ySel.c}"] input`);
+    if(inp)inp.blur();
+  }
+}
+function ySelF(si,ri,ci){
+  const s=gS(pSeas,pSid);
+  const raw=((s.yarnSheets[si]?.rows[ri])||[])[ci]||'';
+  const td=document.querySelector(`#yr-${si}-${ri} td[data-c="${ci}"]`);
+  if(!td)return;
+  td.className='pcel';td.removeAttribute('onclick');
+  td.setAttribute('onmousedown',`yMD(event,${si},${ri},${ci})`);
+  td.setAttribute('onmouseover',`yMO(event,${si},${ri},${ci})`);
+  td.innerHTML=`<input type="text" value="${esc(raw)}"
+    onfocus="yFocus(${si},${ri},${ci},this)" oninput="yCI(${si},${ri},${ci},this)"
+    onblur="yCB(${si},${ri},${ci},this)" onkeydown="yKey(event,${si},${ri},${ci})"
+    style="width:100%;padding:5px 7px;background:transparent;border:none;color:var(--t0);font-family:var(--mono);font-size:12px">`;
+  const inp=td.querySelector('input');inp.focus();inp.select();
+  ySel={si,r:ri,c:ci};
+}
+function yMD(e,si,ri,ci){
+  const fx=document.getElementById('yfx'+si)?.value||'';
+  if(fx.match(/=[A-Z]+\($/i)&&ySel.si===si&&ySel.r>=0){
+    e.preventDefault();
+    yDrag={active:true,si,startR:ri,startC:ci,endR:ri,endC:ci,target:{r:ySel.r,c:ySel.c}};
+    yHD(si);
+  }
+}
+function yMO(e,si,ri,ci){
+  if(!yDrag.active||yDrag.si!==si)return;
+  yDrag.endR=ri;yDrag.endC=ci;yHD(si);
+  const r1=Math.min(yDrag.startR,yDrag.endR),r2=Math.max(yDrag.startR,yDrag.endR);
+  const c1=Math.min(yDrag.startC,yDrag.endC),c2=Math.max(yDrag.startC,yDrag.endC);
+  const ref=colLetter(c1)+(r1+1)+':'+colLetter(c2)+(r2+1);
+  const fx=document.getElementById('yfx'+si);
+  if(fx){const base=fx.value.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');fx.value=base+ref+')';}
+}
+function yMU(e,si){
+  if(!yDrag.active||yDrag.si!==si)return;
+  yDrag.active=false;
+  const fx=document.getElementById('yfx'+si)?.value||'';
+  const {r,c}=yDrag.target;
+  const inp=document.querySelector(`#yr-${si}-${r} td[data-c="${c}"] input`);
+  if(inp){inp.value=fx;yCI(si,r,c,inp);}
+  document.querySelectorAll('.pdrag').forEach(td=>td.classList.remove('pdrag'));
+}
+function yHD(si){
+  document.querySelectorAll(`.pcel[data-si="${si}"]`).forEach(td=>td.classList.remove('pdrag'));
+  const r1=Math.min(yDrag.startR,yDrag.endR),r2=Math.max(yDrag.startR,yDrag.endR);
+  const c1=Math.min(yDrag.startC,yDrag.endC),c2=Math.max(yDrag.startC,yDrag.endC);
+  document.querySelectorAll(`.pcel[data-si="${si}"]`).forEach(td=>{
+    if(+td.dataset.r>=r1&&+td.dataset.r<=r2&&+td.dataset.c>=c1&&+td.dataset.c<=c2)td.classList.add('pdrag');
+  });
+}
+function yKey(e,si,ri,ci){
+  const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];
+  const rows=sh.rows.length,cols=sh.cols.length;
+  if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();yMoveTo(si,Math.min(ri+1,rows-1),ci);}
+  else if(e.key==='ArrowUp'){e.preventDefault();yMoveTo(si,Math.max(ri-1,0),ci);}
+  else if(e.key==='Tab'){e.preventDefault();yMoveTo(si,ri,Math.min(ci+1,cols-1));}
+}
+function yMoveTo(si,ri,ci){
+  const td=document.querySelector(`#yr-${si}-${ri} td[data-c="${ci}"]`);
+  if(!td)return;
+  if(td.classList.contains('sum')){ySelF(si,ri,ci);}
+  else{const inp=td.querySelector('input');if(inp)inp.focus();}
+}
+function yCI(si,ri,ci,el){
+  const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];
+  while(sh.rows.length<=ri)sh.rows.push(new Array(sh.cols.length).fill(''));
+  while((sh.rows[ri]||[]).length<=ci)sh.rows[ri].push('');
+  sh.rows[ri][ci]=el.value;
+  const fx=document.getElementById('yfx'+si);if(fx&&ySel.si===si&&ySel.r===ri&&ySel.c===ci)fx.value=el.value;
+  sdb();
+  reCalcYarn(si,sh);
+}
+function reCalcYarn(si,sh){
+  (sh.rows||[]).forEach((row,ri)=>{
+    (row||[]).forEach((v,ci)=>{
+      if(!v||!v.toString().startsWith('='))return;
+      const result=evF(v.toString(),ri,ci,sh);
+      const td=document.querySelector('#yr-'+si+'-'+ri+' td[data-c="'+ci+'"]');
+      if(!td||td.querySelector('input'))return;
+      if(result==='#ERR'){
+        td.className='pcel perr';
+        td.setAttribute('onclick','ySelF('+si+','+ri+','+ci+')');
+        td.innerHTML='<span style="display:block;padding:5px 7px;color:var(--red)">#ERR (클릭하여 수정)</span>';
+      } else {
+        td.className='sum pcel';
+        td.setAttribute('onclick','ySelF('+si+','+ri+','+ci+')');
+        td.innerHTML='<span style="display:block;padding:5px 7px">'+result+'</span>';
+      }
+    });
+  });
+}
+
+function yCB(si,ri,ci,el){
+  const v=el.value;if(!v.startsWith('='))return;
+  const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];
+  sh.rows[ri][ci]=v;
+  const result=evF(v,ri,ci,sh);
+  const td=el.parentElement;
+  if(result==='#ERR'){td.className='pcel perr';el.style.color='var(--red)';sdb();return;}
+  td.className='sum pcel';td.setAttribute('onclick',`ySelF(${si},${ri},${ci})`);
+  td.removeAttribute('onmousedown');td.removeAttribute('onmouseover');
+  td.innerHTML=`<span style="display:block;padding:5px 7px">${result}</span>`;
+  sdb();
+}
+function yUL(si,ci,v){const s=gS(pSeas,pSid);if(s.yarnSheets[si]?.cols[ci])s.yarnSheets[si].cols[ci].l=v;sdb();}
+function yAC(si){const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.cols.push({id:'yc'+Date.now(),l:'새 열'});sh.rows.forEach(r=>{while(r.length<sh.cols.length)r.push('');});sdb();rTab('yarn');}
+function yDC(si){const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.cols.length<=1){toast('열은 최소 1개');return;}const ci=ySel.si===si&&ySel.c>=0&&ySel.c<sh.cols.length?ySel.c:sh.cols.length-1;sh.cols.splice(ci,1);sh.rows.forEach(r=>r.splice(ci,1));sdb();rTab('yarn');}
+function yAR(si){const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.rows.push(new Array(sh.cols.length).fill(''));sdb();rTab('yarn');}
+function yDR(si){const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.rows.length<=1){toast('행은 최소 1개');return;}const ri=ySel.si===si&&ySel.r>=0&&ySel.r<sh.rows.length?ySel.r:sh.rows.length-1;sh.rows.splice(ri,1);sdb();rTab('yarn');}
+function yCC(e,si,ci){e.preventDefault();showCtx(e,[
+  {l:`${colLetter(ci)}열 왼쪽에 추가`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.cols.splice(ci,0,{id:'yc'+Date.now(),l:'새 열'});sh.rows.forEach(r=>r.splice(ci,0,''));sdb();rTab('yarn');}},
+  {l:`${colLetter(ci)}열 오른쪽에 추가`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.cols.splice(ci+1,0,{id:'yc'+Date.now(),l:'새 열'});sh.rows.forEach(r=>r.splice(ci+1,0,''));sdb();rTab('yarn');}},
+  {l:`${colLetter(ci)}열 삭제`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.cols.length<2){toast('최소 1개');return;}sh.cols.splice(ci,1);sh.rows.forEach(r=>r.splice(ci,1));sdb();rTab('yarn');}},
+]);}
+function yRC(e,si,ri){e.preventDefault();showCtx(e,[
+  {l:`${ri+1}행 위에 추가`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.rows.splice(ri,0,new Array(sh.cols.length).fill(''));sdb();rTab('yarn');}},
+  {l:`${ri+1}행 아래에 추가`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.rows.splice(ri+1,0,new Array(sh.cols.length).fill(''));sdb();rTab('yarn');}},
+  {l:`${ri+1}행 삭제`,fn:()=>{const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.rows.length<2){toast('최소 1개');return;}sh.rows.splice(ri,1);sdb();rTab('yarn');}},
+]);}
+function addYSPhoto(si,e){const s=gS(pSeas,pSid);Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{(s.yarnSheets[si].photos=s.yarnSheets[si].photos||[]).push(ev.target.result);sdb();rTab('yarn');};r.readAsDataURL(f);});}
+function rmYSPhoto(si,pi){const s=gS(pSeas,pSid);s.yarnSheets[si].photos.splice(pi,1);sdb();rTab('yarn');}
+function uYS(si,k,v){const s=gS(pSeas,pSid);s.yarnSheets[si][k]=v;sdb();}
+function rmYS(si){if(!confirm('이 시트를 삭제할까요?'))return;const s=gS(pSeas,pSid);s.yarnSheets.splice(si,1);sdb();rTab('yarn');}
+function addYS(){const s=gS(pSeas,pSid);(s.yarnSheets=s.yarnSheets||[]).push({title:'새 발주서',photos:[],cols:[{id:'yc'+Date.now(),l:'컬러'},{id:'yc'+(Date.now()+1),l:'발주량'},{id:'yc'+(Date.now()+2),l:'입고량'},{id:'yc'+(Date.now()+3),l:'수식'}],rows:[['','','',''],['','','',''],['TOTAL','','','']]});sdb();rTab('yarn');}
+// 구버전 호환
+function addYO(){addYS();}
+function uYO(i,k,v){}
+function rYO(i){}
 
 // ── TASKS ──
 function addTask(){const s=gS(pSeas,pSid);(s.tasks=s.tasks||[]).push({text:'',done:false});sdb();rTab('etc');}
