@@ -827,21 +827,16 @@ function _fb(url,k,pid){
         const r=JSON.parse(v);
         ['styles','payments','incoming','factories','seasons','managers','members','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});
         localStorage.setItem(LKEY,JSON.stringify(DB));
-        renderNav();
-        // 패널이 열려있으면 패널 내용만 갱신, 아니면 전체 렌더
+        renderNav();renderContent();
+        if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
+        // 패널 열려있으면 현재 탭 갱신
         const pov=document.getElementById('pov');
-        renderContent();
-        // 패널 열려있으면 현재 탭도 갱신
-        if(pov&&pov.style.display!=='none'&&pSid&&pTab){
-          if(typeof rTab==='function') rTab(pTab);
-        }
-        if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function') mobRenderContent();
+        if(pov&&pov.style.display!=='none'&&pSid&&pTab&&typeof rTab==='function')rTab(pTab);
       }
       if(!fbOk){
         fbOk=true;syncUI(true);
-        const st=document.getElementById('fbst');
-        if(st)st.textContent='✅ 연결 성공!';
-        toast('Firebase 연결됨');
+        const st=document.getElementById('fbst');if(st)st.textContent='✅ 연결 성공!';
+        if(typeof toast==='function')toast('Firebase 연결됨');
       }
     });
   }catch(e){document.getElementById('fbst').textContent='❌ 실패: '+e.message;}
@@ -2167,7 +2162,7 @@ function saveStyle(){
     s.updated=td();
     document.getElementById('ptitle').textContent=s.style||'—';
   }
-  sdb();renderNav();renderContent();toast('저장됨');
+  sdb();renderContent();toast('저장됨');
 }
 function delStyle(){const s=gS(pSeas,pSid);if(!s||!confirm(`'${s.style}' 삭제?`))return;DB.styles[pSeas]=(DB.styles[pSeas]||[]).filter(x=>x.id!==pSid);sdb();closePanel();renderNav();renderContent();}
 
@@ -2683,42 +2678,92 @@ function autoMemoStatus(s,fromStatus,toStatus){
   (s.memo=s.memo||[]).push({type:'status',from:fromStatus,to:toStatus,ts:new Date().toLocaleString('ko-KR'),id:'a'+Date.now()});
 }
 
-// ── 모달 헬퍼 ──
-function om(id){const el=document.getElementById(id);if(el)el.style.display='flex';}
-function cm(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+// ── 핵심 유틸 ──
+function om(id){const el=document.getElementById(id);if(el){el.style.display='flex';}}
+function cm(id){const el=document.getElementById(id);if(el){el.style.display='none';}}
+function toast(msg,dur=2200){
+  const t=document.getElementById('toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function td(){return new Date().toISOString().slice(0,10);}
+
+// ── 사진 뷰어 ──
+function openPhotoViewer(src){
+  const v=document.getElementById('photo-viewer');
+  const img=document.getElementById('photo-viewer-img');
+  if(!v||!img)return;
+  img.src=src;v.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closePhotoViewer(){
+  const v=document.getElementById('photo-viewer');
+  if(v)v.style.display='none';
+  document.body.style.overflow='';
+}
+function openPdfViewer(src,name){
+  const v=document.getElementById('pdf-viewer');
+  if(!v)return;
+  document.getElementById('pdf-viewer-iframe').src=src;
+  document.getElementById('pdf-viewer-name').textContent=name||'PDF';
+  const dl=document.getElementById('pdf-download-btn');
+  if(dl){dl.href=src;dl.download=name||'file.pdf';}
+  v.style.display='flex';document.body.style.overflow='hidden';
+}
+function closePdfViewer(){
+  const v=document.getElementById('pdf-viewer');
+  if(v)v.style.display='none';
+  const ifr=document.getElementById('pdf-viewer-iframe');
+  if(ifr)ifr.src='';
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closePhotoViewer();closePdfViewer();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
+    if(pTab==='prod'){e.preventDefault();tblUndo('prod');}
+    else if(pTab==='yarn'){e.preventDefault();tblUndo('yarn',0);}
+  }
+  if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){
+    if(pTab==='prod'){e.preventDefault();tblRedo('prod');}
+    else if(pTab==='yarn'){e.preventDefault();tblRedo('yarn',0);}
+  }
+});
+
+// ── 사진 추가 ──
+function addPh(e){
+  const s=gS(pSeas,pSid);if(!s)return;
+  Array.from(e.target.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};
+    r.readAsDataURL(f);
+  });
+}
+function addPhDrop(e){
+  const s=gS(pSeas,pSid);if(!s)return;
+  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};
+    r.readAsDataURL(f);
+  });
+}
 
 // ── 실장님 관리 ──
 function openMgr(){
   document.getElementById('mgrl').innerHTML=(DB.managers||[]).map((m,i)=>`
     <div class="mgri">
-      <input type="text" class="mgr-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="실장님 이름 입력">
+      <input type="text" class="mgr-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="실장님 이름">
       <button class="btn d sm" onclick="delMgr(${i})">삭제</button>
     </div>`).join('');
   om('mgrm');
 }
 function addMgr(){
-  _syncMgrInputs();
-  (DB.managers=DB.managers||[]).push('새 실장님');
-  openMgr();
-  setTimeout(()=>{const ins=document.querySelectorAll('.mgr-inp');if(ins.length>0)ins[ins.length-1].focus();},50);
+  _syncMgrInputs();(DB.managers=DB.managers||[]).push('새 실장님');
+  openMgr();setTimeout(()=>{const ins=document.querySelectorAll('.mgr-inp');if(ins.length)ins[ins.length-1].focus();},50);
 }
-function delMgr(i){
-  if(!confirm('삭제?'))return;
-  _syncMgrInputs();
-  DB.managers.splice(i,1);
-  openMgr();
-}
-function _syncMgrInputs(){
-  document.querySelectorAll('.mgr-inp').forEach(el=>{
-    const i=+el.dataset.i;
-    if(i>=0&&i<(DB.managers||[]).length)DB.managers[i]=el.value.trim()||DB.managers[i];
-  });
-}
-function saveMgr(){
-  _syncMgrInputs();
-  DB.managers=(DB.managers||[]).filter(Boolean);
-  sdb();cm('mgrm');toast('저장됨');
-}
+function delMgr(i){if(!confirm('삭제?'))return;_syncMgrInputs();DB.managers.splice(i,1);openMgr();}
+function _syncMgrInputs(){document.querySelectorAll('.mgr-inp').forEach(el=>{const i=+el.dataset.i;if(i>=0&&i<(DB.managers||[]).length)DB.managers[i]=el.value.trim()||DB.managers[i];});}
+function saveMgr(){_syncMgrInputs();DB.managers=(DB.managers||[]).filter(Boolean);sdb();cm('mgrm');toast('저장됨');}
 
 // ── 담당자 관리 ──
 function openMemberModal(){
@@ -2730,37 +2775,21 @@ function openMemberModal(){
   om('memberm');
 }
 function addMember(){
-  _syncMemberInputs();
-  (DB.members=DB.members||[]).push('새 담당자');
-  openMemberModal();
-  setTimeout(()=>{const ins=document.querySelectorAll('.member-inp');if(ins.length>0)ins[ins.length-1].focus();},50);
+  _syncMemberInputs();(DB.members=DB.members||[]).push('새 담당자');
+  openMemberModal();setTimeout(()=>{const ins=document.querySelectorAll('.member-inp');if(ins.length)ins[ins.length-1].focus();},50);
 }
-function delMember(i){
-  if(!confirm('삭제?'))return;
-  _syncMemberInputs();
-  DB.members.splice(i,1);
-  openMemberModal();
-}
-function _syncMemberInputs(){
-  document.querySelectorAll('.member-inp').forEach(el=>{
-    const i=+el.dataset.i;
-    if(i>=0&&i<(DB.members||[]).length)DB.members[i]=el.value.trim()||DB.members[i];
-  });
-}
-function saveMember(){
-  _syncMemberInputs();
-  DB.members=(DB.members||[]).filter(Boolean);
-  sdb();cm('memberm');toast('저장됨');
-}
+function delMember(i){if(!confirm('삭제?'))return;_syncMemberInputs();DB.members.splice(i,1);openMemberModal();}
+function _syncMemberInputs(){document.querySelectorAll('.member-inp').forEach(el=>{const i=+el.dataset.i;if(i>=0&&i<(DB.members||[]).length)DB.members[i]=el.value.trim()||DB.members[i];});}
+function saveMember(){_syncMemberInputs();DB.members=(DB.members||[]).filter(Boolean);sdb();cm('memberm');toast('저장됨');}
 
 // ── 새 스타일 등록 ──
 function openNSM(){
-  ['nsst','nsbr','nsmgr','nsmember','nsqt','nscmt','nsfob','nsdl'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
-  const fc=document.getElementById('nsfc');if(fc){fc.innerHTML='<option value="">공장 선택</option>'+DB.factories.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
-  const ss=document.getElementById('nsss');if(ss){ss.value='샘플';}
-  const sn=document.getElementById('nssn');if(sn){sn.innerHTML='<option value="">시즌 선택</option>'+DB.seasons.map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');}
+  ['nsst','nsbr','nsmgr','nsmember','nsqt','nscmt','nsfob','nsdl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const fc=document.getElementById('nsfc');
+  if(fc)fc.innerHTML='<option value="">공장 선택</option>'+(DB.factories||[]).map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
+  const ss=document.getElementById('nsss');if(ss)ss.value='샘플';
+  const sn=document.getElementById('nssn');
+  if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
   om('nsm');
 }
 function confNewStyle(){
@@ -2769,8 +2798,7 @@ function confNewStyle(){
   if(!sn){toast('시즌을 선택해주세요');return;}
   if(!st){toast('스타일 번호를 입력해주세요');return;}
   const item=mkS('s'+Date.now());
-  item.style=st;
-  item.brand=document.getElementById('nsbr')?.value||'';
+  item.style=st;item.brand=document.getElementById('nsbr')?.value||'';
   item.manager=document.getElementById('nsmgr')?.value||'';
   item.member=document.getElementById('nsmember')?.value||'';
   item.qty=+document.getElementById('nsqt')?.value||0;
@@ -2786,27 +2814,25 @@ function confNewStyle(){
 
 // ── 시즌 관리 ──
 function openSeasM(id=null){
-  const s=id?DB.seasons.find(x=>x.id===id):null;
-  document.getElementById('seasmt').textContent=s?'시즌 수정':'시즌 추가';
-  document.getElementById('seasn').value=s?.name||'';
-  document.getElementById('seasd').value=s?.desc||'';
-  document.getElementById('seasi').value=s?.icon||'🍂';
-  document.getElementById('seasdel').style.display=s?'block':'none';
-  window._editSeasId=id;
-  om('seasm');
+  const s=id?(DB.seasons||[]).find(x=>x.id===id):null;
+  const mt=document.getElementById('seasmt');if(mt)mt.textContent=s?'시즌 수정':'시즌 추가';
+  const nn=document.getElementById('seasn');if(nn)nn.value=s?.name||'';
+  const nd=document.getElementById('seasd');if(nd)nd.value=s?.desc||'';
+  const ni=document.getElementById('seasi');if(ni)ni.value=s?.icon||'🍂';
+  const dl=document.getElementById('seasdel');if(dl)dl.style.display=s?'block':'none';
+  window._editSeasId=id;om('seasm');
 }
 function confSeas(){
-  const name=document.getElementById('seasn').value.trim();
+  const name=document.getElementById('seasn')?.value?.trim();
   if(!name){toast('시즌명 입력');return;}
   const id=window._editSeasId;
-  if(id){const s=DB.seasons.find(x=>x.id===id);if(s){s.name=name;s.desc=document.getElementById('seasd').value;s.icon=document.getElementById('seasi').value||'🍂';}}
-  else{const nid='s'+Date.now();DB.seasons.push({id:nid,name,desc:document.getElementById('seasd').value,icon:document.getElementById('seasi').value||'🍂'});DB.styles[nid]=[];}
+  if(id){const s=(DB.seasons||[]).find(x=>x.id===id);if(s){s.name=name;s.desc=document.getElementById('seasd')?.value||'';s.icon=document.getElementById('seasi')?.value||'🍂';}}
+  else{const nid='s'+Date.now();(DB.seasons=DB.seasons||[]).push({id:nid,name,desc:document.getElementById('seasd')?.value||'',icon:document.getElementById('seasi')?.value||'🍂'});DB.styles[nid]=[];}
   sdb();cm('seasm');renderNav();renderContent();toast('저장됨');
 }
 function delSeas(){
-  const id=window._editSeasId;if(!id)return;
-  if(!confirm('시즌과 모든 스타일이 삭제됩니다. 계속?'))return;
-  DB.seasons=DB.seasons.filter(x=>x.id!==id);delete DB.styles[id];
+  const id=window._editSeasId;if(!id||!confirm('시즌과 모든 스타일이 삭제됩니다. 계속?'))return;
+  DB.seasons=(DB.seasons||[]).filter(x=>x.id!==id);delete DB.styles[id];
   sdb();cm('seasm');renderNav();renderContent();
 }
 
@@ -2816,20 +2842,19 @@ function saveBackup(manual=false){
   try{
     const backups=getBackups();const now=new Date();
     const label=manual?'수동 백업 — '+now.toLocaleString('ko-KR'):now.toLocaleString('ko-KR');
-    if(!manual&&backups.length>0){const last=new Date(backups[0].ts);if(now-last<30000)return;}
+    if(!manual&&backups.length>0&&(now-new Date(backups[0].ts))<30000)return;
     const snap={ts:now.toISOString(),label,manual,data:JSON.stringify(DB)};
     backups.unshift(snap);
-    const manuals=backups.filter(b=>b.manual);
-    const autos=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
-    localStorage.setItem(BKEY,JSON.stringify([...manuals,...autos].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
+    const m=backups.filter(b=>b.manual),a=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
+    localStorage.setItem(BKEY,JSON.stringify([...m,...a].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
     if(manual)toast('백업 완료');
   }catch(e){}
 }
 function getBackups(){try{return JSON.parse(localStorage.getItem(BKEY))||[];}catch{return[];}}
 function openBackupModal(){renderBackupList();om('backupm');}
 function renderBackupList(){
-  const backups=getBackups();
   const el=document.getElementById('backup-list');if(!el)return;
+  const backups=getBackups();
   if(!backups.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">백업 없음</div>';return;}
   el.innerHTML=backups.map((b,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--b);border-radius:7px;margin-bottom:6px;background:var(--bg2)">
@@ -2844,49 +2869,17 @@ function renderBackupList(){
 }
 function previewBackup(i){
   const b=getBackups()[i];if(!b)return;
-  try{const data=JSON.parse(b.data);alert(`백업 미리보기
-
-날짜: ${new Date(b.ts).toLocaleString('ko-KR')}
-시즌: ${(data.seasons||[]).length}개
-스타일: ${Object.values(data.styles||{}).flat().length}개
-공장: ${(data.factories||[]).length}개`);}catch{alert('미리보기 실패');}
+  try{const d=JSON.parse(b.data);alert('날짜: '+new Date(b.ts).toLocaleString('ko-KR')+'  |  시즌: '+(d.seasons||[]).length+'개  |  스타일: '+Object.values(d.styles||{}).flat().length+'개  |  공장: '+(d.factories||[]).length+'개');}catch{alert('미리보기 실패');}
 }
 function restoreBackup(i){
-  const b=getBackups()[i];if(!b)return;
-  if(!confirm(`복원할까요?
-현재 데이터는 자동 백업됩니다.`))return;
+  const b=getBackups()[i];if(!b||!confirm('복원할까요? 현재 데이터는 자동 백업됩니다.'))return;
   try{saveBackup(true);DB=JSON.parse(b.data);localStorage.setItem(LKEY,JSON.stringify(DB));fbPush();cm('backupm');renderNav();renderContent();toast('복원 완료!');}catch{toast('복원 실패');}
 }
 function deleteBackup(i){
   if(!confirm('삭제?'))return;
-  const backups=getBackups();backups.splice(i,1);
-  localStorage.setItem(BKEY,JSON.stringify(backups));renderBackupList();toast('삭제됨');
+  const b=getBackups();b.splice(i,1);localStorage.setItem(BKEY,JSON.stringify(b));renderBackupList();toast('삭제됨');
 }
 
-// ── 공장 삭제 ──
-function delFactory(){
-  if(!efid||!confirm('삭제?'))return;
-  DB.factories=DB.factories.filter(f=>f.id!==efid);
-  sdb();cm('factm');renderNav();renderContent();
-}
-
-// ── 결제 삭제 ──
-function delPay(id){
-  if(!confirm('삭제?'))return;
-  DB.payments=DB.payments.filter(p=>p.id!==id);
-  sdb();renderNav();renderContent();
-}
-
-// ── toast ──
-function toast(msg,dur=2200){
-  const t=document.getElementById('toast');if(!t)return;
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(window._toastT);
-  window._toastT=setTimeout(()=>t.classList.remove('show'),dur);
-}
-
-// ── 엑셀 내보내기 ──
-function openXL(){om('xlm');}
 </script>
 </body>
 </html>
