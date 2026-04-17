@@ -593,6 +593,8 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 // ══════════════════════════
 const LKEY = 'ak_v3';
 const SL = ['샘플','QC 진행','QC 완료','PP 진행','PP 완료','수납 진행','수납 완료','선적진행','선적완료','입고예정','입고완료'];
+const INC_STATUS=['예정','확정','입고완료'];
+const ISC={'예정':'bs','확정':'bq','입고완료':'bd'};
 const SC = {
   '샘플':'bs',
   'QC 진행':'bq','QC 완료':'bq',
@@ -986,9 +988,6 @@ function renderIncoming(){
   }).length;
   const totalQty=rows.reduce((a,i)=>a+(i.qty||0),0);
 
-  const INC_STATUS=['예정','확정','입고완료'];
-  const ISC={'예정':'bs','확정':'bq','입고완료':'bd'};
-
   return`
   <div class="sg" style="grid-template-columns:repeat(4,1fr)">
     <div class="sc"><div class="sl">전체 건수</div><div class="sv">${total}</div></div>
@@ -1040,6 +1039,10 @@ function renderIncoming(){
       </tr>`;
     }).join(''):'<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--t2)">입고 계획 없음</td></tr>'}</tbody>
   </table></div>`;
+}
+function addInc(){
+  DB.incoming.push({id:'i'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 입고',styleId:'',factory:'',date:td(),qty:0,note:'',status:'예정'});
+  sdb();renderContent();toast('입고 계획 추가됨');
 }
 function delInc(id){if(!confirm('삭제?'))return;DB.incoming=DB.incoming.filter(i=>i.id!==id);sdb();renderContent();}
 function updIncStatus(id,status){
@@ -2158,10 +2161,12 @@ function rMemoTab(s){
               <span style="color:var(--t3);font-size:11px">→</span>
               <span class="badge ${SC[m.to]||'bs'}" style="font-size:9px">${m.to}</span>
             </div>`
-          :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:4px">${m.text||''}${m.edited?`<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>`:''}</div>
+          :m.type==='auto'
+          ?`<div style="font-size:11px;color:var(--t3);font-style:italic">${m.text||''}</div>`
+          :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:6px">${m.text||''}${m.edited?`<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>`:''}</div>
            <div style="display:flex;gap:5px">
-             <button onclick="editMemo('${m.id}')" style="padding:2px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:10px;cursor:pointer">✏️ 수정</button>
-             <button onclick="deleteMemo('${m.id}')" style="padding:2px 8px;border-radius:4px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:10px;cursor:pointer">🗑 삭제</button>
+             <button onclick="editMemo(\`${m.id}\`)" style="padding:2px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:10px;cursor:pointer">✏ 수정</button>
+             <button onclick="deleteMemo(\`${m.id}\`)" style="padding:2px 8px;border-radius:4px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:10px;cursor:pointer">🗑 삭제</button>
            </div>`
         }
       </div>
@@ -2640,9 +2645,8 @@ if(!DB.fb || !DB.fb.url){
   localStorage.setItem(LKEY,JSON.stringify(DB));
 }
 iFB(FB_URL,FB_KEY,FB_PID);
-nav('season','26FW');
 
-// 모바일 초기화
+// 모바일/PC 초기화
 if(isMobile()){
   mobInit();
 } else {
