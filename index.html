@@ -2117,56 +2117,27 @@ function mobRenderSeason(){
     </div>
     <div class="mob-season-hdr" style="top:0">
       <span class="mob-season-hdr-style">STYLE NO.</span>
-      <span class="mob-season-hdr-qty">수량</span>
+      <span class="mob-season-hdr-qty">수량 · 상태</span>
     </div>
     ${rows.map(s=>`
       <div class="mob-row" id="mob-row-${s.id}">
         <div class="mob-row-main" onclick="mobToggleRow('${s.id}')">
           <div class="mob-check"><div class="mob-check-dot"></div></div>
           <span class="mob-row-style">${s.style||'-'}</span>
-          <span class="mob-row-qty">${(s.qty||0).toLocaleString()}</span>
+          <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="mob-row-qty">${(s.qty||0).toLocaleString()}</span>
+            <span class="badge ${SC[s.status]||'bs'}" style="font-size:9px;padding:1px 5px">${s.status||'-'}</span>
+            <span style="color:var(--t3);font-size:16px;margin-left:2px">›</span>
+          </span>
         </div>
-        <div class="mob-detail" id="mob-detail-${s.id}">
-          <div class="mob-detail-grid">
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">브랜드</div>
-              <div class="mob-detail-val">${s.brand||'-'}</div>
-            </div>
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">진행상태</div>
-              <div><span class="badge ${SC[s.status]||'bs'}" style="font-size:10px">${s.status||'-'}</span></div>
-            </div>
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">CMT ($)</div>
-              <div class="mob-detail-val" style="color:var(--al);font-family:var(--mono)">$${(+s.cmt||0).toFixed(2)}</div>
-            </div>
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">마감일</div>
-              <div class="mob-detail-val" style="font-size:11px">${s.deadline||'-'}</div>
-            </div>
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">공장</div>
-              <div class="mob-detail-val" style="font-size:11px;display:flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</div>
-            </div>
-            <div class="mob-detail-card">
-              <div class="mob-detail-label">실장님</div>
-              <div class="mob-detail-val" style="font-size:11px">${s.manager||'-'}</div>
-            </div>
-          </div>
-          <div class="mob-detail-btns">
-            <button class="btn sm" onclick="event.stopPropagation();openMobPanel('${mobSeason}','${s.id}')" style="flex:1;padding:9px;font-size:12px">상세 편집</button>
-            <button class="btn p sm" onclick="event.stopPropagation();mobQuickStatus('${s.id}')" style="flex:1;padding:9px;font-size:12px">상태 변경</button>
-          </div>
-        </div>
+
       </div>`).join('')}
     <div class="mob-add-row" onclick="mobNewStyle()">+ 새 스타일 추가</div>`;
 }
 
 function mobToggleRow(id){
-  const detail=document.getElementById('mob-detail-'+id);
-  const isOpen=detail.classList.contains('open');
-  document.querySelectorAll('.mob-detail.open').forEach(d=>d.classList.remove('open'));
-  if(!isOpen) detail.classList.add('open');
+  // 탭 한 번에 바로 전체화면 패널 열기
+  openMobPanel(mobSeason, id);
 }
 
 function mobRenderFactories(){
