@@ -2481,6 +2481,189 @@ window.addEventListener('resize',()=>{
     document.getElementById('mob-app').style.display='none';
   }
 });
+
+// ── rmWOP / rmPh ──
+function rmWOP(i){const s=gS(pSeas,pSid);if(s&&s.wop){s.wop.splice(i,1);sdb();rTab('info');}}
+function rmPh(i){const s=gS(pSeas,pSid);if(s&&s.photos){s.photos.splice(i,1);sdb();rTab('photos');}}
+
+// ── YARN TAB ──
+function rYarnTab(s){
+  const body=document.getElementById('pbody');if(!body)return;
+  if(!s.yarnSheets||!s.yarnSheets.length){
+    s.yarnSheets=[{title:'발주 현황표 1',photos:[],cols:[{id:'c0',l:'원사명'},{id:'c1',l:'컬러'},{id:'c2',l:'수량'},{id:'c3',l:'단가'},{id:'c4',l:'비고'}],rows:[['','','','',''],['','','','','']]}];
+  }
+  body.innerHTML=s.yarnSheets.map((sh,si)=>`
+    <div class="ps" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="text" value="${sh.title||'발주 현황표'}" oninput="yTitle(${si},this.value)"
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0);font-size:13px;font-weight:600">
+        <button class="btn sm" onclick="yAC(${si})">+ 열</button>
+        <button class="btn sm" onclick="yDC(${si})">− 열</button>
+        <button class="btn sm" onclick="yAR(${si})">+ 행</button>
+        <button class="btn sm" onclick="yDR(${si})">− 행</button>
+        <button class="btn sm" onclick="tblUndo('yarn',${si})" title="되돌리기" style="color:var(--t1)">↩</button>
+        <button class="btn sm" onclick="tblRedo('yarn',${si})" title="다시실행" style="color:var(--t1)">↪</button>
+        ${si>0?`<button class="btn d sm" onclick="rmYarnSheet(${si})">시트 삭제</button>`:''}
+      </div>
+      <div class="tw" style="margin-bottom:8px"><table style="min-width:100%">
+        <thead><tr>${sh.cols.map((c,ci)=>`<th style="min-width:90px"><input type="text" value="${c.l||''}" oninput="yColLabel(${si},${ci},this.value)" style="background:none;border:none;width:100%;color:var(--t2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em"></th>`).join('')}</tr></thead>
+        <tbody>${(sh.rows||[]).map((row,ri)=>`<tr>${sh.cols.map((c,ci)=>{
+          const raw=(row||[])[ci]||'';
+          const isF=raw.toString().startsWith('=');
+          const disp=isF?evFY(raw,ri,ci,sh):raw;
+          return`<td style="${isF?'background:rgba(61,143,110,.06)':''};position:relative">
+            <input type="text" value="${raw.toString().replace(/"/g,'&quot;')}"
+              onfocus="ySelCell(${si},${ri},${ci},this)" oninput="yCI(${si},${ri},${ci},this)"
+              onkeydown="yKey(event,${si},${ri},${ci})"
+              style="background:none;border:none;width:100%;color:${isF?'var(--al)':'var(--t0)'};font-family:var(--mono);font-size:12px">
+            ${isF?`<div style="position:absolute;bottom:1px;right:3px;font-size:9px;color:var(--t3);pointer-events:none">${disp}</div>`:''}
+          </td>`;
+        }).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+    </div>`).join('')+`<button class="btn sm" onclick="addYarnSheet()" style="margin-top:4px">+ 시트 추가</button>`;
+}
+function yTitle(si,v){const s=gS(pSeas,pSid);if(s&&s.yarnSheets[si])s.yarnSheets[si].title=v;}
+function yColLabel(si,ci,v){const s=gS(pSeas,pSid);if(s&&s.yarnSheets[si])s.yarnSheets[si].cols[ci].l=v;}
+function yAC(si){tblSnapshot('yarn',si);const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.cols.push({id:'c'+Date.now(),l:'열'+(sh.cols.length+1)});sh.rows.forEach(r=>r.push(''));sdb();rTab('yarn');}
+function yDC(si){tblSnapshot('yarn',si);const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.cols.length<=1)return;sh.cols.pop();sh.rows.forEach(r=>r.pop());sdb();rTab('yarn');}
+function yAR(si){tblSnapshot('yarn',si);const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];sh.rows.push(new Array(sh.cols.length).fill(''));sdb();rTab('yarn');}
+function yDR(si){tblSnapshot('yarn',si);const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];if(sh.rows.length<=1)return;sh.rows.pop();sdb();rTab('yarn');}
+function addYarnSheet(){const s=gS(pSeas,pSid);(s.yarnSheets=s.yarnSheets||[]).push({title:'발주 현황표 '+(s.yarnSheets.length+1),photos:[],cols:[{id:'c0',l:'원사명'},{id:'c1',l:'컬러'},{id:'c2',l:'수량'},{id:'c3',l:'단가'},{id:'c4',l:'비고'}],rows:[['','','','',''],['','','','','']]});sdb();rTab('yarn');}
+function rmYarnSheet(si){if(!confirm('삭제?'))return;const s=gS(pSeas,pSid);s.yarnSheets.splice(si,1);sdb();rTab('yarn');}
+let ySel={si:-1,r:-1,c:-1};
+function ySelCell(si,ri,ci,el){ySel={si,r:ri,c:ci};}
+function yCI(si,ri,ci,el){
+  const s=gS(pSeas,pSid);const sh=s.yarnSheets[si];
+  if(!el._snapDone){tblSnapshot('yarn',si);el._snapDone=true;}
+  while(sh.rows.length<=ri)sh.rows.push(new Array(sh.cols.length).fill(''));
+  while((sh.rows[ri]||[]).length<=ci)sh.rows[ri].push('');
+  sh.rows[ri][ci]=el.value;
+  sdb();reCalcYarn(si,sh);
+}
+function evFY(expr,ri,ci,sh){
+  try{
+    const rows=sh.rows;
+    const getCell=ref=>{const m=ref.trim().match(/^([A-Z]+)(\d+)$/i);if(!m)return 0;const r=+m[2]-1,c=m[1].toUpperCase().charCodeAt(0)-65;const raw=((rows[r]||[])[c]||'').toString();return raw.startsWith('=')?parseFloat(evFY(raw,r,c,sh))||0:parseFloat(raw)||0;};
+    const pRng=(a2,b2)=>{const ma=a2.match(/^([A-Z]+)(\d+)$/i),mb=b2.match(/^([A-Z]+)(\d+)$/i);if(!ma||!mb)return[];const vs=[];const r1=+ma[2]-1,c1=ma[1].toUpperCase().charCodeAt(0)-65,r2=+mb[2]-1,c2=mb[1].toUpperCase().charCodeAt(0)-65;for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++){const raw=((rows[r]||[])[c]||'').toString();const v=raw.startsWith('=')?parseFloat(evFY(raw,r,c,sh))||0:parseFloat(raw)||0;if(!isNaN(v))vs.push(v);}return vs;};
+    const cl=expr.slice(1).trim().toUpperCase();
+    let m=cl.match(/^SUM\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.reduce((a,b)=>a+b,0);}
+    m=cl.match(/^AVERAGE\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0;}
+    m=cl.match(/^COUNT\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){return pRng(m[1],m[2]).length;}
+    m=cl.match(/^MAX\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.max(...vs):0;}
+    m=cl.match(/^MIN\(([A-Z]+\d+):([A-Z]+\d+)\)$/);if(m){const vs=pRng(m[1],m[2]);return vs.length?Math.min(...vs):0;}
+    return '#ERR';
+  }catch{return '#ERR';}
+}
+function reCalcYarn(si,sh){rTab('yarn');}
+function yMoveTo(si,ri,ci){
+  const s=gS(pSeas,pSid);if(!s||!s.yarnSheets[si])return;
+  const sh=s.yarnSheets[si];
+  ri=Math.max(0,Math.min(ri,sh.rows.length-1));
+  ci=Math.max(0,Math.min(ci,sh.cols.length-1));
+  const sel=document.querySelector(`#pbody table:nth-child(${si+1}) tbody tr:nth-child(${ri+1}) td:nth-child(${ci+1}) input`);
+  if(sel){sel.focus();sel.select();}
+}
+
+// ── MEMO TAB ──
+let curMemoTag='gen';
+function rMemoTab(s){
+  if(!s.memo)s.memo=[];
+  const body=document.getElementById('pbody');if(!body)return;
+  const MEMO_TAGS=[
+    {k:'qc',l:'QC',bg:'rgba(37,99,175,.2)',cl:'#60a5fa'},
+    {k:'pp',l:'PP',bg:'rgba(109,40,217,.2)',cl:'#c084fc'},
+    {k:'ship',l:'선적',bg:'rgba(234,88,12,.2)',cl:'#fb923c'},
+    {k:'warn',l:'⚠ 주의',bg:'rgba(201,64,64,.15)',cl:'#f87171'},
+    {k:'gen',l:'일반',bg:'#1a1c1f',cl:'#6e737d'},
+  ];
+  const tagBtns=MEMO_TAGS.map(t=>`
+    <button onclick="selMemoTag('${t.k}')" id="mtag-${t.k}"
+      style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;
+      background:${curMemoTag===t.k?t.bg:'var(--bg3)'};color:${curMemoTag===t.k?t.cl:'var(--t2)'}">
+      ${t.l}
+    </button>`).join('');
+  const timeline=s.memo.slice().reverse().map((m,i)=>{
+    const tag=MEMO_TAGS.find(t=>t.k===m.tag)||MEMO_TAGS[4];
+    const isAuto=m.type==='auto'||m.type==='status';
+    return`<div style="display:flex;gap:10px;padding-bottom:14px">
+      <div style="display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0">
+        <div style="width:10px;height:10px;border-radius:50%;
+          ${isAuto?'background:#4a4f58':'border:2px solid var(--ac);background:var(--bg0)'};
+          ${m.tag==='warn'?'border-color:var(--red)':''};margin-top:3px;flex-shrink:0"></div>
+        <div style="flex:1;width:1.5px;background:var(--b);margin-top:2px"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${m.ts||''}</span>
+          ${m.author?`<span style="font-size:10px;font-weight:600;color:var(--t2)">${m.author}</span>`:''}
+          ${!isAuto?`<span style="padding:1px 6px;border-radius:10px;font-size:9px;font-weight:600;background:${tag.bg};color:${tag.cl}">${tag.l}</span>`:'<span style="padding:1px 6px;border-radius:10px;font-size:9px;background:var(--bg3);color:var(--t3)">자동</span>'}
+        </div>
+        ${m.type==='status'
+          ?`<div style="display:flex;align-items:center;gap:5px">
+              <span class="badge ${SC[m.from]||'bs'}" style="font-size:9px">${m.from||''}</span>
+              <span style="color:var(--t3)">→</span>
+              <span class="badge ${SC[m.to]||'bs'}" style="font-size:9px">${m.to||''}</span>
+            </div>`
+          :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:4px">${m.text||''}${m.edited?'<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>':''}</div>
+           <div style="display:flex;gap:5px;margin-top:5px">
+             <button onclick="editMemo(this)" data-id="${m.id}"
+               style="padding:3px 10px;border-radius:5px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:11px;cursor:pointer">✏ 수정</button>
+             <button onclick="deleteMemo(this)" data-id="${m.id}"
+               style="padding:3px 10px;border-radius:5px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:11px;cursor:pointer">🗑 삭제</button>
+           </div>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+  body.innerHTML=`
+    <div class="ps">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">새 메모</div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <textarea id="memo-input" rows="3" placeholder="메모 입력..."
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:13px;line-height:1.5"></textarea>
+        <button class="btn p sm" onclick="addMemo()" style="padding:8px 12px;font-size:13px;align-self:flex-end">↑</button>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;color:var(--t3)">태그:</span>${tagBtns}
+      </div>
+    </div>
+    <div style="padding:10px 16px 4px;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">
+      히스토리 (${s.memo.length}건)
+    </div>
+    <div style="padding:8px 16px 16px">
+      ${timeline||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">메모 없음</div>'}
+    </div>`;
+}
+function selMemoTag(k){curMemoTag=k;const s=gS(pSeas,pSid);if(s)rMemoTab(s);}
+function addMemo(){
+  const s=gS(pSeas,pSid);if(!s)return;
+  const text=document.getElementById('memo-input')?.value?.trim();
+  if(!text){toast('내용을 입력해주세요');return;}
+  (s.memo=s.memo||[]).push({type:'memo',tag:curMemoTag,text,author:(DB.members||[])[0]||'',ts:new Date().toLocaleString('ko-KR'),id:'m'+Date.now()});
+  sdb();rMemoTab(s);toast('메모 저장됨');
+}
+function editMemo(btnOrId){
+  const id=typeof btnOrId==='string'?btnOrId:btnOrId.dataset.id;
+  const s=gS(pSeas,pSid);if(!s)return;
+  const idx=s.memo.findIndex(m=>m.id===id);if(idx<0)return;
+  const m=s.memo[idx];
+  if(m.type==='auto'||m.type==='status'){toast('자동 기록은 수정할 수 없어요');return;}
+  const newText=prompt('메모 수정:',m.text||'');
+  if(newText===null)return;
+  if(!newText.trim()){toast('내용을 입력해주세요');return;}
+  s.memo[idx].text=newText.trim();s.memo[idx].edited=true;s.memo[idx].editedTs=new Date().toLocaleString('ko-KR');
+  sdb();rMemoTab(s);toast('메모 수정됨');
+}
+function deleteMemo(btnOrId){
+  const id=typeof btnOrId==='string'?btnOrId:btnOrId.dataset.id;
+  const s=gS(pSeas,pSid);if(!s)return;
+  if(!confirm('이 메모를 삭제할까요?'))return;
+  s.memo=s.memo.filter(m=>m.id!==id);
+  sdb();rMemoTab(s);toast('메모 삭제됨');
+}
+function autoMemoStatus(s,fromStatus,toStatus){
+  (s.memo=s.memo||[]).push({type:'status',from:fromStatus,to:toStatus,ts:new Date().toLocaleString('ko-KR'),id:'a'+Date.now()});
+}
 </script>
 </body>
 </html>
