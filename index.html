@@ -357,6 +357,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <button class="mob-ptab" onclick="mobGoTab(this,'pay')">결제</button>
         <button class="mob-ptab" onclick="mobGoTab(this,'qct')">QC</button>
         <button class="mob-ptab" onclick="mobGoTab(this,'prod')">생산현황</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'memo')">메모</button>
         <button class="mob-ptab" onclick="mobGoTab(this,'etc')">기타</button>
       </div>
       <div class="mob-panel-body" id="mob-panel-body"></div>
@@ -379,6 +380,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
     <div class="nav-foot">
       <div class="sync"><div class="sdot" id="sdot"></div><span id="slbl">로컬 저장</span></div>
       <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:11px;margin-top:2px">⚙ 실장님 관리</button>
+      <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:11px">👤 담당자 관리</button>
       <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:11px">☁ Firebase 설정</button>
       <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:11px;color:var(--amb)">💾 백업 & 복원</button>
     </div>
@@ -405,6 +407,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
       <button class="ptab" onclick="goTab(this,'pay')">결제</button>
       <button class="ptab" onclick="goTab(this,'qct')">QC</button>
       <button class="ptab" onclick="goTab(this,'prod')">생산현황</button>
+      <button class="ptab" onclick="goTab(this,'memo')">메모</button>
       <button class="ptab" onclick="goTab(this,'etc')">기타</button>
     </div>
     <div class="pbody" id="pbody"></div>
@@ -435,6 +438,15 @@ tr:hover td{background:var(--bg2);cursor:pointer}
     <div class="mhdr"><h2>실장님 관리</h2><button class="btn sm g" onclick="cm('mgrm')">✕</button></div>
     <div class="mbody"><div id="mgrl"></div><button class="btn sm" style="margin-top:8px" onclick="addMgr()">+ 추가</button></div>
     <div class="mfoot"><button class="btn p sm" onclick="saveMgr()">저장</button></div>
+  </div>
+</div>
+
+<!-- ── MEMBER MODAL ── -->
+<div class="mov" id="memberm">
+  <div class="modal" style="width:360px">
+    <div class="mhdr"><h2>👤 담당자 관리 (해외사업부)</h2><button class="btn sm g" onclick="cm('memberm')">✕</button></div>
+    <div class="mbody"><div id="memberl"></div><button class="btn sm" style="margin-top:8px" onclick="addMember()">+ 추가</button></div>
+    <div class="mfoot"><button class="btn p sm" onclick="saveMember()">저장</button></div>
   </div>
 </div>
 
@@ -608,7 +620,7 @@ function mkS(id){
     yords:[],files:[],tasks:[],
     prod:{cols:[{id:'c0',l:'날짜'},{id:'c1',l:'편직기'},{id:'c2',l:'생산량'},{id:'c3',l:'누계'},{id:'c4',l:'비고'}],
           rows:[['','','','',''],['','','','',''],['','','','','']]},
-    updated:td()};
+    updated:td(),memo:[],member:''};
 }
 function td(){return new Date().toISOString().slice(0,10);}
 
@@ -617,6 +629,7 @@ function ldb(){
   try{DB=JSON.parse(localStorage.getItem(LKEY))||null;}catch{}
   if(!DB) DB={
     managers:['박소라 실장님','이수연 실장님'],
+    members:['김민준','이서연','박지훈'],
     factories:[
       {id:'f1',name:'화성텍스',eng:'HWASUNG TEX',country:'중국',port:'청도',addr:'중국 산동성 청도시',tel:'86-532-0001',liaison:'왕웨이',color:'#e74c3c'},
       {id:'f2',name:'동흥니트',eng:'DONGHEUNG KNIT',country:'중국',port:'상해',addr:'중국 강소성 상해시',tel:'86-21-0002',liaison:'리민',color:'#3498db'},
@@ -637,6 +650,7 @@ function ldb(){
   // migration
   if(!DB.cols) DB.cols=JSON.parse(JSON.stringify(DCOLS));
   // 공장 color 마이그레이션
+  if(!DB.members) DB.members=['김민준','이서연','박지훈'];
   const defaultColors=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e91e63','#607d8b'];
   DB.factories.forEach((f,i)=>{if(!f.color)f.color=defaultColors[i%defaultColors.length];});
   Object.values(DB.styles).flat().forEach(s=>{
@@ -815,6 +829,7 @@ function renderSeason(){
       if(c.k==='status')return`<td><span class="badge ${SC[s.status]||'bs'}">${s.status||'-'}</span></td>`;
       if(c.k==='deadline'||c.k==='updated')return`<td style="font-size:11px">${s[c.k]||'-'}</td>`;
       if(c.k==='manager')return`<td style="font-size:11px;color:var(--t2)">${s.manager||'-'}</td>`;
+      if(c.k==='member')return`<td style="font-size:11px;color:var(--al)">${s.member||'-'}</td>`;
       return`<td>${s[c.k]||'-'}</td>`;
     }).join('');
     main=`<div class="tw"><table style="min-width:100%">
@@ -1001,6 +1016,11 @@ function rTab(tab){
               autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)">
             <div id="mgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
           </div>
+          <div class="f"><label>담당자 (해외사업부)</label>
+            <input type="text" id="pmember" value="${s.member||''}" placeholder="이름 입력 또는 선택"
+              autocomplete="off" oninput="memberDropFilter(this.value)" onfocus="memberDropShow()" onblur="setTimeout(memberDropHide,200)">
+            <div id="member-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
+          </div>
           <div class="f"><label>수량 (장)</label><input type="number" id="pqt" value="${s.qty||''}"></div>
           <div class="f"><label>CMT ($) — 임가공비</label><input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="공임 단가"></div>
           <div class="f"><label>FOB ($) — 선적가</label><input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="총 선적 단가"></div>
@@ -1053,6 +1073,8 @@ function rTab(tab){
       </div>`).join('')}</div>`;
   } else if(tab==='prod'){
     rProd(s);
+  } else if(tab==='memo'){
+    rMemoTab(s);
   } else if(tab==='etc'){
     const tasks=s.tasks||[];
     body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">지원 파일</div>
@@ -1448,13 +1470,18 @@ function saveStyle(){
     s.cmt=+document.getElementById('pcmt').value||0;
     s.fob=+document.getElementById('pfob').value||0;
     s.deadline=document.getElementById('pdl').value;
+    const prevStatus=s.status;
     s.status=document.getElementById('pst2').value;
+    if(prevStatus&&s.status&&prevStatus!==s.status){
+      autoMemoStatus(s,prevStatus,s.status);
+    }
     s.factory=document.getElementById('pfc').value;
     s.yarn=document.getElementById('pyn').value;
     s.mix=document.getElementById('pmx').value;
     s.weight=document.getElementById('pwt').value;
     s.hs=document.getElementById('phs').value;
     s.note=document.getElementById('pnt').value;
+    s.member=document.getElementById('pmember')?.value||s.member||'';
     s.updated=td();
     document.getElementById('ptitle').textContent=s.style||'—';
   }
@@ -1844,8 +1871,11 @@ function confNewStyle(){
     style:st,brand:document.getElementById('nsbr').value,factory:document.getElementById('nsfc').value,
     qty:+document.getElementById('nsq').value||0,cmt:+document.getElementById('nscmt').value||0,fob:+document.getElementById('nsfob').value||0,
     deadline:document.getElementById('nsdl').value,status:document.getElementById('nsst').value||'샘플',
-    manager:document.getElementById('nsmgr').value,updated:td(),
+    manager:document.getElementById('nsmgr').value,
+    member:document.getElementById('nsmember')?.value||'',updated:td(),
   });
+  // 등록 히스토리 자동 기록
+  item.memo=[{type:'auto',text:'스타일 등록됨',ts:new Date().toLocaleString('ko-KR'),id:'a'+Date.now()}];
   (DB.styles[season]=DB.styles[season]||[]).unshift(item);
   sdb();cm('nsm');renderNav();renderContent();toast('등록됨');
 }
@@ -1919,6 +1949,176 @@ function doXL(){
 function om(id){document.getElementById(id).classList.add('open');}
 function cm(id){document.getElementById(id).classList.remove('open');}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
+
+// ══════════════════════════
+// 담당자 드롭다운
+// ══════════════════════════
+function memberDropShow(){
+  const inp=document.getElementById('pmember');
+  const drop=document.getElementById('member-drop');
+  if(!inp||!drop)return;
+  memberDropRender('');
+  drop.style.display='block';
+}
+function memberDropHide(){
+  const drop=document.getElementById('member-drop');
+  if(drop)drop.style.display='none';
+}
+function memberDropFilter(val){
+  memberDropRender(val);
+  const drop=document.getElementById('member-drop');
+  if(drop)drop.style.display='block';
+}
+function memberDropRender(q){
+  const drop=document.getElementById('member-drop');
+  if(!drop)return;
+  const list=(DB.members||[]).filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
+  if(!list.length){drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">없음</div>';return;}
+  drop.innerHTML=`<div style="padding:6px">`+list.map(m=>`
+    <div onclick="memberDropSelect('${m.replace(/'/g,"\'")}' )"
+      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
+      onmouseout="this.style.background='';this.style.color='var(--t0)'">
+      <span style="font-size:13px">👤</span>${m}
+    </div>`).join('')+`</div>`;
+}
+function memberDropSelect(name){
+  const inp=document.getElementById('pmember');
+  if(inp){inp.value=name;inp.dispatchEvent(new Event('input'));}
+  memberDropHide();
+  const s=gS(pSeas,pSid);if(s){s.member=name;sdb();renderContent();}
+}
+function openMemberModal(){
+  document.getElementById('memberl').innerHTML=(DB.members||[]).map((m,i)=>`
+    <div class="mgri">
+      <input type="text" class="member-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="담당자 이름">
+      <button class="btn d sm" onclick="delMember(${i})">삭제</button>
+    </div>`).join('');
+  om('memberm');
+}
+function addMember(){
+  _syncMemberInputs();
+  (DB.members=DB.members||[]).push('새 담당자');
+  openMemberModal();
+  setTimeout(()=>{const ins=document.querySelectorAll('.member-inp');if(ins.length>0)ins[ins.length-1].focus();},50);
+}
+function delMember(i){
+  if(!confirm('삭제?'))return;
+  _syncMemberInputs();
+  DB.members.splice(i,1);
+  openMemberModal();
+}
+function _syncMemberInputs(){
+  document.querySelectorAll('.member-inp').forEach(el=>{
+    const i=+el.dataset.i;
+    if(i>=0&&i<(DB.members||[]).length)DB.members[i]=el.value.trim()||DB.members[i];
+  });
+}
+function saveMember(){
+  _syncMemberInputs();
+  DB.members=(DB.members||[]).filter(Boolean);
+  sdb();cm('memberm');toast('저장됨');
+}
+
+// ══════════════════════════
+// 메모 & 히스토리
+// ══════════════════════════
+const MEMO_TAGS=[
+  {k:'qc',l:'QC',bg:'rgba(37,99,175,.2)',cl:'#60a5fa'},
+  {k:'pp',l:'PP',bg:'rgba(109,40,217,.2)',cl:'#c084fc'},
+  {k:'ship',l:'선적',bg:'rgba(234,88,12,.2)',cl:'#fb923c'},
+  {k:'warn',l:'⚠ 주의',bg:'rgba(201,64,64,.15)',cl:'#f87171'},
+  {k:'gen',l:'일반',bg:'#1a1c1f',cl:'#6e737d'},
+];
+let curMemoTag='gen';
+
+function rMemoTab(s){
+  if(!s.memo)s.memo=[];
+  const body=document.getElementById('pbody');
+  const tagBtns=MEMO_TAGS.map(t=>`
+    <button onclick="memoSelTag('${t.k}')" id="mtag-${t.k}"
+      style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;
+      background:${curMemoTag===t.k?t.bg:'var(--bg3)'};color:${curMemoTag===t.k?t.cl:'var(--t2)'}">
+      ${t.l}
+    </button>`).join('');
+
+  const timeline=s.memo.slice().reverse().map((m,i)=>{
+    const tag=MEMO_TAGS.find(t=>t.k===m.tag)||MEMO_TAGS[4];
+    const isAuto=m.type==='auto';
+    return`<div style="display:flex;gap:10px;padding-bottom:14px">
+      <div style="display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0">
+        <div style="width:10px;height:10px;border-radius:50%;
+          ${isAuto?'background:#4a4f58':'border:2px solid var(--ac);background:var(--bg0)'};
+          ${m.tag==='warn'?'border-color:var(--red)':''};
+          margin-top:3px;flex-shrink:0;z-index:1"></div>
+        ${i<s.memo.length-1?`<div style="flex:1;width:1.5px;background:var(--b);margin-top:2px"></div>`:''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${m.ts}</span>
+          ${m.author?`<span style="font-size:10px;font-weight:600;color:var(--t2)">${m.author}</span>`:''}
+          ${!isAuto?`<span style="padding:1px 6px;border-radius:10px;font-size:9px;font-weight:600;background:${tag.bg};color:${tag.cl}">${tag.l}</span>`:'<span style="padding:1px 6px;border-radius:10px;font-size:9px;background:var(--bg3);color:var(--t3)">자동</span>'}
+        </div>
+        ${m.type==='status'
+          ?`<div style="display:flex;align-items:center;gap:5px">
+              <span class="badge ${SC[m.from]||'bs'}" style="font-size:9px">${m.from}</span>
+              <span style="color:var(--t3);font-size:11px">→</span>
+              <span class="badge ${SC[m.to]||'bs'}" style="font-size:9px">${m.to}</span>
+            </div>`
+          :`<div style="font-size:12px;color:var(--t1);line-height:1.55">${m.text||''}</div>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML=`
+    <div class="ps">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">새 메모</div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <textarea id="memo-input" rows="3" placeholder="메모 입력..."
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:13px;line-height:1.5"></textarea>
+        <button class="btn p sm" onclick="addMemo()" style="padding:8px 12px;font-size:13px;align-self:flex-end">↑</button>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;color:var(--t3)">태그:</span>
+        ${tagBtns}
+      </div>
+    </div>
+    <div style="padding:10px 16px 4px;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">
+      히스토리 (${s.memo.length}건)
+    </div>
+    <div style="padding:8px 16px 16px">
+      ${timeline||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">메모 없음</div>'}
+    </div>`;
+}
+
+function memoSelTag(k){
+  curMemoTag=k;
+  const s=gS(pSeas,pSid);if(s)rMemoTab(s);
+  // 입력값 유지
+}
+function addMemo(){
+  const s=gS(pSeas,pSid);if(!s)return;
+  const text=document.getElementById('memo-input')?.value?.trim();
+  if(!text){toast('내용을 입력해주세요');return;}
+  (s.memo=s.memo||[]).push({
+    type:'memo',tag:curMemoTag,
+    text,
+    author:DB.members?.[0]||'',
+    ts:new Date().toLocaleString('ko-KR'),
+    id:'m'+Date.now()
+  });
+  sdb();rMemoTab(s);toast('메모 저장됨');
+}
+
+// 진행상태 변경 시 자동 히스토리 기록
+function autoMemoStatus(s, fromStatus, toStatus){
+  (s.memo=s.memo||[]).push({
+    type:'status',from:fromStatus,to:toStatus,
+    ts:new Date().toLocaleString('ko-KR'),
+    id:'a'+Date.now()
+  });
+}
 
 // ══════════════════════════
 // 백업 & 복원
