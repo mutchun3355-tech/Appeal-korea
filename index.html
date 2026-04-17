@@ -514,7 +514,8 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <div class="f"><label>항구</label><input type="text" id="fp"></div>
         <div class="f ff"><label>주소</label><input type="text" id="fa"></div>
         <div class="f"><label>연락처</label><input type="text" id="ft"></div>
-        <div class="f"><label>대련 담당자</label><input type="text" id="fl"></div>
+        <div class="f"><label>담당자</label><input type="text" id="fl"></div>
+        <div class="f ff"><label>비고</label><textarea id="fremark" rows="2" style="resize:vertical"></textarea></div>
       </div>
     </div>
     <div class="mfoot">
@@ -585,6 +586,14 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 </div>
 
 <div class="ctx" id="ctx"></div>
+
+<!-- 사진 확대 뷰어 -->
+<div id="photo-viewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;align-items:center;justify-content:center;cursor:zoom-out"
+  onclick="closePhotoViewer()">
+  <img id="photo-viewer-img" src="" style="max-width:92vw;max-height:92vh;border-radius:8px;object-fit:contain">
+  <div style="position:absolute;top:16px;right:20px;color:#fff;font-size:22px;cursor:pointer;opacity:.7" onclick="closePhotoViewer()">✕</div>
+  <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:12px">클릭하면 닫힘</div>
+</div>
 
 <!-- 입고계획 스타일 피커 -->
 <div class="mov" id="inc-style-picker" style="align-items:center">
@@ -932,7 +941,8 @@ function renderFactories(){
       <div class="fr"><span class="frl">항구</span><span>${f.port||'-'}</span></div>
       <div class="fr"><span class="frl">주소</span><span style="text-align:right;max-width:160px;word-break:break-all;white-space:normal">${f.addr||'-'}</span></div>
       <div class="fr"><span class="frl">연락처</span><span>${f.tel||'-'}</span></div>
-      <div class="fr"><span class="frl">대련</span><span>${f.liaison||'-'}</span></div>
+      <div class="fr"><span class="frl">담당자</span><span>${f.liaison||'-'}</span></div>
+      ${f.remark?`<div class="fr" style="border-bottom:none"><span class="frl">비고</span><span style="color:var(--t2);font-size:11px;max-width:160px;word-break:break-all;white-space:normal">${f.remark}</span></div>`:''}
       <div class="fr" style="border-bottom:none"><span class="frl">연결 스타일</span><span style="color:var(--al);font-weight:500">${Object.values(DB.styles).flat().filter(s=>s.factory===f.id).length}건</span></div>
     </div>`).join('')}</div>`;
 }
@@ -940,6 +950,7 @@ function openFactM(id=null){
   efid=id;const f=id?DB.factories.find(x=>x.id===id):null;
   document.getElementById('factmt').textContent=f?'공장 수정':'공장 등록';
   ['fn','fe','fct','fp','fa','ft','fl'].forEach((el,i)=>{document.getElementById(el).value=f?[f.name,f.eng,f.country,f.port,f.addr,f.tel,f.liaison][i]||'':'';});
+  document.getElementById('fremark').value=f?.remark||'';
   document.getElementById('fdel').style.display=f?'block':'none';
   // 색상 초기화
   const initColor=f?.color||'#e74c3c';
@@ -958,7 +969,7 @@ function selFColor(color){
 }
 function saveFactory(){
   const name=document.getElementById('fn').value.trim();if(!name){alert('공장명 필수');return;}
-  const d={name,eng:document.getElementById('fe').value,country:document.getElementById('fct').value,port:document.getElementById('fp').value,addr:document.getElementById('fa').value,tel:document.getElementById('ft').value,liaison:document.getElementById('fl').value,color:document.getElementById('fcolor').value||'#e74c3c'};
+  const d={name,eng:document.getElementById('fe').value,country:document.getElementById('fct').value,port:document.getElementById('fp').value,addr:document.getElementById('fa').value,tel:document.getElementById('ft').value,liaison:document.getElementById('fl').value,color:document.getElementById('fcolor').value||'#e74c3c',remark:document.getElementById('fremark').value};
   if(efid){const i=DB.factories.findIndex(f=>f.id===efid);if(i>=0)DB.factories[i]={...DB.factories[i],...d};}
   else DB.factories.push({id:'f'+Date.now(),...d});
   sdb();cm('factm');renderNav();renderContent();toast('저장됨');
@@ -1435,10 +1446,17 @@ function rTab(tab){
       <!-- 작업지시서 -->
       <div class="ps">
         <div class="psh"><h3>작업지시서</h3></div>
-        <div class="uz" onclick="document.getElementById('woi').click()"><div class="uzt">📋 작업지시서 사진 업로드 (클릭)</div><div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG — 여러 장 가능</div></div>
+        <div class="uz" id="wo-dropzone"
+          onclick="document.getElementById('woi').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
+          ondragleave="this.style.borderColor='';this.style.background=''"
+          ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addWOPDrop(event)">
+          <div class="uzt">📋 작업지시서 사진 업로드</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기 · JPG, PNG</div>
+        </div>
         <input type="file" id="woi" accept="image/*" multiple style="display:none" onchange="addWOP(event)">
         <div id="wog">${(s.wop||[]).map((src,i)=>`<div style="position:relative;margin-bottom:8px">
-          <img src="${src}" class="wothumb">
+          <img src="${src}" class="wothumb" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기">
           <button class="pdel" style="top:8px;right:8px" onclick="rmWOP(${i})">✕</button>
         </div>`).join('')}</div>
       </div>
@@ -1461,7 +1479,9 @@ function rTab(tab){
           <div class="f"><label>수량 (장)</label><input type="number" id="pqt" value="${s.qty||''}"></div>
           <div class="f"><label>CMT ($) — 임가공비</label><input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="공임 단가"></div>
           <div class="f"><label>FOB ($) — 선적가</label><input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="총 선적 단가"></div>
-          <div class="f"><label>마감일</label><input type="date" id="pdl" value="${s.deadline||''}"></div>
+          <div class="f"><label>마감일</label><input type="date" id="pdl" value="${s.deadline||''}"
+            onclick="this.showPicker&&this.showPicker()"
+            style="cursor:pointer"></div>
           <div class="f"><label>진행 상태</label><select id="pst2">${so}</select></div>
           <div class="f ff"><label>공장</label><select id="pfc"><option value="">선택</option>${fo}</select></div>
         </div>
@@ -1483,9 +1503,16 @@ function rTab(tab){
 
   } else if(tab==='photos'){
     body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">스타일 사진</div>
-      <div class="uz" onclick="document.getElementById('phi').click()"><div class="uzt">사진 업로드 (클릭)</div></div>
+      <div class="uz" id="ph-dropzone"
+        onclick="document.getElementById('phi').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
+        ondragleave="this.style.borderColor='';this.style.background=''"
+        ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addPhDrop(event)">
+        <div class="uzt">사진 업로드</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기</div>
+      </div>
       <input type="file" id="phi" accept="image/*" multiple style="display:none" onchange="addPh(event)">
-      <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
+      <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
     </div>`;
   } else if(tab==='yarn'){
     rYarnTab(s);
@@ -1985,6 +2012,31 @@ function rCF(k,i){const s=gS(pSeas,pSid);s[k].splice(i,1);sdb();rTab('info');}
 
 // ── PHOTOS ──
 function addWOP(e){const s=gS(pSeas,pSid);Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{(s.wop=s.wop||[]).push(ev.target.result);sdb();rTab('info');};r.readAsDataURL(f);});}
+function addWOPDrop(e){
+  const s=gS(pSeas,pSid);
+  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
+    const r=new FileReader();r.onload=ev=>{(s.wop=s.wop||[]).push(ev.target.result);sdb();rTab('info');};r.readAsDataURL(f);
+  });
+}
+function addPhDrop(e){
+  const s=gS(pSeas,pSid);
+  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
+    const r=new FileReader();r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};r.readAsDataURL(f);
+  });
+}
+function openPhotoViewer(src){
+  const v=document.getElementById('photo-viewer');
+  const img=document.getElementById('photo-viewer-img');
+  img.src=src;
+  v.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closePhotoViewer(){
+  document.getElementById('photo-viewer').style.display='none';
+  document.body.style.overflow='';
+}
+// ESC 키로 닫기
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePhotoViewer();});
 function rmWOP(i){const s=gS(pSeas,pSid);s.wop.splice(i,1);sdb();rTab('info');}
 function addPh(e){const s=gS(pSeas,pSid);Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};r.readAsDataURL(f);});}
 function rmPh(i){const s=gS(pSeas,pSid);s.photos.splice(i,1);sdb();rTab('photos');}
