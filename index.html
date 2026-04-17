@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>APPEAL KOREA — 생산관리 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -234,6 +234,62 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .mgri{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b)}
 .mgri input{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0)}
 
+/* ── MOBILE ── */
+.mob-only{display:none}
+.mob-app{display:none;flex-direction:column;height:100vh;background:var(--bg0);overflow:hidden}
+.mob-topbar{background:var(--bg1);padding:12px 14px 10px;border-bottom:1px solid var(--b);flex-shrink:0}
+.mob-topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.mob-title{font-size:15px;font-weight:700;color:var(--t0)}
+.mob-sub{font-size:11px;color:var(--t2)}
+.mob-search{margin:10px 12px 0;background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--t2);display:flex;align-items:center;gap:8px}
+.mob-search input{flex:1;background:none;border:none;color:var(--t0);font-size:13px;outline:none}
+.mob-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mob-season-hdr{display:flex;align-items:center;padding:10px 14px 6px;border-bottom:1px solid var(--b);position:sticky;top:0;background:var(--bg1);z-index:5}
+.mob-season-hdr-style{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;flex:1}
+.mob-season-hdr-qty{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;min-width:52px;text-align:right}
+.mob-row{border-bottom:1px solid var(--b);overflow:hidden;transition:background .1s}
+.mob-row-main{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mob-row-main:active{background:var(--bg2)}
+.mob-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mob-check-dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
+.mob-row-style{font-size:13px;font-weight:700;color:var(--al);font-family:var(--mono);flex:1}
+.mob-row-qty{font-size:12px;color:var(--t1);font-family:var(--mono);min-width:52px;text-align:right}
+.mob-detail{display:none;padding:10px 14px 14px;background:var(--bg2);border-top:1px solid var(--b)}
+.mob-detail.open{display:block}
+.mob-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mob-detail-card{background:var(--bg1);border-radius:8px;padding:9px 11px}
+.mob-detail-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.mob-detail-val{font-size:12px;font-weight:500;color:var(--t0)}
+.mob-detail-btns{display:flex;gap:8px}
+.mob-tabbar{background:var(--bg1);border-top:1px solid var(--b);display:flex;padding:8px 0 20px;flex-shrink:0}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mob-tab-icon{font-size:20px}
+.mob-tab-lbl{font-size:9px;color:var(--t2)}
+.mob-tab.on .mob-tab-lbl{color:var(--al)}
+.mob-tab-dot{width:4px;height:4px;border-radius:50%;background:var(--al);margin:0 auto}
+.mob-panel{position:absolute;inset:0;background:var(--bg0);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.mob-panel.open{transform:translateX(0)}
+.mob-panel-hdr{background:var(--bg1);padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.mob-panel-back{font-size:13px;color:var(--al);font-weight:500;cursor:pointer;padding:4px 0}
+.mob-panel-title{font-size:14px;font-weight:700;color:var(--t0);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-panel-save{font-size:13px;color:var(--al);font-weight:600;cursor:pointer;padding:4px 0}
+.mob-ptabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mob-ptabs::-webkit-scrollbar{display:none}
+.mob-ptab{flex:none;padding:9px 11px;font-size:11px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
+.mob-ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:600}
+.mob-panel-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mob-panel-footer{padding:10px 14px 24px;border-top:1px solid var(--b);display:flex;gap:8px;flex-shrink:0}
+.mob-add-row{display:flex;align-items:center;gap:8px;padding:11px 14px;color:var(--t3);font-size:13px;cursor:pointer;border-bottom:1px solid var(--b)}
+.mob-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px}
+.mob-stat{background:var(--bg2);border-radius:8px;padding:10px 12px}
+.mob-stat-l{font-size:10px;color:var(--t2);margin-bottom:4px}
+.mob-stat-v{font-size:17px;font-weight:700;color:var(--t0);font-family:var(--mono)}
+
+@media(max-width:768px){
+  .app{display:none!important}
+  .mob-app{display:flex!important}
+}
+
 /* ── PROD SPREADSHEET EXTRAS ── */
 .pcel{position:relative}
 .pcel:focus-within{outline:2px solid var(--al);outline-offset:-1px;z-index:1}
@@ -245,6 +301,74 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 </style>
 </head>
 <body>
+<!-- ── MOBILE APP ── -->
+<div class="mob-app" id="mob-app">
+  <div style="position:relative;flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <!-- 모바일 상단바 -->
+    <div class="mob-topbar">
+      <div class="mob-topbar-row">
+        <div>
+          <div class="mob-title" id="mob-title">26FW</div>
+          <div class="mob-sub" id="mob-sub">로딩 중...</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn sm" onclick="mobOpenXL()" style="font-size:11px;padding:5px 9px">📥</button>
+          <button class="btn p sm" onclick="mobNewStyle()" style="font-size:11px;padding:5px 9px">+ 등록</button>
+        </div>
+      </div>
+      <div class="mob-search">
+        <span style="font-size:14px;color:var(--t3)">🔍</span>
+        <input type="text" id="mob-search-input" placeholder="스타일번호, 브랜드 검색..." oninput="mobRenderList()">
+      </div>
+    </div>
+    <!-- 리스트 -->
+    <div class="mob-content" id="mob-content"></div>
+    <!-- 하단 탭바 -->
+    <div class="mob-tabbar">
+      <div class="mob-tab on" id="mobt-season" onclick="mobNav('season')">
+        <div class="mob-tab-icon" style="font-size:20px">📋</div>
+        <div class="mob-tab-lbl" style="color:var(--al)">시즌</div>
+        <div class="mob-tab-dot"></div>
+      </div>
+      <div class="mob-tab" id="mobt-factories" onclick="mobNav('factories')">
+        <div class="mob-tab-icon" style="font-size:20px">🏭</div>
+        <div class="mob-tab-lbl">공장</div>
+      </div>
+      <div class="mob-tab" id="mobt-payments" onclick="mobNav('payments')">
+        <div class="mob-tab-icon" style="font-size:20px">💳</div>
+        <div class="mob-tab-lbl">결제</div>
+      </div>
+      <div class="mob-tab" id="mobt-home" onclick="mobNav('home')">
+        <div class="mob-tab-icon" style="font-size:20px">🏠</div>
+        <div class="mob-tab-lbl">홈</div>
+      </div>
+    </div>
+    <!-- 모바일 상세 패널 -->
+    <div class="mob-panel" id="mob-panel">
+      <div class="mob-panel-hdr">
+        <span class="mob-panel-back" onclick="closeMobPanel()">← 뒤로</span>
+        <span class="mob-panel-title" id="mob-panel-title">—</span>
+        <span class="mob-panel-save" onclick="mobSaveStyle()">저장</span>
+      </div>
+      <div class="mob-ptabs" id="mob-ptabs">
+        <button class="mob-ptab on" onclick="mobGoTab(this,'info')">기본정보</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'photos')">사진</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'yarn')">원사</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'pay')">결제</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'qct')">QC</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'prod')">생산현황</button>
+        <button class="mob-ptab" onclick="mobGoTab(this,'etc')">기타</button>
+      </div>
+      <div class="mob-panel-body" id="mob-panel-body"></div>
+      <div class="mob-panel-footer">
+        <button class="btn d sm" onclick="mobDelStyle()" style="flex:1;padding:10px;font-size:13px">삭제</button>
+        <button class="btn sm" onclick="closeMobPanel()" style="flex:1;padding:10px;font-size:13px">닫기</button>
+        <button class="btn p sm" onclick="mobSaveStyle()" style="flex:2;padding:10px;font-size:13px;font-weight:600">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="app">
   <div class="nav">
     <div class="nav-hdr">
@@ -1910,6 +2034,271 @@ function deleteBackup(i){
 }
 
 // ══════════════════════════
+// MOBILE
+// ══════════════════════════
+let mobView='season', mobSeason='26FW', mobOpenStyleId=null, mobTab='info';
+
+function isMobile(){return window.innerWidth<=768;}
+
+function mobInit(){
+  if(!isMobile())return;
+  // 현재 시즌 기본값 설정
+  if(DB.seasons&&DB.seasons.length>0) mobSeason=DB.seasons[DB.seasons.length-1].id;
+  mobNav('season');
+}
+
+function mobNav(v){
+  mobView=v;
+  document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.mob-tab .mob-tab-dot').forEach(d=>d.style.display='none');
+  const tabEl=document.getElementById('mobt-'+v)||document.getElementById('mobt-season');
+  if(tabEl){
+    tabEl.classList.add('on');
+    const lbl=tabEl.querySelector('.mob-tab-lbl');
+    if(lbl)lbl.style.color='var(--al)';
+    const dot=tabEl.querySelector('.mob-tab-dot');
+    if(dot)dot.style.display='block';
+  }
+  mobRenderContent();
+}
+
+function mobRenderContent(){
+  if(mobView==='season') mobRenderSeason();
+  else if(mobView==='home') mobRenderHome();
+  else if(mobView==='factories') mobRenderFactories();
+  else if(mobView==='payments') mobRenderPayments();
+}
+
+function mobRenderHome(){
+  document.getElementById('mob-title').textContent='APPEAL KOREA';
+  document.getElementById('mob-sub').textContent=DB.seasons.length+'개 시즌';
+  const el=document.getElementById('mob-content');
+  el.innerHTML=`<div class="mob-stats">
+    <div class="mob-stat"><div class="mob-stat-l">전체 스타일</div><div class="mob-stat-v">${Object.values(DB.styles).flat().length}</div></div>
+    <div class="mob-stat"><div class="mob-stat-l">등록 공장</div><div class="mob-stat-v">${DB.factories.length}</div></div>
+  </div>
+  <div style="padding:8px 12px">
+    ${DB.seasons.map(s=>{
+      const cnt=(DB.styles[s.id]||[]).length;
+      const cmt=(DB.styles[s.id]||[]).reduce((a,x)=>a+(x.qty||0)*(x.cmt||0),0);
+      return`<div onclick="mobSeason='${s.id}';mobNav('season')" style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:15px;font-weight:700;margin-bottom:3px">${s.icon} ${s.name}</div>
+        <div style="font-size:11px;color:var(--t2)">${cnt}개 스타일 · CMT $${Math.round(cmt).toLocaleString()}</div></div>
+        <span style="color:var(--t3);font-size:18px">›</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function mobRenderSeason(){
+  const all=DB.styles[mobSeason]||[];
+  const q=(document.getElementById('mob-search-input')?.value||'').toLowerCase();
+  const rows=all.filter(s=>!q||(s.style||'').toLowerCase().includes(q)||(s.brand||'').toLowerCase().includes(q));
+  const tQ=all.reduce((a,s)=>a+(s.qty||0),0);
+  const tCMT=all.reduce((a,s)=>a+(s.qty||0)*(s.cmt||0),0);
+  const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:7px;margin-right:4px">🏭</span>`:'';}
+
+  document.getElementById('mob-title').textContent=mobSeason;
+  document.getElementById('mob-sub').textContent=all.length+'개 스타일';
+
+  // 시즌 선택 탭
+  const seasonTabs=DB.seasons.map(s=>`<button onclick="mobSeason='${s.id}';mobRenderSeason()"
+    style="flex:none;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:none;margin-right:6px;
+    background:${s.id===mobSeason?'var(--ac)':'var(--bg3)'};color:${s.id===mobSeason?'#fff':'var(--t2)'}">
+    ${s.name}</button>`).join('');
+
+  const el=document.getElementById('mob-content');
+  el.innerHTML=`
+    <div style="padding:8px 12px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid var(--b);display:flex;-webkit-overflow-scrolling:touch">${seasonTabs}</div>
+    <div class="mob-stats">
+      <div class="mob-stat"><div class="mob-stat-l">총 수량</div><div class="mob-stat-v">${tQ.toLocaleString()}</div></div>
+      <div class="mob-stat"><div class="mob-stat-l">총 CMT</div><div class="mob-stat-v" style="font-size:14px">$${Math.round(tCMT).toLocaleString()}</div></div>
+    </div>
+    <div class="mob-season-hdr" style="top:0">
+      <span class="mob-season-hdr-style">STYLE NO.</span>
+      <span class="mob-season-hdr-qty">수량</span>
+    </div>
+    ${rows.map(s=>`
+      <div class="mob-row" id="mob-row-${s.id}">
+        <div class="mob-row-main" onclick="mobToggleRow('${s.id}')">
+          <div class="mob-check"><div class="mob-check-dot"></div></div>
+          <span class="mob-row-style">${s.style||'-'}</span>
+          <span class="mob-row-qty">${(s.qty||0).toLocaleString()}</span>
+        </div>
+        <div class="mob-detail" id="mob-detail-${s.id}">
+          <div class="mob-detail-grid">
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">브랜드</div>
+              <div class="mob-detail-val">${s.brand||'-'}</div>
+            </div>
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">진행상태</div>
+              <div><span class="badge ${SC[s.status]||'bs'}" style="font-size:10px">${s.status||'-'}</span></div>
+            </div>
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">CMT ($)</div>
+              <div class="mob-detail-val" style="color:var(--al);font-family:var(--mono)">$${(+s.cmt||0).toFixed(2)}</div>
+            </div>
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">마감일</div>
+              <div class="mob-detail-val" style="font-size:11px">${s.deadline||'-'}</div>
+            </div>
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">공장</div>
+              <div class="mob-detail-val" style="font-size:11px;display:flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</div>
+            </div>
+            <div class="mob-detail-card">
+              <div class="mob-detail-label">실장님</div>
+              <div class="mob-detail-val" style="font-size:11px">${s.manager||'-'}</div>
+            </div>
+          </div>
+          <div class="mob-detail-btns">
+            <button class="btn sm" onclick="event.stopPropagation();openMobPanel('${mobSeason}','${s.id}')" style="flex:1;padding:9px;font-size:12px">상세 편집</button>
+            <button class="btn p sm" onclick="event.stopPropagation();mobQuickStatus('${s.id}')" style="flex:1;padding:9px;font-size:12px">상태 변경</button>
+          </div>
+        </div>
+      </div>`).join('')}
+    <div class="mob-add-row" onclick="mobNewStyle()">+ 새 스타일 추가</div>`;
+}
+
+function mobToggleRow(id){
+  const detail=document.getElementById('mob-detail-'+id);
+  const isOpen=detail.classList.contains('open');
+  document.querySelectorAll('.mob-detail.open').forEach(d=>d.classList.remove('open'));
+  if(!isOpen) detail.classList.add('open');
+}
+
+function mobRenderFactories(){
+  document.getElementById('mob-title').textContent='공장 정보';
+  document.getElementById('mob-sub').textContent=DB.factories.length+'개 공장';
+  const el=document.getElementById('mob-content');
+  el.innerHTML=`<div style="padding:10px 12px">
+    ${DB.factories.map(f=>`<div onclick="openFactM('${f.id}')" style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;border-radius:8px;background:${f.color||'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏭</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;margin-bottom:3px">${f.name}</div>
+        <div style="font-size:11px;color:var(--t2)">${f.country||'-'} · ${f.port||'-'} · ${f.liaison||'-'}</div>
+      </div>
+      <span style="color:var(--t3);font-size:18px">›</span>
+    </div>`).join('')}
+    <button class="btn p sm" onclick="openFactM()" style="width:100%;padding:12px;font-size:13px;margin-top:4px">+ 공장 추가</button>
+  </div>`;
+}
+
+function mobRenderPayments(){
+  document.getElementById('mob-title').textContent='결제 현황';
+  document.getElementById('mob-sub').textContent=DB.payments.length+'건';
+  const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const sn=sid=>(Object.values(DB.styles).flat().find(s=>s.id===sid)||{style:'-'}).style;
+  const total=DB.payments.reduce((a,p)=>a+(p.price||0)*(p.qty||0),0);
+  const el=document.getElementById('mob-content');
+  el.innerHTML=`
+    <div class="mob-stats">
+      <div class="mob-stat"><div class="mob-stat-l">총 건수</div><div class="mob-stat-v">${DB.payments.length}</div></div>
+      <div class="mob-stat"><div class="mob-stat-l">총 금액</div><div class="mob-stat-v" style="font-size:14px">$${Math.round(total).toLocaleString()}</div></div>
+    </div>
+    <div style="padding:0 12px 12px">
+    ${DB.payments.map(p=>`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">${p.title||'-'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+        <div><span style="color:var(--t2)">시즌 </span><span class="tag">${p.season}</span></div>
+        <div><span style="color:var(--t2)">공장 </span>${fn(p.factory)}</div>
+        <div><span style="color:var(--t2)">단가 </span><span style="font-family:var(--mono)">$${(p.price||0).toFixed(2)}</span></div>
+        <div><span style="color:var(--t2)">합계 </span><span style="font-family:var(--mono);color:var(--al)">$${Math.round((p.price||0)*(p.qty||0)).toLocaleString()}</span></div>
+        <div><span style="color:var(--t2)">날짜 </span>${p.date||'-'}</div>
+        <div><span style="color:var(--t2)">비고 </span>${p.note||'-'}</div>
+      </div>
+    </div>`).join('')}
+    </div>`;
+}
+
+// 빠른 상태 변경
+function mobQuickStatus(sid){
+  const s=(DB.styles[mobSeason]||[]).find(x=>x.id===sid);
+  if(!s)return;
+  const cur=SL.indexOf(s.status);
+  const sheet=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end" onclick="this.remove()">
+    <div style="background:var(--bg1);width:100%;border-radius:16px 16px 0 0;padding:16px;max-height:70vh;overflow-y:auto" onclick="event.stopPropagation()">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--t0)">${s.style} — 진행상태 변경</div>
+      ${SL.map(st=>`<div onclick="mobSetStatus('${sid}','${st}');this.closest('[style*=fixed]').remove()"
+        style="padding:12px 14px;border-radius:8px;margin-bottom:4px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between;
+        background:${s.status===st?'var(--bg3)':'var(--bg2)'};cursor:pointer">
+        <span class="badge ${SC[st]||'bs'}">${st}</span>
+        ${s.status===st?'<span style="color:var(--al)">✓ 현재</span>':''}
+      </div>`).join('')}
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',sheet);
+}
+function mobSetStatus(sid,status){
+  const s=(DB.styles[mobSeason]||[]).find(x=>x.id===sid);
+  if(s){s.status=status;s.updated=td();sdb();mobRenderSeason();}
+}
+
+// 모바일 패널 (기존 rTab 재활용)
+function openMobPanel(seas,id){
+  pSeas=seas;pSid=id;pTab='info';
+  const s=gS(seas,id);if(!s)return;
+  document.getElementById('mob-panel-title').textContent=s.style||'—';
+  document.getElementById('mob-panel').classList.add('open');
+  document.querySelectorAll('.mob-ptab').forEach(t=>t.classList.remove('on'));
+  document.querySelector('.mob-ptab').classList.add('on');
+  // pbody → mob-panel-body 에 렌더
+  const orig=document.getElementById('pbody');
+  const mob=document.getElementById('mob-panel-body');
+  const origPanel=document.getElementById('pov');
+  // 임시로 pbody를 mob-panel-body로 교체해서 rTab 활용
+  orig.id='pbody-hidden';
+  mob.id='pbody';
+  rTab('info');
+  mob.id='mob-panel-body';
+  orig.id='pbody';
+}
+function closeMobPanel(){
+  document.getElementById('mob-panel').classList.remove('open');
+  mobRenderSeason();
+}
+function mobGoTab(el,tab){
+  pTab=tab;
+  document.querySelectorAll('.mob-ptab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const mob=document.getElementById('mob-panel-body');
+  const orig=document.getElementById('pbody');
+  orig.id='pbody-hidden';
+  mob.id='pbody';
+  rTab(tab);
+  mob.id='mob-panel-body';
+  orig.id='pbody';
+}
+function mobSaveStyle(){
+  saveStyle();
+  toast('저장됨');
+  mobRenderSeason();
+}
+function mobDelStyle(){
+  const s=gS(pSeas,pSid);
+  if(!s||!confirm(`'${s.style}' 삭제?`))return;
+  DB.styles[pSeas]=(DB.styles[pSeas]||[]).filter(x=>x.id!==pSid);
+  sdb();closeMobPanel();
+}
+function mobNewStyle(){
+  // 기존 PC 신규 스타일 모달 재활용
+  openNSM();
+  // 저장 후 모바일 리스트 갱신
+  const origConf=window.confNewStyle;
+  window.confNewStyle=function(){
+    origConf();
+    mobRenderSeason();
+    window.confNewStyle=origConf;
+  };
+}
+function mobOpenXL(){om('xlm');}
+
+// Firebase 업데이트 시 모바일도 갱신
+const _origFb=window._connectFB||null;
+
+// ══════════════════════════
 // PANEL RESIZE
 // ══════════════════════════
 (function(){
@@ -1959,6 +2348,39 @@ if(!DB.fb || !DB.fb.url){
 }
 iFB(FB_URL,FB_KEY,FB_PID);
 nav('season','26FW');
+
+// 모바일 초기화
+if(isMobile()){
+  mobInit();
+} else {
+  nav('season','26FW');
+}
+
+// Firebase 실시간 업데이트 시 모바일도 갱신
+const _origFbRef=window.fbRef;
+Object.defineProperty(window,'fbRef',{
+  set(v){
+    window._fbRef=v;
+    if(v){
+      v.on('value',()=>{
+        if(isMobile()) setTimeout(mobRenderContent,100);
+      });
+    }
+  },
+  get(){return window._fbRef;}
+});
+
+// 화면 크기 변경 시 자동 전환
+window.addEventListener('resize',()=>{
+  if(isMobile()){
+    document.querySelector('.app').style.display='none';
+    document.getElementById('mob-app').style.display='flex';
+    mobRenderContent();
+  } else {
+    document.querySelector('.app').style.display='';
+    document.getElementById('mob-app').style.display='none';
+  }
+});
 </script>
 </body>
 </html>
