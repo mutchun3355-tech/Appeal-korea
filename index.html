@@ -295,6 +295,8 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .pcel{position:relative}
 .pcel:focus-within{outline:2px solid var(--al);outline-offset:-1px;z-index:1}
 .pdrag{background:rgba(61,143,110,.18)!important;outline:1px solid var(--ac)!important}
+.ydrag{background:rgba(61,143,110,.18)!important;outline:1px solid var(--ac)!important}
+.ycel{cursor:cell}
 .plt td.perr{background:rgba(201,64,64,.08)}
 .plt td.perr input{color:var(--red)!important}
 .plch{cursor:context-menu}
@@ -685,8 +687,10 @@ function ldb(){
   };
   // migration
   // 컬럼 마이그레이션 - yarn, mix 없으면 DCOLS로 리셋
+  // 컬럼 항상 최신 DCOLS로 동기화 (member, yarn 없으면 리셋)
   if(!DB.cols||!DB.cols.find(c=>c.k==='member')||!DB.cols.find(c=>c.k==='yarn')){
     DB.cols=JSON.parse(JSON.stringify(DCOLS));
+    localStorage.setItem(LKEY,JSON.stringify(DB));
   }
   // 공장 color 마이그레이션
   if(!DB.members) DB.members=['김민준','이서연','박지훈'];
@@ -1639,7 +1643,7 @@ function rTab(tab){
           const icon=isPdf?'📄':isXls?'📊':isDoc?'📝':isPpt?'📑':'📎';
           const shortName=name.length>20?name.slice(0,18)+'..':name;
           return`<div style="position:relative;margin-bottom:8px">
-            ${isImg?`<img src="${src}" class="wothumb" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기">`
+            ${isImg?`<img src="${src}" class="wothumb" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in" title="더블클릭하면 크게 보기">`
               :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;overflow:hidden;cursor:pointer" onclick="openPdfViewer('${src}','${name}')" title="클릭하면 미리보기">
                 <div style="height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
                   <span style="font-size:40px">📄</span>
@@ -1710,7 +1714,7 @@ function rTab(tab){
         <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기</div>
       </div>
       <input type="file" id="phi" accept="image/*" multiple style="display:none" onchange="addPh(event)">
-      <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
+      <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in" title="더블클릭하면 크게 보기"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
     </div>`;
   } else if(tab==='yarn'){
     rYarnTab(s);
@@ -1922,13 +1926,14 @@ function pMouseDown(e,ri,ci){
   // 수식 입력 중 (= 로 시작) → 클릭으로 셀 참조 삽입
   if(fx.startsWith('=')&&pSel.r>=0){
     e.preventDefault();
-    // 드래그 범위 지정 모드: =SUM( 처럼 함수 괄호 열린 상태
-    if(fx.match(/=[A-Z]+\($/i)||fx.match(/=[A-Z]+\([^)]*,\s*$/i)){
+    // 드래그 범위 지정 모드: = 로 시작하면 항상 드래그 가능
+    if(fx.startsWith('=')){
       pDragSel={active:true,startR:ri,startC:ci,endR:ri,endC:ci,formulaTarget:{r:pSel.r,c:pSel.c}};
       pHighDrag();
-      // 단일 셀 참조 미리 표시
+      // 수식바에 셀 참조 미리 표시
+      const hasFnOpen=fx.match(/=[A-Z]+\(|,\s*$/i);
       const base=fx.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');
-      fxEl.value=base+ref+')';
+      fxEl.value=hasFnOpen?base+ref+')':base+ref;
     } else {
       // 단순 수식 중 클릭: 커서 위치에 셀 참조 삽입
       const inp=pSel.r>=0?document.querySelector('#pr-'+pSel.r+' td[data-c="'+pSel.c+'"] input'):null;
@@ -1961,10 +1966,12 @@ function pMouseUp(e){
   if(!pDragSel.active)return;
   pDragSel.active=false;
   // 드래그 완료 → 수식 확정
-  const fx=document.getElementById('pfx').value;
-  const {r,c}=pDragSel.formulaTarget;
-  const inp=document.querySelector(`#pr-${r} td[data-c="${c}"] input`);
-  if(inp){inp.value=fx;pCI(r,c,inp);}
+  const fx=document.getElementById('pfx')?.value||'';
+  const ft=pDragSel.formulaTarget;
+  if(ft&&fx.startsWith('=')){
+    const inp=document.querySelector(`#pr-${ft.r} td[data-c="${ft.c}"] input`);
+    if(inp){inp.value=fx;pCI(ft.r,ft.c,inp);}
+  }
   document.querySelectorAll('.pdrag').forEach(td=>td.classList.remove('pdrag'));
 }
 function pHighDrag(){
@@ -2518,13 +2525,16 @@ function rYarnTab(s){
         <button class="btn sm" onclick="tblRedo('yarn',${si})" title="다시실행" style="color:var(--t1)">↪</button>
         ${si>0?`<button class="btn d sm" onclick="rmYarnSheet(${si})">시트 삭제</button>`:''}
       </div>
-      <div class="tw" style="margin-bottom:8px"><table style="min-width:100%">
-        <thead><tr>${sh.cols.map((c,ci)=>`<th style="min-width:90px"><input type="text" value="${c.l||''}" oninput="yColLabel(${si},${ci},this.value)" style="background:none;border:none;width:100%;color:var(--t2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em"></th>`).join('')}</tr></thead>
-        <tbody>${(sh.rows||[]).map((row,ri)=>`<tr>${sh.cols.map((c,ci)=>{
+      <div class="tw" style="margin-bottom:8px"><table style="min-width:100%" onmouseup="yMouseUp(event,${si})" onmouseleave="yMouseUp(event,${si})">
+        <thead><tr><th class="rn" style="background:var(--bg3)">#</th>${sh.cols.map((c,ci)=>`<th style="min-width:90px"><input type="text" value="${c.l||''}" oninput="yColLabel(${si},${ci},this.value)" style="background:none;border:none;width:100%;color:var(--t2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em"></th>`).join('')}</tr></thead>
+        <tbody>${(sh.rows||[]).map((row,ri)=>`<tr id="yr-${si}-${ri}"><td class="rn" style="background:var(--bg3);color:var(--t2);font-size:10px;text-align:center;padding:2px 4px;user-select:none">${ri+1}</td>${sh.cols.map((c,ci)=>{
           const raw=(row||[])[ci]||'';
           const isF=raw.toString().startsWith('=');
           const disp=isF?evFY(raw,ri,ci,sh):raw;
-          return`<td style="${isF?'background:rgba(61,143,110,.06)':''};position:relative">
+          return`<td class="ycel" data-si="${si}" data-r="${ri}" data-c="${ci}"
+            style="${isF?'background:rgba(61,143,110,.06)':'background:transparent'};position:relative"
+            onmousedown="yMouseDown(event,${si},${ri},${ci})"
+            onmouseover="yMouseOver(event,${si},${ri},${ci})">
             <input type="text" value="${raw.toString().replace(/"/g,'&quot;')}"
               onfocus="ySelCell(${si},${ri},${ci},this)" oninput="yCI(${si},${ri},${ci},this)"
               onkeydown="yKey(event,${si},${ri},${ci})"
@@ -2880,6 +2890,116 @@ function deleteBackup(i){
   const b=getBackups();b.splice(i,1);localStorage.setItem(BKEY,JSON.stringify(b));renderBackupList();toast('삭제됨');
 }
 
+
+// ── 담당자 드롭다운 ──
+function memberDropShow(){
+  const inp=document.getElementById('pmember');
+  const drop=document.getElementById('member-drop');
+  if(!inp||!drop)return;
+  memberDropRender('');
+  drop.style.display='block';
+}
+function memberDropHide(){
+  const drop=document.getElementById('member-drop');
+  if(drop)drop.style.display='none';
+}
+function memberDropFilter(val){
+  memberDropRender(val);
+  const drop=document.getElementById('member-drop');
+  if(drop)drop.style.display='block';
+}
+function memberDropRender(q){
+  const drop=document.getElementById('member-drop');
+  if(!drop)return;
+  const list=(DB.members||[]).filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
+  if(!list.length){
+    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">없음</div>';
+    return;
+  }
+  drop.innerHTML='<div style="padding:6px">'+list.map(m=>`
+    <div onclick="memberDropSelect('${m.replace(/'/g,"\'")}' )"
+      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
+      onmouseout="this.style.background='';this.style.color='var(--t0)'">
+      <span style="font-size:13px">👤</span>${m}
+    </div>`).join('')+'</div>';
+}
+function memberDropSelect(name){
+  const inp=document.getElementById('pmember');
+  if(inp){inp.value=name;}
+  memberDropHide();
+  const s=gS(pSeas,pSid);
+  if(s){s.member=name;sdb();renderContent();}
+}
+
+// ── YARN 드래그 범위 선택 ──
+let yDragSel={active:false,si:-1,startR:-1,startC:-1,endR:-1,endC:-1,formulaTarget:null};
+let yCurSel={si:-1,r:-1,c:-1};
+
+function yMouseDown(e,si,ri,ci){
+  const sh=gS(pSeas,pSid)?.yarnSheets?.[si];if(!sh)return;
+  // 수식 입력 중인지 확인
+  const inp=e.currentTarget.querySelector('input');
+  const curInp=yCurSel.si===si?document.querySelector(`#yr-${si}-${yCurSel.r} td[data-c="${yCurSel.c}"] input`):null;
+  const fx=curInp?.value||'';
+  if(fx.startsWith('=')){
+    e.preventDefault();
+    yDragSel={active:true,si,startR:ri,startC:ci,endR:ri,endC:ci,formulaTarget:{si,r:yCurSel.r,c:yCurSel.c}};
+    yHighDrag(si);
+    const hasFnOpen=fx.match(/=[A-Z]+\(|,\s*$/i);
+    const ref=colLetter(ci)+(ri+1);
+    const base=fx.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');
+    if(curInp){curInp.value=hasFnOpen?base+ref+')':base+ref;}
+    return;
+  }
+  yCurSel={si,r:ri,c:ci};
+  yHighlight(si,ri,ci);
+}
+function yMouseOver(e,si,ri,ci){
+  if(!yDragSel.active||yDragSel.si!==si)return;
+  yDragSel.endR=ri;yDragSel.endC=ci;
+  yHighDrag(si);
+  const r1=Math.min(yDragSel.startR,yDragSel.endR),r2=Math.max(yDragSel.startR,yDragSel.endR);
+  const c1=Math.min(yDragSel.startC,yDragSel.endC),c2=Math.max(yDragSel.startC,yDragSel.endC);
+  const ref=colLetter(c1)+(r1+1)+':'+colLetter(c2)+(r2+1);
+  const ft=yDragSel.formulaTarget;
+  if(ft){
+    const curInp=document.querySelector(`#yr-${ft.si}-${ft.r} td[data-c="${ft.c}"] input`);
+    if(curInp){
+      const hasFnOpen=curInp.value.match(/=[A-Z]+\(|,\s*$/i);
+      const base=curInp.value.replace(/:?[A-Z]+\d+:[A-Z]+\d+\)?$/i,'').replace(/:?[A-Z]+\d+\)?$/i,'');
+      curInp.value=hasFnOpen?base+ref+')':base+ref;
+    }
+  }
+}
+function yMouseUp(e,si){
+  if(!yDragSel.active)return;
+  yDragSel.active=false;
+  const ft=yDragSel.formulaTarget;
+  if(ft){
+    const curInp=document.querySelector(`#yr-${ft.si}-${ft.r} td[data-c="${ft.c}"] input`);
+    if(curInp)yCI(ft.si,ft.r,ft.c,curInp);
+  }
+  document.querySelectorAll('.ydrag').forEach(td=>td.classList.remove('ydrag'));
+}
+function yHighDrag(si){
+  document.querySelectorAll(`.ycel[data-si="${si}"]`).forEach(td=>td.classList.remove('ydrag'));
+  const r1=Math.min(yDragSel.startR,yDragSel.endR),r2=Math.max(yDragSel.startR,yDragSel.endR);
+  const c1=Math.min(yDragSel.startC,yDragSel.endC),c2=Math.max(yDragSel.startC,yDragSel.endC);
+  document.querySelectorAll(`.ycel[data-si="${si}"]`).forEach(td=>{
+    const r=+td.dataset.r,c=+td.dataset.c;
+    if(r>=r1&&r<=r2&&c>=c1&&c<=c2)td.classList.add('ydrag');
+  });
+}
+function yHighlight(si,ri,ci){
+  document.querySelectorAll('.ycel').forEach(td=>{
+    const isSel=+td.dataset.si===si&&+td.dataset.r===ri&&+td.dataset.c===ci;
+    td.style.outline=isSel?'2px solid var(--ac)':'';
+  });
+  // 선택된 셀 input에 포커스
+  const inp=document.querySelector(`#yr-${si}-${ri} td[data-c="${ci}"] input`);
+  if(inp)inp.focus();
+}
 </script>
 </body>
 </html>
