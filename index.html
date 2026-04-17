@@ -717,24 +717,43 @@ let pSeas=null,pSid=null,pTab='info';
 let efid=null,dgSrc=null,qcN=4;
 
 function nav(v,s=null){view=v;season=s;renderNav();renderBC();renderTA();renderContent();}
+function navSeason(s){
+  // 시즌 클릭 시 스타일 목록으로 이동 + 하위메뉴 펼치기
+  nav('season',s);
+}
+function navSub(v,s){
+  // 결제/입고를 해당 시즌 기준으로 열기
+  view=v;season=s;renderNav();renderBC();renderTA();renderContent();
+}
 
 function renderNav(){
   let h=`<div class="nsl">홈</div><div class="ni ${view==='home'?'on':''}" onclick="nav('home')">🏠 APPEAL KOREA MAIN</div><div class="nsl" style="margin-top:8px">시즌</div>`;
-  DB.seasons.forEach(s=>{const c=(DB.styles[s.id]||[]).length;
-    h+=`<div class="ni ${season===s.id&&view==='season'?'on':''}" onclick="nav('season','${s.id}')">${s.icon} ${s.name}<span class="nc">${c}</span></div>`;});
+  DB.seasons.forEach(s=>{
+    const c=(DB.styles[s.id]||[]).length;
+    const isActiveSeason=season===s.id&&['season','payments','incoming'].includes(view);
+    // 시즌 행 - 클릭하면 스타일 목록(season view)으로 이동
+    h+=`<div class="ni ${view==='season'&&season===s.id?'on':''}" onclick="nav('season','${s.id}')">${s.icon} ${s.name}<span class="nc">${c}</span></div>`;
+    // 항상 하위 메뉴 표시 (접기 없이)
+    h+=`<div class="ni ${view==='payments'&&season===s.id?'on':''}" onclick="navSub('payments','${s.id}')"
+      style="padding-left:22px;font-size:12px;border-left:none">
+      <span style="color:var(--t3);margin-right:5px;font-size:11px">💳</span>결제 현황
+      <span class="nc">${(DB.payments||[]).filter(p=>p.season===s.id).length}</span></div>`;
+    h+=`<div class="ni ${view==='incoming'&&season===s.id?'on':''}" onclick="navSub('incoming','${s.id}')"
+      style="padding-left:22px;font-size:12px;border-left:none">
+      <span style="color:var(--t3);margin-right:5px;font-size:11px">📦</span>입고 계획
+      <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
+  });
   h+=`<div class="na" onclick="om('seasm')">+ 시즌 추가</div>
     <div class="nsl" style="margin-top:8px">관리</div>
-    <div class="ni ${view==='factories'?'on':''}" onclick="nav('factories')">🏭 공장 정보<span class="nc">${DB.factories.length}</span></div>
-    <div class="ni ${view==='payments'?'on':''}" onclick="nav('payments')">💳 결제 현황</div>
-    <div class="ni ${view==='incoming'?'on':''}" onclick="nav('incoming')">📦 주간 입고 계획</div>`;
+    <div class="ni ${view==='factories'?'on':''}" onclick="nav('factories')">🏭 공장 정보<span class="nc">${DB.factories.length}</span></div>`;
   document.getElementById('navBody').innerHTML=h;
 }
 function renderBC(){
   let h=`<span class="c" onclick="nav('home')">APPEAL KOREA</span>`;
   if(view==='season'&&season)h+=`<span class="sep">›</span><span class="cur">${season}</span>`;
   else if(view==='factories')h+=`<span class="sep">›</span><span class="cur">공장 정보</span>`;
-  else if(view==='payments')h+=`<span class="sep">›</span><span class="cur">결제 현황</span>`;
-  else if(view==='incoming')h+=`<span class="sep">›</span><span class="cur">주간 입고 계획</span>`;
+  else if(view==='payments')h+=`<span class="sep">›</span><span class="c" onclick="nav('season','${season}')">${season||''}</span><span class="sep">›</span><span class="cur">결제 현황</span>`;
+  else if(view==='incoming')h+=`<span class="sep">›</span><span class="c" onclick="nav('season','${season}')">${season||''}</span><span class="sep">›</span><span class="cur">주간 입고 계획</span>`;
   document.getElementById('bc').innerHTML=h;
 }
 function renderTA(){
@@ -742,7 +761,7 @@ function renderTA(){
   if(view==='season')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="openNSM()">+ 스타일 등록</button>`;
   else if(view==='factories')h=`<button class="btn p sm" onclick="openFactM()">+ 공장 추가</button>`;
   else if(view==='payments')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="addPay()">+ 결제 추가</button>`;
-  else if(view==='incoming')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="addInc()">+ 입고 추가</button>`;
+  else if(view==='incoming')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="addIncWithSeason()">+ 입고 추가</button>`;
   else h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button>`;
   document.getElementById('ta').innerHTML=h;
 }
@@ -949,7 +968,7 @@ function renderPayments(){
     <td><button class="btn g sm" onclick="event.stopPropagation();delPay('${p.id}')">삭제</button></td>
   </tr>`).join('')}</tbody></table></div>`;
 }
-function addPay(){DB.payments.push({id:'p'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 결제',factory:'',styleId:'',price:0,qty:0,date:td(),note:''});sdb();renderContent();}
+function addPay(){DB.payments.push({id:'p'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 결제',factory:'',styleId:'',price:0,qty:0,date:td(),note:''});sdb();renderNav();renderContent();}
 function delPay(id){if(!confirm('삭제?'))return;DB.payments=DB.payments.filter(p=>p.id!==id);sdb();renderContent();}
 function renderIncoming(){
   const allS=Object.values(DB.styles).flat();
@@ -972,6 +991,8 @@ function renderIncoming(){
   };
 
   let rows=DB.incoming.filter(i=>{
+    // 현재 시즌 기준 필터링
+    if(season&&i.season!==season)return false;
     if(sf!=='all'&&i.status!==sf)return false;
     if(wf!=='all'&&getWeek(i.date)!==wf)return false;
     return true;
@@ -1024,7 +1045,13 @@ function renderIncoming(){
           ${wkLabel}
         </td>
         <td><span class="tag">${i.season||'-'}</span></td>
-        <td style="font-size:11px;color:var(--al);font-family:var(--mono)">${styleObj?.style||'-'}</td>
+        <td>
+          <select onchange="updIncStyle('${i.id}',this.value)"
+            style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:11px;color:var(--al);font-family:var(--mono);max-width:140px">
+            <option value="">스타일 선택</option>
+            ${(DB.styles[season]||[]).map(s=>`<option value="${s.id}" ${i.styleId===s.id?'selected':''}>${s.style}</option>`).join('')}
+          </select>
+        </td>
         <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${ficon(i.factory)}${fn(i.factory)}</span></td>
         <td style="font-size:11px;${isDelayed?'color:var(--red);font-weight:500':''}">${i.date||'-'}</td>
         <td style="font-family:var(--mono)">${(i.qty||0).toLocaleString()}</td>
@@ -1048,6 +1075,19 @@ function delInc(id){if(!confirm('삭제?'))return;DB.incoming=DB.incoming.filter
 function updIncStatus(id,status){
   const i=DB.incoming.find(x=>x.id===id);
   if(i){i.status=status;sdb();renderContent();}
+}
+function updIncStyle(id,styleId){
+  const i=DB.incoming.find(x=>x.id===id);
+  if(!i)return;
+  i.styleId=styleId;
+  // 스타일 선택 시 공장, 수량 자동 채워짐
+  const s=Object.values(DB.styles).flat().find(x=>x.id===styleId);
+  if(s){
+    if(!i.factory&&s.factory)i.factory=s.factory;
+    if(!i.qty&&s.qty)i.qty=s.qty;
+    if(!i.title||i.title==='새 입고')i.title=s.style+' 입고';
+  }
+  sdb();renderContent();
 }
 
 // ══════════════════════════
@@ -2164,9 +2204,13 @@ function rMemoTab(s){
           :m.type==='auto'
           ?`<div style="font-size:11px;color:var(--t3);font-style:italic">${m.text||''}</div>`
           :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:6px">${m.text||''}${m.edited?`<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>`:''}</div>
-           <div style="display:flex;gap:5px">
-             <button onclick="editMemo(\`${m.id}\`)" style="padding:2px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:10px;cursor:pointer">✏ 수정</button>
-             <button onclick="deleteMemo(\`${m.id}\`)" style="padding:2px 8px;border-radius:4px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:10px;cursor:pointer">🗑 삭제</button>
+           <div style="display:flex;gap:5px;margin-top:5px">
+             <button data-mid="${m.id}" data-act="edit"
+               style="padding:3px 10px;border-radius:5px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:11px;cursor:pointer"
+               onclick="handleMemoBtn(this)">✏ 수정</button>
+             <button data-mid="${m.id}" data-act="del"
+               style="padding:3px 10px;border-radius:5px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:11px;cursor:pointer"
+               onclick="handleMemoBtn(this)">🗑 삭제</button>
            </div>`
         }
       </div>
@@ -2213,6 +2257,12 @@ function addMemo(){
   sdb();rMemoTab(s);toast('메모 저장됨');
 }
 
+function handleMemoBtn(btn){
+  const id=btn.dataset.mid;
+  const action=btn.dataset.act;
+  if(action==='edit') editMemo(id);
+  else if(action==='del') deleteMemo(id);
+}
 function editMemo(id){
   const s=gS(pSeas,pSid);if(!s)return;
   const idx=s.memo.findIndex(m=>m.id===id);
