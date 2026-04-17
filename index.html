@@ -738,12 +738,12 @@ function renderNav(){
     // 현재 선택된 시즌만 하위 메뉴 표시
     if(isOpen){
       h+=`<div class="ni ${view==='payments'&&season===s.id?'on':''}" onclick="navSub('payments','${s.id}')"
-        style="padding-left:26px;font-size:12px">
-        <span style="font-size:11px;margin-right:5px">💳</span>결제 현황
+        style="padding-left:28px;font-size:12px;border-left:2px solid ${view==='payments'&&season===s.id?'var(--ac)':'transparent'}">
+        <span style="width:4px;height:4px;border-radius:50%;background:${view==='payments'&&season===s.id?'var(--al)':'var(--t3)'};display:inline-block;margin-right:8px;flex-shrink:0"></span>결제 현황
         <span class="nc">${(DB.payments||[]).filter(p=>p.season===s.id).length}</span></div>`;
       h+=`<div class="ni ${view==='incoming'&&season===s.id?'on':''}" onclick="navSub('incoming','${s.id}')"
-        style="padding-left:26px;font-size:12px">
-        <span style="font-size:11px;margin-right:5px">📦</span>입고 계획
+        style="padding-left:28px;font-size:12px;border-left:2px solid ${view==='incoming'&&season===s.id?'var(--ac)':'transparent'}">
+        <span style="width:4px;height:4px;border-radius:50%;background:${view==='incoming'&&season===s.id?'var(--al)':'var(--t3)'};display:inline-block;margin-right:8px;flex-shrink:0"></span>입고 계획
         <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
     }
   });
