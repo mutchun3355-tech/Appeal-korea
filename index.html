@@ -632,7 +632,8 @@ const SG = {
 };
 const DCOLS = [
   {k:'style',l:'STYLE NO.',w:130},{k:'brand',l:'브랜드',w:85},{k:'member',l:'담당자',w:85},{k:'factory',l:'공장',w:95},
-  {k:'deadline',l:'마감일',w:88},{k:'status',l:'진행 상태',w:90},{k:'manager',l:'실장님',w:90},{k:'updated',l:'업데이트',w:83}
+  {k:'deadline',l:'마감일',w:88},{k:'status',l:'진행 상태',w:90},{k:'manager',l:'실장님',w:90},
+  {k:'yarn',l:'원사',w:100},{k:'mix',l:'혼용율',w:90},{k:'updated',l:'업데이트',w:83}
 ];
 
 function mkS(id){
@@ -670,8 +671,8 @@ function ldb(){
     fb:{url:'',k:'',pid:''},
   };
   // migration
-  // 컬럼 마이그레이션 - 새 기본 컬럼으로 리셋 (qty,cmt,fob 제거, member 추가)
-  if(!DB.cols||!DB.cols.find(c=>c.k==='member')){
+  // 컬럼 마이그레이션 - yarn, mix 없으면 DCOLS로 리셋
+  if(!DB.cols||!DB.cols.find(c=>c.k==='member')||!DB.cols.find(c=>c.k==='yarn')){
     DB.cols=JSON.parse(JSON.stringify(DCOLS));
   }
   // 공장 color 마이그레이션
@@ -859,8 +860,22 @@ function renderSeason(){
   const mgrs=[...new Set(all.map(s=>s.manager).filter(Boolean))];
   const mems=[...new Set(all.map(s=>s.member).filter(Boolean))];
 
-  const sbts=[{k:'style',l:'STYLE NO.'},{k:'brand',l:'브랜드'},{k:'member',l:'담당자'},{k:'factory',l:'공장'},{k:'status',l:'진행 상태'},{k:'deadline',l:'마감일'},{k:'manager',l:'실장님'}]
-    .map(c=>`<button class="sb ${sk===c.k?'on':''}" onclick="setSt('${c.k}')">${c.l}${sk===c.k?(sd===1?' ↑':' ↓'):''}</button>`).join('');
+  // 그룹 키 - 브랜드/담당자/공장/진행상태 은 그룹핑, 나머지는 정렬
+  const groupKeys=['brand','member','factory','status'];
+  const sortOnlyKeys=['style','deadline','manager'];
+  const allBtns=[
+    {k:'style',l:'STYLE NO.'},{k:'brand',l:'브랜드'},{k:'member',l:'담당자'},
+    {k:'factory',l:'공장'},{k:'status',l:'진행 상태'},{k:'deadline',l:'마감일'},{k:'manager',l:'실장님'}
+  ];
+  const isGrouped=groupKeys.includes(sk);
+  const sbts=allBtns.map(c=>{
+    const active=sk===c.k;
+    const isGrpBtn=groupKeys.includes(c.k);
+    return`<button class="sb ${active?'on':''}" onclick="setSt('${c.k}')"
+      style="${active&&isGrpBtn?'border-color:var(--al);color:var(--al)':''}">
+      ${isGrpBtn?'▤ ':''} ${c.l}${active&&!isGrpBtn?(sd===1?' ↑':' ↓'):''}
+    </button>`;
+  }).join('');
 
   let main='';
   if(vw==='board'){
@@ -871,12 +886,15 @@ function renderSeason(){
     </div>`).join('')}</div>`;
   } else {
     const vc=DB.cols;
-    const ths=vc.map((c,i)=>`<th draggable="true"
+    // 그룹핑 모드: 그룹 키 칼럼 제외하고 나머지만 표시
+    const visibleCols=isGrouped?vc.filter(c=>c.k!==sk):vc;
+    const ths=visibleCols.map((c,i)=>`<th draggable="true"
       ondragstart="dgS(event,${i})" ondragover="dgOv(event,${i})" ondrop="dgDp(event,${i})" ondragend="dgE()"
       onclick="if(!window._dg)setSt('${c.k}')" style="min-width:${c.w||80}px;max-width:200px">
-      ${c.l}<span style="margin-left:3px;color:${sk===c.k?'var(--al)':'var(--t3)'}">${sk===c.k?(sd===1?'↑':'↓'):'↕'}</span>
+      ${c.l}<span style="margin-left:3px;color:${sk===c.k?'var(--al)':'var(--t3)'}">${sk===c.k&&!isGrouped?(sd===1?'↑':'↓'):'↕'}</span>
     </th>`).join('');
-    const tdr=s=>vc.map(c=>{
+
+    const tdr=s=>visibleCols.map(c=>{
       if(c.k==='style')return`<td><span class="slink">${s.style||'-'}</span></td>`;
       if(c.k==='factory')return`<td style="font-size:11px;color:var(--t2)"><span style="display:inline-flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</span></td>`;
       if(c.k==='qty')return`<td style="font-family:var(--mono)">${(s.qty||0).toLocaleString()}</td>`;
@@ -886,12 +904,52 @@ function renderSeason(){
       if(c.k==='deadline'||c.k==='updated')return`<td style="font-size:11px">${s[c.k]||'-'}</td>`;
       if(c.k==='manager')return`<td style="font-size:11px;color:var(--t2)">${s.manager||'-'}</td>`;
       if(c.k==='member')return`<td style="font-size:11px;color:var(--al)">${s.member||'-'}</td>`;
+      if(c.k==='yarn')return`<td style="font-size:11px;color:var(--t2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${s.yarn||'-'}</td>`;
+      if(c.k==='mix')return`<td style="font-size:11px;color:var(--t2);max-width:110px;overflow:hidden;text-overflow:ellipsis">${s.mix||'-'}</td>`;
       return`<td>${s[c.k]||'-'}</td>`;
     }).join('');
-    main=`<div class="tw"><table style="min-width:100%">
-      <thead><tr>${ths}</tr></thead>
-      <tbody>${rows.length?rows.map(s=>`<tr onclick="openPanel('${season}','${s.id}')">${tdr(s)}</tr>`).join(''):'<tr><td colspan="99" style="text-align:center;padding:28px;color:var(--t2)">결과 없음</td></tr>'}</tbody>
-    </table></div>`;
+
+    if(isGrouped){
+      // 그룹핑 뷰 - 노션 스타일
+      const getGroupVal=s=>{
+        if(sk==='factory') return fn(s.factory)||'(없음)';
+        if(sk==='status') return s.status||'(없음)';
+        return s[sk]||'(없음)';
+      };
+      // 그룹별로 묶기
+      const groupMap={};
+      rows.forEach(s=>{
+        const gv=getGroupVal(s);
+        if(!groupMap[gv])groupMap[gv]=[];
+        groupMap[gv].push(s);
+      });
+      const groupBlocks=Object.entries(groupMap).map(([gv,gRows])=>{
+        const totalQty=gRows.reduce((a,s)=>a+(s.qty||0),0);
+        return`
+          <tbody>
+            <tr>
+              <td colspan="${visibleCols.length+1}" style="background:var(--bg2);padding:8px 12px;border-bottom:1px solid var(--b)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:12px;font-weight:700;color:var(--t0)">${sk==='factory'?`${(()=>{const f=DB.factories.find(x=>fn(x.id)===gv||x.name===gv);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:5px">🏭</span>`:''})()}`:''}<span>${gv}</span></span>
+                  <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${gRows.length}개</span>
+                  <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">수량 합계 ${totalQty.toLocaleString()}</span>
+                  ${sk==='status'?`<span class="badge ${SC[gv]||'bs'}" style="font-size:10px">${gv}</span>`:''}
+                </div>
+              </td>
+            </tr>
+            ${gRows.map(s=>`<tr onclick="openPanel('${season}','${s.id}')">${tdr(s)}</tr>`).join('')}
+          </tbody>`;
+      }).join('');
+      main=`<div class="tw"><table style="min-width:100%">
+        <thead><tr><th style="width:0;padding:0"></th>${ths}</tr></thead>
+        ${groupBlocks||'<tbody><tr><td colspan="99" style="text-align:center;padding:28px;color:var(--t2)">결과 없음</td></tr></tbody>'}
+      </table></div>`;
+    } else {
+      main=`<div class="tw"><table style="min-width:100%">
+        <thead><tr>${ths}</tr></thead>
+        <tbody>${rows.length?rows.map(s=>`<tr onclick="openPanel('${season}','${s.id}')">${tdr(s)}</tr>`).join(''):'<tr><td colspan="99" style="text-align:center;padding:28px;color:var(--t2)">결과 없음</td></tr>'}</tbody>
+      </table></div>`;
+    }
   }
 
   return`<div class="sg">
@@ -908,7 +966,11 @@ function renderSeason(){
     <select id="sfm" onchange="renderContent()"><option value="">전체 실장님</option>${mgrs.map(m=>`<option ${fm===m?'selected':''}>${m}</option>`).join('')}</select>
     <select id="svw" onchange="renderContent()" style="flex:none;min-width:75px"><option value="table" ${vw==='table'?'selected':''}>테이블</option><option value="board" ${vw==='board'?'selected':''}>보드</option></select>
   </div>
-  <div class="sbs"><span style="font-size:11px;color:var(--t3);margin-right:2px">정렬:</span>${sbts}</div>
+  <div class="sbs">
+  <span style="font-size:11px;color:var(--t3);margin-right:4px">${isGrouped?'그룹:':'정렬:'}</span>
+  ${sbts}
+  ${isGrouped?`<button class="sb" onclick="setSt('style')" style="margin-left:8px;color:var(--red);font-size:10px">✕ 그룹 해제</button>`:''}
+</div>
   ${main}`;
 }
 function setSt(k){if(sk===k)sd*=-1;else{sk=k;sd=1;}renderContent();}
