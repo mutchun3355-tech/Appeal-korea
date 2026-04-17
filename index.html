@@ -755,8 +755,10 @@ async function cldUpload(file){
         const data=JSON.parse(xhr.responseText);
         resolve({url:data.secure_url,publicId:data.public_id,type:resType,format:data.format,name:file.name,size:file.size});
       } else {
-        const err=JSON.parse(xhr.responseText||'{}');
-        reject(new Error(err.error?.message||'업로드 실패 ('+xhr.status+')'));
+        let errMsg='업로드 실패 ('+xhr.status+')';
+        try{const err=JSON.parse(xhr.responseText);errMsg=err.error?.message||errMsg;}catch(e){}
+        console.error('Cloudinary 에러:', xhr.responseText);
+        reject(new Error(errMsg));
       }
     };
     xhr.onerror=()=>reject(new Error('네트워크 오류'));
@@ -3345,7 +3347,7 @@ const _origFb=window._connectFB||null;
 const FB_URL = 'https://project-appeal-korea-default-rtdb.firebaseio.com';
 // ── Cloudinary 설정 ──
 const CLD_CLOUD = 'dne0yhjro';
-const CLD_PRESET = 'appeal_korea'; // unsigned upload preset (아래에서 생성 필요)
+const CLD_PRESET = 'appeal_korea';
 const CLD_API_KEY = '259316851449774';
 const FB_KEY = 'AIzaSyDb951taCjmt1ZploAtbVZYKo8EMuhmYU8';
 const FB_PID = 'project-appeal-korea';
