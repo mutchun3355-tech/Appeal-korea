@@ -608,8 +608,7 @@ const SG = {
   '완료': ['선적진행','선적완료','입고예정','입고완료']
 };
 const DCOLS = [
-  {k:'style',l:'STYLE NO.',w:130},{k:'brand',l:'브랜드',w:85},{k:'factory',l:'공장',w:95},
-  {k:'qty',l:'수량',w:68},{k:'cmt',l:'CMT ($)',w:78},{k:'fob',l:'FOB ($)',w:78},
+  {k:'style',l:'STYLE NO.',w:130},{k:'brand',l:'브랜드',w:85},{k:'member',l:'담당자',w:85},{k:'factory',l:'공장',w:95},
   {k:'deadline',l:'마감일',w:88},{k:'status',l:'진행 상태',w:90},{k:'manager',l:'실장님',w:90},{k:'updated',l:'업데이트',w:83}
 ];
 
@@ -648,7 +647,10 @@ function ldb(){
     fb:{url:'',k:'',pid:''},
   };
   // migration
-  if(!DB.cols) DB.cols=JSON.parse(JSON.stringify(DCOLS));
+  // 컬럼 마이그레이션 - 새 기본 컬럼으로 리셋 (qty,cmt,fob 제거, member 추가)
+  if(!DB.cols||!DB.cols.find(c=>c.k==='member')){
+    DB.cols=JSON.parse(JSON.stringify(DCOLS));
+  }
   // 공장 color 마이그레이션
   if(!DB.members) DB.members=['김민준','이서연','박지훈'];
   const defaultColors=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e91e63','#607d8b'];
@@ -738,6 +740,7 @@ function renderTA(){
   if(view==='season')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="openNSM()">+ 스타일 등록</button>`;
   else if(view==='factories')h=`<button class="btn p sm" onclick="openFactM()">+ 공장 추가</button>`;
   else if(view==='payments')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="addPay()">+ 결제 추가</button>`;
+  else if(view==='incoming')h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button><button class="btn p sm" onclick="addInc()">+ 입고 추가</button>`;
   else h=`<button class="btn sm" onclick="om('xlm')">📥 엑셀</button>`;
   document.getElementById('ta').innerHTML=h;
 }
@@ -785,6 +788,7 @@ function renderSeason(){
   const fs=document.getElementById('sfs')?.value||'';
   const fb=document.getElementById('sfb')?.value||'';
   const fm=document.getElementById('sfm')?.value||'';
+  const fmem=document.getElementById('sfmem')?.value||'';
   const vw=document.getElementById('svw')?.value||'table';
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
   const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
@@ -794,6 +798,7 @@ function renderSeason(){
     if(fs&&s.status!==fs)return false;
     if(fb&&s.brand!==fb)return false;
     if(fm&&!(s.manager||'').includes(fm))return false;
+    if(fmem&&!(s.member||'').includes(fmem))return false;
     return true;
   }).sort((a,b)=>{let av=a[sk]||'',bv=b[sk]||'';if(['qty','cmt','fob'].includes(sk)){av=+av||0;bv=+bv||0;}return av<bv?-sd:av>bv?sd:0;});
 
@@ -802,8 +807,9 @@ function renderSeason(){
   const done=all.filter(s=>s.status==='입고완료').length;
   const brands=[...new Set(all.map(s=>s.brand).filter(Boolean))];
   const mgrs=[...new Set(all.map(s=>s.manager).filter(Boolean))];
+  const mems=[...new Set(all.map(s=>s.member).filter(Boolean))];
 
-  const sbts=[{k:'style',l:'STYLE NO.'},{k:'brand',l:'브랜드'},{k:'factory',l:'공장'},{k:'status',l:'진행 상태'},{k:'manager',l:'실장님'},{k:'deadline',l:'마감일'},{k:'qty',l:'수량'},{k:'cmt',l:'CMT'}]
+  const sbts=[{k:'style',l:'STYLE NO.'},{k:'brand',l:'브랜드'},{k:'member',l:'담당자'},{k:'factory',l:'공장'},{k:'status',l:'진행 상태'},{k:'deadline',l:'마감일'},{k:'manager',l:'실장님'}]
     .map(c=>`<button class="sb ${sk===c.k?'on':''}" onclick="setSt('${c.k}')">${c.l}${sk===c.k?(sd===1?' ↑':' ↓'):''}</button>`).join('');
 
   let main='';
@@ -848,6 +854,7 @@ function renderSeason(){
     <input type="text" id="sq" placeholder="스타일번호, 브랜드 검색..." oninput="renderContent()" style="flex:1;min-width:130px">
     <select id="sfs" onchange="renderContent()"><option value="">전체 상태</option>${SL.map(s=>`<option ${fs===s?'selected':''}>${s}</option>`).join('')}</select>
     <select id="sfb" onchange="renderContent()"><option value="">전체 브랜드</option>${brands.map(b=>`<option ${fb===b?'selected':''}>${b}</option>`).join('')}</select>
+    <select id="sfmem" onchange="renderContent()"><option value="">전체 담당자</option>${mems.map(m=>`<option ${fmem===m?'selected':''}>${m}</option>`).join('')}</select>
     <select id="sfm" onchange="renderContent()"><option value="">전체 실장님</option>${mgrs.map(m=>`<option ${fm===m?'selected':''}>${m}</option>`).join('')}</select>
     <select id="svw" onchange="renderContent()" style="flex:none;min-width:75px"><option value="table" ${vw==='table'?'selected':''}>테이블</option><option value="board" ${vw==='board'?'selected':''}>보드</option></select>
   </div>
@@ -943,18 +950,102 @@ function renderPayments(){
 function addPay(){DB.payments.push({id:'p'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 결제',factory:'',styleId:'',price:0,qty:0,date:td(),note:''});sdb();renderContent();}
 function delPay(id){if(!confirm('삭제?'))return;DB.payments=DB.payments.filter(p=>p.id!==id);sdb();renderContent();}
 function renderIncoming(){
-  const allS=Object.values(DB.styles).flat();const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
-  return`<div class="tw"><table class="fw"><thead><tr><th>건명</th><th>시즌</th><th>스타일</th><th>공장</th><th>예정일</th><th>수량</th><th>비고</th><th></th></tr></thead>
-  <tbody>${DB.incoming.length?DB.incoming.map(i=>`<tr>
-    <td style="font-weight:500">${i.title}</td><td><span class="tag">${i.season}</span></td>
-    <td style="font-size:11px;color:var(--al);font-family:var(--mono)">${(allS.find(s=>s.id===i.styleId)||{style:'-'}).style}</td>
-    <td style="font-size:11px">${fn(i.factory)}</td><td style="font-size:11px">${i.date||'-'}</td>
-    <td style="font-family:var(--mono)">${(i.qty||0).toLocaleString()}</td>
-    <td style="font-size:11px;color:var(--t2)">${i.note||''}</td>
-    <td><button class="btn g sm" onclick="delInc('${i.id}')">삭제</button></td>
-  </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--t2)">없음</td></tr>'}</tbody></table></div>`;
+  const allS=Object.values(DB.styles).flat();
+  const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:7px;margin-right:4px">🏭</span>`:'';}
+  const today=new Date();today.setHours(0,0,0,0);
+
+  // 주차 필터
+  const wf=document.getElementById('inc-wf')?.value||'all';
+  const sf=document.getElementById('inc-sf')?.value||'all';
+
+  const getWeek=dateStr=>{
+    if(!dateStr)return null;
+    const d=new Date(dateStr);d.setHours(0,0,0,0);
+    const diff=Math.floor((d-today)/(1000*60*60*24));
+    if(diff<0)return 'past';
+    if(diff<7)return 'this';
+    if(diff<14)return 'next';
+    return 'later';
+  };
+
+  let rows=DB.incoming.filter(i=>{
+    if(sf!=='all'&&i.status!==sf)return false;
+    if(wf!=='all'&&getWeek(i.date)!==wf)return false;
+    return true;
+  });
+
+  // 통계
+  const total=DB.incoming.length;
+  const thisWeek=DB.incoming.filter(i=>getWeek(i.date)==='this').length;
+  const nextWeek=DB.incoming.filter(i=>getWeek(i.date)==='next').length;
+  const delayed=DB.incoming.filter(i=>{
+    if(i.status==='입고완료')return false;
+    const d=new Date(i.date);d.setHours(0,0,0,0);
+    return d<today;
+  }).length;
+  const totalQty=rows.reduce((a,i)=>a+(i.qty||0),0);
+
+  const INC_STATUS=['예정','확정','입고완료'];
+  const ISC={'예정':'bs','확정':'bq','입고완료':'bd'};
+
+  return`
+  <div class="sg" style="grid-template-columns:repeat(4,1fr)">
+    <div class="sc"><div class="sl">전체 건수</div><div class="sv">${total}</div></div>
+    <div class="sc"><div class="sl">이번 주 예정</div><div class="sv" style="color:var(--al)">${thisWeek}</div></div>
+    <div class="sc"><div class="sl">다음 주 예정</div><div class="sv">${nextWeek}</div></div>
+    <div class="sc"><div class="sl">지연</div><div class="sv" style="color:var(--red)">${delayed}</div></div>
+  </div>
+
+  <div class="tb" style="margin-bottom:12px">
+    <select id="inc-wf" onchange="renderContent()" style="flex:none">
+      <option value="all">전체 기간</option>
+      <option value="past">지연</option>
+      <option value="this">이번 주</option>
+      <option value="next">다음 주</option>
+      <option value="later">이후</option>
+    </select>
+    <select id="inc-sf" onchange="renderContent()" style="flex:none">
+      <option value="all">전체 상태</option>
+      ${INC_STATUS.map(s=>`<option value="${s}">${s}</option>`).join('')}
+    </select>
+    <span style="font-size:12px;color:var(--t2);align-self:center;margin-left:4px">총 ${rows.length}건 · ${totalQty.toLocaleString()}장</span>
+  </div>
+
+  <div class="tw"><table class="fw">
+    <thead><tr><th>건명</th><th>시즌</th><th>스타일</th><th>공장</th><th>예정일</th><th>수량</th><th>상태</th><th>비고</th><th></th></tr></thead>
+    <tbody>${rows.length?rows.map(i=>{
+      const isDelayed=i.status!=='입고완료'&&i.date&&new Date(i.date)<today;
+      const wk=getWeek(i.date);
+      const wkLabel=wk==='past'?'<span style="color:var(--red);font-size:10px">⚠ 지연</span>':wk==='this'?'<span style="color:var(--al);font-size:10px">이번주</span>':wk==='next'?'<span style="color:var(--amb);font-size:10px">다음주</span>':'';
+      const styleObj=allS.find(s=>s.id===i.styleId);
+      return`<tr style="${isDelayed?'background:rgba(201,64,64,.04)':''}">
+        <td>
+          <div style="font-weight:500;margin-bottom:2px">${i.title||'-'}</div>
+          ${wkLabel}
+        </td>
+        <td><span class="tag">${i.season||'-'}</span></td>
+        <td style="font-size:11px;color:var(--al);font-family:var(--mono)">${styleObj?.style||'-'}</td>
+        <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${ficon(i.factory)}${fn(i.factory)}</span></td>
+        <td style="font-size:11px;${isDelayed?'color:var(--red);font-weight:500':''}">${i.date||'-'}</td>
+        <td style="font-family:var(--mono)">${(i.qty||0).toLocaleString()}</td>
+        <td>
+          <select onchange="updIncStatus('${i.id}',this.value)"
+            style="background:none;border:none;font-size:11px;color:${i.status==='입고완료'?'var(--al)':i.status==='확정'?'#60a5fa':'var(--t2)'}">
+            ${INC_STATUS.map(s=>`<option value="${s}" ${i.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td style="font-size:11px;color:var(--t2)">${i.note||''}</td>
+        <td><button class="btn g sm" onclick="delInc('${i.id}')">삭제</button></td>
+      </tr>`;
+    }).join(''):'<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--t2)">입고 계획 없음</td></tr>'}</tbody>
+  </table></div>`;
 }
 function delInc(id){if(!confirm('삭제?'))return;DB.incoming=DB.incoming.filter(i=>i.id!==id);sdb();renderContent();}
+function updIncStatus(id,status){
+  const i=DB.incoming.find(x=>x.id===id);
+  if(i){i.status=status;sdb();renderContent();}
+}
 
 // ══════════════════════════
 // PANEL
@@ -1757,6 +1848,8 @@ function yCI(si,ri,ci,el){
   reCalcYarn(si,sh);
 }
 function reCalcYarn(si,sh){
+  // incoming status migration
+  (DB.incoming||[]).forEach(i=>{if(!i.status)i.status='예정';});
   (sh.rows||[]).forEach((row,ri)=>{
     (row||[]).forEach((v,ci)=>{
       if(!v||!v.toString().startsWith('='))return;
@@ -2065,7 +2158,11 @@ function rMemoTab(s){
               <span style="color:var(--t3);font-size:11px">→</span>
               <span class="badge ${SC[m.to]||'bs'}" style="font-size:9px">${m.to}</span>
             </div>`
-          :`<div style="font-size:12px;color:var(--t1);line-height:1.55">${m.text||''}</div>`
+          :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:4px">${m.text||''}${m.edited?`<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>`:''}</div>
+           <div style="display:flex;gap:5px">
+             <button onclick="editMemo('${m.id}')" style="padding:2px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:10px;cursor:pointer">✏️ 수정</button>
+             <button onclick="deleteMemo('${m.id}')" style="padding:2px 8px;border-radius:4px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:10px;cursor:pointer">🗑 삭제</button>
+           </div>`
         }
       </div>
     </div>`;
@@ -2109,6 +2206,31 @@ function addMemo(){
     id:'m'+Date.now()
   });
   sdb();rMemoTab(s);toast('메모 저장됨');
+}
+
+function editMemo(id){
+  const s=gS(pSeas,pSid);if(!s)return;
+  const idx=s.memo.findIndex(m=>m.id===id);
+  if(idx<0)return;
+  const m=s.memo[idx];
+  if(m.type==='auto'||m.type==='status'){toast('자동 기록은 수정할 수 없어요');return;}
+  const newText=prompt('메모 수정:', m.text||'');
+  if(newText===null)return; // 취소
+  if(!newText.trim()){toast('내용을 입력해주세요');return;}
+  s.memo[idx].text=newText.trim();
+  s.memo[idx].edited=true;
+  s.memo[idx].editedTs=new Date().toLocaleString('ko-KR');
+  sdb();
+  rMemoTab(s);
+  toast('메모 수정됨');
+}
+function deleteMemo(id){
+  const s=gS(pSeas,pSid);if(!s)return;
+  if(!confirm('이 메모를 삭제할까요?'))return;
+  s.memo=s.memo.filter(m=>m.id!==id);
+  sdb();
+  rMemoTab(s);
+  toast('메모 삭제됨');
 }
 
 // 진행상태 변경 시 자동 히스토리 기록
