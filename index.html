@@ -1029,6 +1029,8 @@ function renderIncoming(){
   }).length;
   const totalQty=rows.reduce((a,i)=>a+(i.qty||0),0);
 
+  const calView=document.getElementById('inc-view')?.value||'list';
+
   return`
   <div class="sg" style="grid-template-columns:repeat(4,1fr)">
     <div class="sc"><div class="sl">전체 건수</div><div class="sv">${total}</div></div>
@@ -1038,6 +1040,10 @@ function renderIncoming(){
   </div>
 
   <div class="tb" style="margin-bottom:12px">
+    <select id="inc-view" onchange="renderContent()" style="flex:none;min-width:80px">
+      <option value="list" ${calView==='list'?'selected':''}>📋 목록</option>
+      <option value="cal" ${calView==='cal'?'selected':''}>📅 달력</option>
+    </select>
     <select id="inc-wf" onchange="renderContent()" style="flex:none">
       <option value="all">전체 기간</option>
       <option value="past">지연</option>
@@ -1052,7 +1058,7 @@ function renderIncoming(){
     <span style="font-size:12px;color:var(--t2);align-self:center;margin-left:4px">총 ${rows.length}건 · ${totalQty.toLocaleString()}장</span>
   </div>
 
-  <div class="tw"><table class="fw">
+  ${calView==='list'?`<div class="tw"><table class="fw">
     <thead><tr><th>건명</th><th>시즌</th><th>스타일</th><th>공장</th><th>예정일</th><th>수량</th><th>상태</th><th>비고</th><th></th></tr></thead>
     <tbody>${rows.length?rows.map(i=>{
       const isDelayed=i.status!=='입고완료'&&i.date&&new Date(i.date)<today;
@@ -1076,7 +1082,8 @@ function renderIncoming(){
         <td>
           <input type="date" value="${i.date||''}"
             onchange="updIncField(this.dataset.iid,'date',this.value)" data-iid="${i.id}"
-            style="background:none;border:none;color:${isDelayed?'var(--red)':'var(--t1)'};font-size:11px;font-weight:${isDelayed?'600':'400'}">
+            onclick="this.showPicker&&this.showPicker()"
+            style="background:none;border:none;color:${isDelayed?'var(--red)':'var(--t1)'};font-size:11px;font-weight:${isDelayed?'600':'400'};cursor:pointer;min-width:100px">
         </td>
         <td><input type="number" value="${i.qty||0}"
             onchange="updIncField(this.dataset.iid,'qty',+this.value)" data-iid="${i.id}"
@@ -1093,8 +1100,72 @@ function renderIncoming(){
         <td><button class="btn g sm" onclick="delInc('${i.id}')">삭제</button></td>
       </tr>`;
     }).join(''):'<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--t2)">입고 계획 없음</td></tr>'}</tbody>
-  </table></div>`;
+  </table></div>`:''}
+  ${calView==='cal'?renderIncCal(DB.incoming.filter(i=>season?i.season===season:true)):''}
+  `;
 }
+
+function renderIncCal(rows){
+  const today=new Date();
+  const year=today.getFullYear();
+  const month=today.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthName=new Date(year,month).toLocaleDateString('ko-KR',{year:'numeric',month:'long'});
+  const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
+  const allS=Object.values(DB.styles).flat();
+
+  // 날짜별로 입고 항목 그룹핑
+  const byDate={};
+  rows.forEach(i=>{
+    if(!i.date)return;
+    const d=i.date.split('-')[2]?+i.date.split('-')[2]:null;
+    const m=i.date.split('-')[1]?+i.date.split('-')[1]-1:null;
+    const y=i.date.split('-')[0]?+i.date.split('-')[0]:null;
+    if(y===year&&m===month&&d){
+      if(!byDate[d])byDate[d]=[];
+      byDate[d].push(i);
+    }
+  });
+
+  const dayNames=['일','월','화','수','목','금','토'];
+  let cells='';
+  // 빈 칸 채우기
+  for(let i=0;i<firstDay;i++) cells+=`<div style="min-height:80px;background:var(--bg2);border:1px solid var(--b);border-radius:4px;opacity:.3"></div>`;
+  // 날짜 칸
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=d===today.getDate();
+    const items=byDate[d]||[];
+    const hasDelayed=items.some(i=>i.status!=='입고완료');
+    cells+=`<div style="min-height:80px;background:${isToday?'rgba(61,143,110,.1)':'var(--bg2)'};border:1px solid ${isToday?'var(--ac)':'var(--b)'};border-radius:6px;padding:6px">
+      <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--al)':'var(--t2)'};margin-bottom:4px">${d}</div>
+      ${items.map(i=>{
+        const styleObj=allS.find(s=>s.id===i.styleId);
+        return`<div style="background:${i.status==='입고완료'?'rgba(61,143,110,.2)':i.status==='확정'?'rgba(37,99,175,.2)':'rgba(110,115,125,.2)'};
+          border-radius:4px;padding:2px 5px;margin-bottom:2px;font-size:10px;color:var(--t0);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+          onclick="navSub('incoming','${i.season}')" title="${styleObj?.style||i.title}">
+          ${styleObj?.style||i.title||'-'}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  return`<div style="margin-top:16px;background:var(--bg1);border:1px solid var(--b);border-radius:8px;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700;color:var(--t0)">${monthName} 입고 계획</div>
+      <div style="display:flex;gap:8px;font-size:11px;color:var(--t2)">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(110,115,125,.4);display:inline-block"></span>예정</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(37,99,175,.4);display:inline-block"></span>확정</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(61,143,110,.4);display:inline-block"></span>완료</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+      ${dayNames.map((d,i)=>`<div style="text-align:center;font-size:10px;font-weight:600;color:${i===0?'var(--red)':i===6?'var(--al)':'var(--t3)'};padding:3px">${d}</div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells}</div>
+  </div>`;
+}
+
 function addInc(){
   DB.incoming.push({id:'i'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 입고',styleId:'',factory:'',date:td(),qty:0,note:'',status:'예정'});
   sdb();renderNav();renderContent();toast('입고 계획 추가됨');
