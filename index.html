@@ -730,18 +730,22 @@ function renderNav(){
   let h=`<div class="nsl">홈</div><div class="ni ${view==='home'?'on':''}" onclick="nav('home')">🏠 APPEAL KOREA MAIN</div><div class="nsl" style="margin-top:8px">시즌</div>`;
   DB.seasons.forEach(s=>{
     const c=(DB.styles[s.id]||[]).length;
-    const isActiveSeason=season===s.id&&['season','payments','incoming'].includes(view);
-    // 시즌 행 - 클릭하면 스타일 목록(season view)으로 이동
-    h+=`<div class="ni ${view==='season'&&season===s.id?'on':''}" onclick="nav('season','${s.id}')">${s.icon} ${s.name}<span class="nc">${c}</span></div>`;
-    // 항상 하위 메뉴 표시 (접기 없이)
-    h+=`<div class="ni ${view==='payments'&&season===s.id?'on':''}" onclick="navSub('payments','${s.id}')"
-      style="padding-left:22px;font-size:12px;border-left:none">
-      <span style="color:var(--t3);margin-right:5px;font-size:11px">💳</span>결제 현황
-      <span class="nc">${(DB.payments||[]).filter(p=>p.season===s.id).length}</span></div>`;
-    h+=`<div class="ni ${view==='incoming'&&season===s.id?'on':''}" onclick="navSub('incoming','${s.id}')"
-      style="padding-left:22px;font-size:12px;border-left:none">
-      <span style="color:var(--t3);margin-right:5px;font-size:11px">📦</span>입고 계획
-      <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
+    const isOpen=season===s.id&&['season','payments','incoming'].includes(view);
+    // 시즌 행 - 클릭 시 펼치기/접기 + season view 이동
+    h+=`<div class="ni ${view==='season'&&season===s.id?'on':''}" onclick="nav('season','${s.id}')">
+      <span style="color:var(--t3);font-size:10px;margin-right:3px">${isOpen?'▾':'▸'}</span>${s.icon} ${s.name}
+      <span class="nc">${c}</span></div>`;
+    // 현재 선택된 시즌만 하위 메뉴 표시
+    if(isOpen){
+      h+=`<div class="ni ${view==='payments'&&season===s.id?'on':''}" onclick="navSub('payments','${s.id}')"
+        style="padding-left:26px;font-size:12px">
+        <span style="font-size:11px;margin-right:5px">💳</span>결제 현황
+        <span class="nc">${(DB.payments||[]).filter(p=>p.season===s.id).length}</span></div>`;
+      h+=`<div class="ni ${view==='incoming'&&season===s.id?'on':''}" onclick="navSub('incoming','${s.id}')"
+        style="padding-left:26px;font-size:12px">
+        <span style="font-size:11px;margin-right:5px">📦</span>입고 계획
+        <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
+    }
   });
   h+=`<div class="na" onclick="om('seasm')">+ 시즌 추가</div>
     <div class="nsl" style="margin-top:8px">관리</div>
