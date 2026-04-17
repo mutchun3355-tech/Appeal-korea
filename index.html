@@ -585,6 +585,18 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 </div>
 
 <div class="ctx" id="ctx"></div>
+
+<!-- 입고계획 스타일 피커 -->
+<div class="mov" id="inc-style-picker" style="align-items:center">
+  <div class="modal" style="width:420px">
+    <div class="mhdr"><h2>스타일 선택</h2><button class="btn sm g" onclick="cm('inc-style-picker')">✕</button></div>
+    <div class="mbody">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:10px">선적진행 · 선적완료 · 입고예정 상태 스타일만 표시</div>
+      <div id="inc-style-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+    <div class="mfoot"><button class="btn sm" onclick="cm('inc-style-picker')">닫기</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -655,6 +667,10 @@ function ldb(){
   }
   // 공장 color 마이그레이션
   if(!DB.members) DB.members=['김민준','이서연','박지훈'];
+  // payments styles 마이그레이션
+  (DB.payments||[]).forEach(p=>{if(!p.styles)p.styles=p.styleId?[{styleId:p.styleId,price:p.price||0,qty:p.qty||0}]:[];});
+  // incoming styleIds 마이그레이션
+  (DB.incoming||[]).forEach(i=>{if(!i.styleIds)i.styleIds=i.styleId?[i.styleId]:[];});
   const defaultColors=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e91e63','#607d8b'];
   DB.factories.forEach((f,i)=>{if(!f.color)f.color=defaultColors[i%defaultColors.length];});
   Object.values(DB.styles).flat().forEach(s=>{
@@ -953,42 +969,85 @@ function delFactory(){if(!efid||!confirm('삭제?'))return;DB.factories=DB.facto
 // PAYMENTS / INCOMING
 // ══════════════════════════
 function renderPayments(){
-  const tot=DB.payments.reduce((a,p)=>a+(p.price||0)*(p.qty||0),0);
+  const seasonPays=season?DB.payments.filter(p=>p.season===season):DB.payments;
+  const total=seasonPays.reduce((a,p)=>{
+    const sm=p.styles&&p.styles.length>0?p.styles.reduce((s,x)=>s+(x.price||0)*(x.qty||0),0):(p.price||0)*(p.qty||0);
+    return a+sm;
+  },0);
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
-  const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
-  const sn=sid=>(Object.values(DB.styles).flat().find(s=>s.id===sid)||{style:'-'}).style;
+  const allS=DB.styles[season]||[];
+
+  const rows=seasonPays.map(p=>{
+    const styles=p.styles&&p.styles.length>0?p.styles:[{styleId:p.styleId,price:p.price||0,qty:p.qty||0}];
+    const payTotal=styles.reduce((a,x)=>a+(x.price||0)*(x.qty||0),0);
+
+    const styleRows=styles.map((sx,si)=>{
+      const sObj=Object.values(DB.styles).flat().find(s=>s.id===sx.styleId);
+      return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--b)">
+        <select onchange="updPayStyleItem(this)" data-pid="${p.id}" data-si="${si}"
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:11px;color:var(--al);font-family:var(--mono);flex:1;min-width:0">
+          <option value="">스타일 선택</option>
+          ${allS.map(s=>`<option value="${s.id}" ${sx.styleId===s.id?'selected':''}>${s.style}</option>`).join('')}
+        </select>
+        <input type="number" value="${sx.price||0}" step="0.01" placeholder="단가"
+          onchange="updPayStyleField(this)" data-pid="${p.id}" data-si="${si}" data-field="price"
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:65px;font-size:11px;color:var(--al);font-family:var(--mono)">
+        <input type="number" value="${sx.qty||0}" placeholder="수량"
+          onchange="updPayStyleField(this)" data-pid="${p.id}" data-si="${si}" data-field="qty"
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:60px;font-size:11px;color:var(--t0);font-family:var(--mono)">
+        <span style="font-size:11px;color:var(--al);font-family:var(--mono);min-width:65px;text-align:right">$${Math.round((sx.price||0)*(sx.qty||0)).toLocaleString()}</span>
+        <button onclick="rmPayStyle(this)" data-pid="${p.id}" data-si="${si}"
+          style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:4px;color:var(--red);font-size:11px;padding:2px 6px;cursor:pointer;flex-shrink:0">✕</button>
+      </div>`;
+    }).join('');
+
+    return`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" value="${p.title||''}" placeholder="결제 내용 입력..."
+          onchange="updPayField(this.dataset.pid,'title',this.value)" data-pid="${p.id}"
+          style="flex:1;min-width:150px;background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:6px 10px;color:var(--t0);font-size:13px;font-weight:600">
+        <span class="tag">${p.season}</span>
+        <input type="date" value="${p.date||''}"
+          onchange="updPayField(this.dataset.pid,'date',this.value)" data-pid="${p.id}"
+          onclick="this.showPicker&&this.showPicker()"
+          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t1);font-size:11px;cursor:pointer">
+        <input type="text" value="${p.note||''}" placeholder="비고"
+          onchange="updPayField(this.dataset.pid,'note',this.value)" data-pid="${p.id}"
+          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t2);font-size:11px;width:100px">
+        <button onclick="delPay('${p.id}')" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:6px;color:var(--red);font-size:11px;padding:5px 10px;cursor:pointer">삭제</button>
+      </div>
+      <div style="margin-bottom:6px">${styleRows}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px">
+        <button onclick="addPayStyle('${p.id}')"
+          style="background:var(--bg3);border:1px dashed var(--b2);border-radius:5px;color:var(--t2);font-size:11px;padding:4px 12px;cursor:pointer">
+          + 스타일 추가
+        </button>
+        <div style="font-size:13px;font-weight:700;color:var(--al);font-family:var(--mono)">
+          합계: $${Math.round(payTotal).toLocaleString()}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
   return`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-    <div class="sc"><div class="sl">총 결제 건수</div><div class="sv">${DB.payments.length}</div></div>
-    <div class="sc"><div class="sl">총 결제 금액</div><div class="sv" style="font-size:17px">$${Math.round(tot).toLocaleString()}</div></div>
-    <div class="sc"><div class="sl">연동 공장</div><div class="sv">${[...new Set(DB.payments.map(p=>p.factory))].length}개</div></div>
+    <div class="sc"><div class="sl">${season||'전체'} 결제 건수</div><div class="sv">${seasonPays.length}</div></div>
+    <div class="sc"><div class="sl">${season||'전체'} 결제 금액</div><div class="sv" style="font-size:17px">$${Math.round(total).toLocaleString()}</div></div>
+    <div class="sc"><div class="sl">연동 공장</div><div class="sv">${[...new Set(seasonPays.map(p=>p.factory))].filter(Boolean).length}개</div></div>
   </div>
-  <div class="tw"><table class="fw"><thead><tr><th>결제내용</th><th>시즌</th><th>공장</th><th>스타일</th><th>단가</th><th>수량</th><th>합계</th><th>날짜</th><th>비고</th><th></th></tr></thead>
-  <tbody>${DB.payments.map(p=>`<tr>
-    <td style="font-weight:500">${p.title}</td><td><span class="tag">${p.season}</span></td>
-    <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${(()=>{const f=DB.factories.find(x=>x.id===p.factory);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px">🏭</span>`:''})()}${fn(p.factory)}</span></td><td>
-      <select onchange="updPayStyle(this.dataset.pid,this.value)" data-pid="${p.id}"
-        style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:11px;color:var(--al);font-family:var(--mono);max-width:140px">
-        <option value="">스타일 선택</option>
-        ${(DB.styles[season]||[]).map(s=>`<option value="${s.id}" ${p.styleId===s.id?'selected':''}>${s.style}</option>`).join('')}
-      </select>
-    </td>
-    <td><input type="number" value="${p.price||0}" step="0.01"
-        onchange="updPayField(this.dataset.pid,'price',+this.value)" data-pid="${p.id}"
-        style="background:none;border:none;width:70px;color:var(--al);font-family:var(--mono);font-size:12px"></td>
-    <td><input type="number" value="${p.qty||0}"
-        onchange="updPayField(this.dataset.pid,'qty',+this.value)" data-pid="${p.id}"
-        style="background:none;border:none;width:65px;color:var(--t0);font-family:var(--mono);font-size:12px"></td>
-    <td style="font-family:var(--mono);font-weight:500;color:var(--al)">$${Math.round((p.price||0)*(p.qty||0)).toLocaleString()}</td>
-    <td><input type="date" value="${p.date||''}"
-        onchange="updPayField(this.dataset.pid,'date',this.value)" data-pid="${p.id}"
-        style="background:none;border:none;color:var(--t1);font-size:11px"></td>
-    <td><input type="text" value="${p.note||''}" placeholder="비고"
-        onchange="updPayField(this.dataset.pid,'note',this.value)" data-pid="${p.id}"
-        style="background:none;border:none;width:90px;color:var(--t2);font-size:11px"></td>
-    <td><button class="btn g sm" onclick="event.stopPropagation();delPay('${p.id}')">삭제</button></td>
-  </tr>`).join('')}</tbody></table></div>`;
+  ${rows||'<div style="text-align:center;padding:32px;color:var(--t2)">결제 내역 없음</div>'}`;
 }
-function addPay(){DB.payments.push({id:'p'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 결제',factory:'',styleId:'',price:0,qty:0,date:td(),note:''});sdb();renderNav();renderContent();}
+function addPay(){
+  DB.payments.push({
+    id:'p'+Date.now(),
+    season:season||DB.seasons[0]?.id||'',
+    title:'새 결제',
+    factory:'',
+    styleId:'',
+    styles:[], // 복수 스타일 [{styleId, price, qty}]
+    price:0,qty:0,date:td(),note:''
+  });
+  sdb();renderNav();renderContent();
+}
 function delPay(id){if(!confirm('삭제?'))return;DB.payments=DB.payments.filter(p=>p.id!==id);sdb();renderContent();}
 function renderIncoming(){
   const allS=Object.values(DB.styles).flat();
@@ -1067,16 +1126,19 @@ function renderIncoming(){
       const styleObj=allS.find(s=>s.id===i.styleId);
       return`<tr style="${isDelayed?'background:rgba(201,64,64,.04)':''}">
         <td>
-          <div style="font-weight:500;margin-bottom:2px">${i.title||'-'}</div>
+          <div style="font-weight:500;margin-bottom:3px;font-size:12px">${i.title||'스타일을 선택하세요'}</div>
           ${wkLabel}
         </td>
         <td><span class="tag">${i.season||'-'}</span></td>
         <td>
-          <select onchange="updIncStyle(this.dataset.iid,this.value)" data-iid="${i.id}"
-            style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:11px;color:var(--al);font-family:var(--mono);max-width:140px">
-            <option value="">스타일 선택</option>
-            ${(DB.styles[season]||[]).map(s=>`<option value="${s.id}" ${i.styleId===s.id?'selected':''}>${s.style}</option>`).join('')}
-          </select>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            ${(i.styleIds||[i.styleId]).filter(Boolean).map((sid,idx2)=>{
+              const sObj=Object.values(DB.styles).flat().find(s=>s.id===sid);
+              return`<span style="background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:2px 6px;font-size:10px;color:var(--al);font-family:var(--mono)">${sObj?.style||sid}</span>`;
+            }).join('')}
+            <button onclick="openIncStylePicker(this)" data-iid="${i.id}"
+              style="background:var(--ac);border:none;border-radius:4px;color:#fff;font-size:11px;padding:2px 7px;cursor:pointer;flex-shrink:0">+</button>
+          </div>
         </td>
         <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${ficon(i.factory)}${fn(i.factory)}</span></td>
         <td>
@@ -1167,8 +1229,14 @@ function renderIncCal(rows){
 }
 
 function addInc(){
-  DB.incoming.push({id:'i'+Date.now(),season:season||DB.seasons[0]?.id||'',title:'새 입고',styleId:'',factory:'',date:td(),qty:0,note:'',status:'예정'});
-  sdb();renderNav();renderContent();toast('입고 계획 추가됨');
+  DB.incoming.push({
+    id:'i'+Date.now(),
+    season:season||DB.seasons[0]?.id||'',
+    title:'새 입고',
+    styleId:'',styleIds:[],
+    factory:'',date:td(),qty:0,note:'',status:'예정'
+  });
+  sdb();renderNav();renderContent();
 }
 function delInc(id){if(!confirm('삭제?'))return;DB.incoming=DB.incoming.filter(i=>i.id!==id);sdb();renderContent();}
 function updIncStatus(id,status){
@@ -1177,7 +1245,49 @@ function updIncStatus(id,status){
 }
 function updPayField(id,field,val){
   const p=DB.payments.find(x=>x.id==id);
-  if(p){p[field]=val;sdb();renderContent();}
+  if(p){p[field]=val;sdb();}
+}
+function addPayStyle(pid){
+  const p=DB.payments.find(x=>x.id==pid);
+  if(!p)return;
+  if(!p.styles)p.styles=[];
+  p.styles.push({styleId:'',price:0,qty:0});
+  sdb();renderContent();
+}
+function rmPayStyle(btn){
+  const pid=btn.dataset.pid,si=+btn.dataset.si;
+  const p=DB.payments.find(x=>x.id==pid);
+  if(!p||!p.styles)return;
+  p.styles.splice(si,1);
+  sdb();renderContent();
+}
+function updPayStyleItem(sel){
+  const pid=sel.dataset.pid,si=+sel.dataset.si,styleId=sel.value;
+  const p=DB.payments.find(x=>x.id==pid);
+  if(!p||!p.styles)return;
+  p.styles[si].styleId=styleId;
+  const s=Object.values(DB.styles).flat().find(x=>x.id===styleId);
+  if(s){
+    if(!p.styles[si].price&&s.cmt) p.styles[si].price=s.cmt;
+    if(!p.styles[si].qty&&s.qty) p.styles[si].qty=s.qty;
+    if(!p.factory&&s.factory) p.factory=s.factory;
+    // 결제 제목 자동 업데이트
+    const styleNames=p.styles.filter(x=>x.styleId).map(x=>{
+      const so=Object.values(DB.styles).flat().find(y=>y.id===x.styleId);
+      return so?so.style:'';
+    }).filter(Boolean);
+    if(styleNames.length>0) p.title=styleNames.join(', ')+' 결제';
+  }
+  sdb();renderContent();
+}
+function updPayStyleField(inp){
+  const pid=inp.dataset.pid,si=+inp.dataset.si,field=inp.dataset.field;
+  const p=DB.payments.find(x=>x.id==pid);
+  if(!p||!p.styles)return;
+  p.styles[si][field]=+inp.value||0;
+  // 구버전 호환 - price, qty 동기화
+  if(p.styles.length>0){p.price=p.styles[0].price;p.qty=p.styles[0].qty;}
+  sdb();renderContent();
 }
 function updPayStyle(id,styleId){
   const p=DB.payments.find(x=>x.id==id);
@@ -1195,6 +1305,80 @@ function updPayStyle(id,styleId){
 function updIncField(id,field,val){
   const i=DB.incoming.find(x=>x.id==id);
   if(i){i[field]=val;sdb();renderNav();renderContent();}
+}
+
+let _incPickerIid=null;
+function openIncStylePicker(btn){
+  _incPickerIid=btn.dataset.iid;
+  const i=DB.incoming.find(x=>x.id==_incPickerIid);
+  if(!i)return;
+  const curIds=i.styleIds||[];
+  // 대상 시즌 스타일 필터링 - 선적진행/선적완료/입고예정 + 입고완료 제외
+  const eligible=['선적진행','선적완료','입고예정'];
+  const styles=(DB.styles[i.season||season]||[]).filter(s=>eligible.includes(s.status));
+  const list=document.getElementById('inc-style-list');
+  if(!styles.length){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">선적진행/선적완료/입고예정 상태 스타일 없음</div>';
+  } else {
+    list.innerHTML=styles.map(s=>{
+      const isSelected=curIds.includes(s.id);
+      // 이 스타일이 몇 차인지 계산
+      const existingCount=curIds.filter(id=>id===s.id).length;
+      const nextNum=existingCount+1;
+      const badge=nextNum>1?` <span style="font-size:9px;color:var(--amb)">${nextNum}차 추가</span>`:'';
+      return`<div onclick="addIncStyleItem('${s.id}')"
+        style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--b);border-radius:7px;cursor:pointer;background:${isSelected?'rgba(61,143,110,.08)':'var(--bg2)'}"
+        onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--b)'">
+        <span style="flex:1;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--al)">${s.style}</span>
+        ${badge}
+        <span class="badge ${SC[s.status]||'bs'}" style="font-size:10px">${s.status}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--t2)">${(s.qty||0).toLocaleString()}장</span>
+      </div>`;
+    }).join('');
+  }
+  om('inc-style-picker');
+}
+
+function addIncStyleItem(styleId){
+  const i=DB.incoming.find(x=>x.id==_incPickerIid);
+  if(!i)return;
+  if(!i.styleIds)i.styleIds=i.styleId?[i.styleId]:[];
+  i.styleIds.push(styleId);
+  // 건명 자동 생성 - 스타일별 차수 계산
+  const titleParts=[];
+  const countMap={};
+  i.styleIds.forEach(sid=>{
+    const s=Object.values(DB.styles).flat().find(x=>x.id===sid);
+    if(!s)return;
+    countMap[sid]=(countMap[sid]||0)+1;
+    // 마지막 추가된 것만 제목에 반영
+  });
+  // 유니크 스타일별 최종 차수로 제목 생성
+  const seen={};
+  const parts=[];
+  i.styleIds.forEach(sid=>{
+    const s=Object.values(DB.styles).flat().find(x=>x.id===sid);
+    if(!s)return;
+    seen[sid]=(seen[sid]||0)+1;
+  });
+  Object.entries(seen).forEach(([sid,cnt])=>{
+    const s=Object.values(DB.styles).flat().find(x=>x.id===sid);
+    if(s) parts.push(s.style+' '+cnt+'차');
+  });
+  i.title=parts.join(' / ');
+  // 첫 스타일 기준으로 공장/수량 자동
+  if(i.styleIds.length===1){
+    const s=Object.values(DB.styles).flat().find(x=>x.id===styleId);
+    if(s){i.factory=s.factory||i.factory;i.qty=s.qty||i.qty;}
+  }
+  // styleId 구버전 호환
+  i.styleId=i.styleIds[0]||'';
+  sdb();cm('inc-style-picker');renderNav();renderContent();
+  // 피커 다시 열기 (연속 추가)
+  setTimeout(()=>{
+    const btn=document.querySelector(`button[data-iid="${_incPickerIid}"]`);
+    if(btn)openIncStylePicker(btn);
+  },100);
 }
 function updIncStyle(id,styleId){
   const i=DB.incoming.find(x=>x.id==id);
