@@ -703,6 +703,74 @@ function ldb(){
     if(!s.prod)s.prod={cols:[{id:'c0',l:'날짜'},{id:'c1',l:'편직기'},{id:'c2',l:'생산량'},{id:'c3',l:'누계'},{id:'c4',l:'비고'}],rows:[['','','','',''],['','','','',''],['','','','','']]};
   });
 }
+// ══════════════════════════
+// CLOUDINARY 파일 업로드
+// ══════════════════════════
+const CLD = {
+  cloud: 'dne0yhjro',
+  preset: 'appeal_korea_unsigned', // unsigned upload preset (아래에서 생성 필요)
+  apiKey: '259316851449774'
+};
+
+async function uploadToCloudinary(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLD.preset);
+  fd.append('folder', 'appeal_korea');
+  try {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLD.cloud}/auto/upload`, {method:'POST',body:fd});
+    const data = await res.json();
+    if(data.secure_url) return {url:data.secure_url, publicId:data.public_id, type:file.type, name:file.name, size:file.size};
+    throw new Error(data.error?.message||'업로드 실패');
+  } catch(e) {
+    toast('업로드 실패: '+e.message);
+    return null;
+  }
+}
+
+async function uploadFilesToCld(files, onEach){
+  const results = [];
+  for(const f of files){
+    toast('업로드 중: '+f.name+' ...');
+    const r = await uploadToCloudinary(f);
+    if(r){ results.push(r); if(onEach) onEach(r); }
+  }
+  return results;
+}
+
+// ── Cloudinary 업로드 ──
+async function cldUpload(file){
+  // 파일을 Cloudinary에 업로드하고 URL 반환
+  const fd=new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLD_PRESET);
+  fd.append('cloud_name', CLD_CLOUD);
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${CLD_CLOUD}/auto/upload`,{method:'POST',body:fd});
+  if(!res.ok) throw new Error('Cloudinary 업로드 실패');
+  const data=await res.json();
+  return {url:data.secure_url, publicId:data.public_id, type:data.resource_type, format:data.format, name:file.name, size:file.size};
+}
+
+async function cldUploadFiles(files, onProgress){
+  const results=[];
+  for(let i=0;i<files.length;i++){
+    if(onProgress) onProgress(i+1, files.length);
+    const r=await cldUpload(files[i]);
+    results.push(r);
+  }
+  return results;
+}
+
+function cldThumb(url, w=200, h=200){
+  // Cloudinary URL을 썸네일 URL로 변환
+  if(!url||!url.includes('cloudinary')) return url;
+  return url.replace('/upload/', `/upload/w_${w},h_${h},c_fill/`);
+}
+
+function isCldUrl(val){
+  return typeof val==='string'&&val.startsWith('https://res.cloudinary.com');
+}
+
 // ── 표 Undo/Redo ──
 const TABLE_UNDO = {}; // {key: [snapshots], idx}
 const MAX_UNDO = 10;
@@ -1579,7 +1647,7 @@ function rTab(tab){
         </div>
         <input type="file" id="woi" accept="image/*,.pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.zip,.hwp" multiple style="display:none" onchange="addWOP(event)">
         <div id="wog">${(s.wop||[]).map((item,i)=>{
-          const src=typeof item==='string'?item:item.data;
+          const src=typeof item==='string'?item:(item.url||item.data||'');
           const name=typeof item==='string'?'':item.name||'';
           const type=typeof item==='string'?'image/jpeg':item.type||'';
           const isPdf=type==='application/pdf'||name.toLowerCase().endsWith('.pdf');
@@ -1590,7 +1658,7 @@ function rTab(tab){
           const icon=isPdf?'📄':isXls?'📊':isDoc?'📝':isPpt?'📑':'📎';
           const shortName=name.length>20?name.slice(0,18)+'..':name;
           return`<div style="position:relative;margin-bottom:8px">
-            ${isImg?`<img src="${src}" class="wothumb" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기">`
+            ${isImg?`<img src="${thumb}" class="wothumb" ondblclick="openPhotoViewer('${src}')" style="cursor:zoom-in" title="더블클릭하면 크게 보기">`
               :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;overflow:hidden;cursor:pointer" onclick="openPdfViewer('${src}','${name}')" title="클릭하면 미리보기">
                 <div style="height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
                   <span style="font-size:40px">📄</span>
@@ -1701,8 +1769,8 @@ function rTab(tab){
           <span style="font-size:16px">${icon}</span>
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
           <span style="font-size:10px;color:var(--t3)">${Math.round((f.size||0)/1024)}KB</span>
-          ${(isImg&&f.data)?`<button class="btn g sm" onclick="openPhotoViewer('${f.data||''}')">🔍</button>`:''}
-          ${(isPdf&&f.data)?`<button class="btn g sm" onclick="openPdfViewer('${f.data||''}','${f.name}')">👁</button>`:''}
+          ${(isImg&&(f.url||f.data))?`<button class="btn g sm" onclick="openPhotoViewer('${f.url||f.data||''}')">🔍</button>`:''}
+          ${(isPdf&&(f.url||f.data))?`<button class="btn g sm" onclick="openPdfViewer('${f.url||f.data||''}','${f.name}')">👁</button>`:''}
           <button class="btn g sm" onclick="rEtc(${i})">✕</button>
         </div>`;
       }).join('')}</div>
@@ -2175,33 +2243,32 @@ function uCF(k,i,f,v){const s=gS(pSeas,pSid);s[k][i][f]=v;sdb();}
 function rCF(k,i){const s=gS(pSeas,pSid);s[k].splice(i,1);sdb();rTab('info');}
 
 // ── PHOTOS ──
-function addWOP(e){
+async function addWOP(e){
   const s=gS(pSeas,pSid);
-  Array.from(e.target.files).forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
-      sdb();rTab('info');
-    };
-    r.readAsDataURL(f);
-  });
+  const files=Array.from(e.target.files);
+  for(const f of files){
+    toast('📤 업로드 중: '+f.name);
+    const r=await uploadToCloudinary(f);
+    if(r){(s.wop=s.wop||[]).push(r);sdb();rTab('info');}
+  }
 }
-function addWOPDrop(e){
+async function addWOPDrop(e){
   const s=gS(pSeas,pSid);
-  Array.from(e.dataTransfer.files).forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
-      sdb();rTab('info');
-    };
-    r.readAsDataURL(f);
-  });
+  const files=Array.from(e.dataTransfer.files);
+  for(const f of files){
+    toast('📤 업로드 중: '+f.name);
+    const r=await uploadToCloudinary(f);
+    if(r){(s.wop=s.wop||[]).push(r);sdb();rTab('info');}
+  }
 }
-function addPhDrop(e){
+async function addPhDrop(e){
   const s=gS(pSeas,pSid);
-  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
-    const r=new FileReader();r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};r.readAsDataURL(f);
-  });
+  const files=Array.from(e.dataTransfer.files);
+  for(const f of files){
+    toast('📤 업로드 중: '+f.name);
+    const r=await uploadToCloudinary(f);
+    if(r){(s.photos=s.photos||[]).push(r);sdb();rTab('photos');}
+  }
 }
 function openPhotoViewer(src){
   const v=document.getElementById('photo-viewer');
@@ -2241,18 +2308,24 @@ document.addEventListener('keydown',e=>{
   }
 });
 function rmWOP(i){const s=gS(pSeas,pSid);if(s.wop)s.wop.splice(i,1);sdb();rTab('info');}
-function addPh(e){const s=gS(pSeas,pSid);Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};r.readAsDataURL(f);});}
-function rmPh(i){const s=gS(pSeas,pSid);s.photos.splice(i,1);sdb();rTab('photos');}
-function addEtc(e){
+async function addPh(e){
   const s=gS(pSeas,pSid);
-  Array.from(e.target.files).forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.files=s.files||[]).push({name:f.name,size:f.size,type:f.type,data:ev.target.result});
-      sdb();rTab('etc');
-    };
-    r.readAsDataURL(f);
-  });
+  const files=Array.from(e.target.files);
+  for(const f of files){
+    toast('📤 업로드 중: '+f.name);
+    const r=await uploadToCloudinary(f);
+    if(r){(s.photos=s.photos||[]).push(r);sdb();rTab('photos');}
+  }
+}
+function rmPh(i){const s=gS(pSeas,pSid);s.photos.splice(i,1);sdb();rTab('photos');}
+async function addEtc(e){
+  const s=gS(pSeas,pSid);
+  const files=Array.from(e.target.files);
+  for(const f of files){
+    toast('📤 업로드 중: '+f.name);
+    const r=await uploadToCloudinary(f);
+    if(r){(s.files=s.files||[]).push({name:r.name,size:r.size,type:r.type,url:r.url,publicId:r.publicId});sdb();rTab('etc');}
+  }
 }
 function rEtc(i){const s=gS(pSeas,pSid);s.files.splice(i,1);sdb();rTab('etc');}
 
@@ -3257,6 +3330,10 @@ const _origFb=window._connectFB||null;
 // ══════════════════════════
 // Firebase 자동 연결 (팀원들 설정 불필요)
 const FB_URL = 'https://project-appeal-korea-default-rtdb.firebaseio.com';
+// ── Cloudinary 설정 ──
+const CLD_CLOUD = 'dne0yhjro';
+const CLD_PRESET = 'appeal_korea'; // unsigned upload preset (아래에서 생성 필요)
+const CLD_API_KEY = '259316851449774';
 const FB_KEY = 'AIzaSyDb951taCjmt1ZploAtbVZYKo8EMuhmYU8';
 const FB_PID = 'project-appeal-korea';
 
