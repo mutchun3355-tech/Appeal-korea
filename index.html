@@ -30,7 +30,7 @@ a{color:var(--al)}
 .nav-hdr{padding:15px 14px 10px;border-bottom:1px solid var(--b)}
 .nav-logo{font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--t2);text-transform:uppercase;margin-bottom:3px}
 .nav-title{font-size:14px;font-weight:600}
-.nav-body{flex:1;overflow-y:auto;padding:8px 0}
+.nav-body{flex:1;overflow-y:auto;padding:8px 0;min-height:0}
 .nsl{padding:6px 14px 3px;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
 .ni{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;color:var(--t1);border-left:2px solid transparent;transition:all .15s}
 .ni:hover{background:var(--bg2);color:var(--t0)}
@@ -823,8 +823,26 @@ function _fb(url,k,pid){
     fbRef=firebase.database().ref('ak');
     fbRef.on('value',snap=>{
       const v=snap.val();
-      if(v){const r=JSON.parse(v);['styles','payments','incoming','factories','seasons','managers','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});localStorage.setItem(LKEY,JSON.stringify(DB));renderNav();renderContent();}
-      fbOk=true;syncUI(true);document.getElementById('fbst').textContent='✅ 연결 성공!';cm('fbm');toast('Firebase 연결 완료!');
+      if(v){
+        const r=JSON.parse(v);
+        ['styles','payments','incoming','factories','seasons','managers','members','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});
+        localStorage.setItem(LKEY,JSON.stringify(DB));
+        renderNav();
+        // 패널이 열려있으면 패널 내용만 갱신, 아니면 전체 렌더
+        const pov=document.getElementById('pov');
+        renderContent();
+        // 패널 열려있으면 현재 탭도 갱신
+        if(pov&&pov.style.display!=='none'&&pSid&&pTab){
+          if(typeof rTab==='function') rTab(pTab);
+        }
+        if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function') mobRenderContent();
+      }
+      if(!fbOk){
+        fbOk=true;syncUI(true);
+        const st=document.getElementById('fbst');
+        if(st)st.textContent='✅ 연결 성공!';
+        toast('Firebase 연결됨');
+      }
     });
   }catch(e){document.getElementById('fbst').textContent='❌ 실패: '+e.message;}
 }
@@ -2149,7 +2167,7 @@ function saveStyle(){
     s.updated=td();
     document.getElementById('ptitle').textContent=s.style||'—';
   }
-  sdb();renderContent();toast('저장됨');
+  sdb();renderNav();renderContent();toast('저장됨');
 }
 function delStyle(){const s=gS(pSeas,pSid);if(!s||!confirm(`'${s.style}' 삭제?`))return;DB.styles[pSeas]=(DB.styles[pSeas]||[]).filter(x=>x.id!==pSid);sdb();closePanel();renderNav();renderContent();}
 
@@ -2664,6 +2682,211 @@ function deleteMemo(btnOrId){
 function autoMemoStatus(s,fromStatus,toStatus){
   (s.memo=s.memo||[]).push({type:'status',from:fromStatus,to:toStatus,ts:new Date().toLocaleString('ko-KR'),id:'a'+Date.now()});
 }
+
+// ── 모달 헬퍼 ──
+function om(id){const el=document.getElementById(id);if(el)el.style.display='flex';}
+function cm(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+
+// ── 실장님 관리 ──
+function openMgr(){
+  document.getElementById('mgrl').innerHTML=(DB.managers||[]).map((m,i)=>`
+    <div class="mgri">
+      <input type="text" class="mgr-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="실장님 이름 입력">
+      <button class="btn d sm" onclick="delMgr(${i})">삭제</button>
+    </div>`).join('');
+  om('mgrm');
+}
+function addMgr(){
+  _syncMgrInputs();
+  (DB.managers=DB.managers||[]).push('새 실장님');
+  openMgr();
+  setTimeout(()=>{const ins=document.querySelectorAll('.mgr-inp');if(ins.length>0)ins[ins.length-1].focus();},50);
+}
+function delMgr(i){
+  if(!confirm('삭제?'))return;
+  _syncMgrInputs();
+  DB.managers.splice(i,1);
+  openMgr();
+}
+function _syncMgrInputs(){
+  document.querySelectorAll('.mgr-inp').forEach(el=>{
+    const i=+el.dataset.i;
+    if(i>=0&&i<(DB.managers||[]).length)DB.managers[i]=el.value.trim()||DB.managers[i];
+  });
+}
+function saveMgr(){
+  _syncMgrInputs();
+  DB.managers=(DB.managers||[]).filter(Boolean);
+  sdb();cm('mgrm');toast('저장됨');
+}
+
+// ── 담당자 관리 ──
+function openMemberModal(){
+  document.getElementById('memberl').innerHTML=(DB.members||[]).map((m,i)=>`
+    <div class="mgri">
+      <input type="text" class="member-inp" data-i="${i}" value="${m.replace(/"/g,'&quot;')}" placeholder="담당자 이름">
+      <button class="btn d sm" onclick="delMember(${i})">삭제</button>
+    </div>`).join('');
+  om('memberm');
+}
+function addMember(){
+  _syncMemberInputs();
+  (DB.members=DB.members||[]).push('새 담당자');
+  openMemberModal();
+  setTimeout(()=>{const ins=document.querySelectorAll('.member-inp');if(ins.length>0)ins[ins.length-1].focus();},50);
+}
+function delMember(i){
+  if(!confirm('삭제?'))return;
+  _syncMemberInputs();
+  DB.members.splice(i,1);
+  openMemberModal();
+}
+function _syncMemberInputs(){
+  document.querySelectorAll('.member-inp').forEach(el=>{
+    const i=+el.dataset.i;
+    if(i>=0&&i<(DB.members||[]).length)DB.members[i]=el.value.trim()||DB.members[i];
+  });
+}
+function saveMember(){
+  _syncMemberInputs();
+  DB.members=(DB.members||[]).filter(Boolean);
+  sdb();cm('memberm');toast('저장됨');
+}
+
+// ── 새 스타일 등록 ──
+function openNSM(){
+  ['nsst','nsbr','nsmgr','nsmember','nsqt','nscmt','nsfob','nsdl'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const fc=document.getElementById('nsfc');if(fc){fc.innerHTML='<option value="">공장 선택</option>'+DB.factories.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');}
+  const ss=document.getElementById('nsss');if(ss){ss.value='샘플';}
+  const sn=document.getElementById('nssn');if(sn){sn.innerHTML='<option value="">시즌 선택</option>'+DB.seasons.map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');}
+  om('nsm');
+}
+function confNewStyle(){
+  const sn=document.getElementById('nssn')?.value;
+  const st=document.getElementById('nsst')?.value?.trim();
+  if(!sn){toast('시즌을 선택해주세요');return;}
+  if(!st){toast('스타일 번호를 입력해주세요');return;}
+  const item=mkS('s'+Date.now());
+  item.style=st;
+  item.brand=document.getElementById('nsbr')?.value||'';
+  item.manager=document.getElementById('nsmgr')?.value||'';
+  item.member=document.getElementById('nsmember')?.value||'';
+  item.qty=+document.getElementById('nsqt')?.value||0;
+  item.cmt=+document.getElementById('nscmt')?.value||0;
+  item.fob=+document.getElementById('nsfob')?.value||0;
+  item.deadline=document.getElementById('nsdl')?.value||'';
+  item.status=document.getElementById('nsss')?.value||'샘플';
+  item.factory=document.getElementById('nsfc')?.value||'';
+  item.memo=[{type:'auto',text:'스타일 등록됨',ts:new Date().toLocaleString('ko-KR'),id:'a'+Date.now()}];
+  (DB.styles[sn]=DB.styles[sn]||[]).unshift(item);
+  sdb();cm('nsm');renderNav();renderContent();toast('등록됨');
+}
+
+// ── 시즌 관리 ──
+function openSeasM(id=null){
+  const s=id?DB.seasons.find(x=>x.id===id):null;
+  document.getElementById('seasmt').textContent=s?'시즌 수정':'시즌 추가';
+  document.getElementById('seasn').value=s?.name||'';
+  document.getElementById('seasd').value=s?.desc||'';
+  document.getElementById('seasi').value=s?.icon||'🍂';
+  document.getElementById('seasdel').style.display=s?'block':'none';
+  window._editSeasId=id;
+  om('seasm');
+}
+function confSeas(){
+  const name=document.getElementById('seasn').value.trim();
+  if(!name){toast('시즌명 입력');return;}
+  const id=window._editSeasId;
+  if(id){const s=DB.seasons.find(x=>x.id===id);if(s){s.name=name;s.desc=document.getElementById('seasd').value;s.icon=document.getElementById('seasi').value||'🍂';}}
+  else{const nid='s'+Date.now();DB.seasons.push({id:nid,name,desc:document.getElementById('seasd').value,icon:document.getElementById('seasi').value||'🍂'});DB.styles[nid]=[];}
+  sdb();cm('seasm');renderNav();renderContent();toast('저장됨');
+}
+function delSeas(){
+  const id=window._editSeasId;if(!id)return;
+  if(!confirm('시즌과 모든 스타일이 삭제됩니다. 계속?'))return;
+  DB.seasons=DB.seasons.filter(x=>x.id!==id);delete DB.styles[id];
+  sdb();cm('seasm');renderNav();renderContent();
+}
+
+// ── 백업 ──
+const BKEY='ak_backups';const MAX_BACKUPS=10;
+function saveBackup(manual=false){
+  try{
+    const backups=getBackups();const now=new Date();
+    const label=manual?'수동 백업 — '+now.toLocaleString('ko-KR'):now.toLocaleString('ko-KR');
+    if(!manual&&backups.length>0){const last=new Date(backups[0].ts);if(now-last<30000)return;}
+    const snap={ts:now.toISOString(),label,manual,data:JSON.stringify(DB)};
+    backups.unshift(snap);
+    const manuals=backups.filter(b=>b.manual);
+    const autos=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
+    localStorage.setItem(BKEY,JSON.stringify([...manuals,...autos].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
+    if(manual)toast('백업 완료');
+  }catch(e){}
+}
+function getBackups(){try{return JSON.parse(localStorage.getItem(BKEY))||[];}catch{return[];}}
+function openBackupModal(){renderBackupList();om('backupm');}
+function renderBackupList(){
+  const backups=getBackups();
+  const el=document.getElementById('backup-list');if(!el)return;
+  if(!backups.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">백업 없음</div>';return;}
+  el.innerHTML=backups.map((b,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--b);border-radius:7px;margin-bottom:6px;background:var(--bg2)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--t0)">${b.label}</div>
+        <div style="font-size:10px;color:var(--t2);margin-top:2px">${b.manual?'<span style="color:var(--al)">● 수동</span>':'<span style="color:var(--t3)">● 자동</span>'} · ${new Date(b.ts).toLocaleString('ko-KR')}</div>
+      </div>
+      <button class="btn sm" onclick="previewBackup(${i})" style="font-size:11px">미리보기</button>
+      <button class="btn p sm" onclick="restoreBackup(${i})" style="font-size:11px">복원</button>
+      <button class="btn d sm" onclick="deleteBackup(${i})" style="font-size:11px">삭제</button>
+    </div>`).join('');
+}
+function previewBackup(i){
+  const b=getBackups()[i];if(!b)return;
+  try{const data=JSON.parse(b.data);alert(`백업 미리보기
+
+날짜: ${new Date(b.ts).toLocaleString('ko-KR')}
+시즌: ${(data.seasons||[]).length}개
+스타일: ${Object.values(data.styles||{}).flat().length}개
+공장: ${(data.factories||[]).length}개`);}catch{alert('미리보기 실패');}
+}
+function restoreBackup(i){
+  const b=getBackups()[i];if(!b)return;
+  if(!confirm(`복원할까요?
+현재 데이터는 자동 백업됩니다.`))return;
+  try{saveBackup(true);DB=JSON.parse(b.data);localStorage.setItem(LKEY,JSON.stringify(DB));fbPush();cm('backupm');renderNav();renderContent();toast('복원 완료!');}catch{toast('복원 실패');}
+}
+function deleteBackup(i){
+  if(!confirm('삭제?'))return;
+  const backups=getBackups();backups.splice(i,1);
+  localStorage.setItem(BKEY,JSON.stringify(backups));renderBackupList();toast('삭제됨');
+}
+
+// ── 공장 삭제 ──
+function delFactory(){
+  if(!efid||!confirm('삭제?'))return;
+  DB.factories=DB.factories.filter(f=>f.id!==efid);
+  sdb();cm('factm');renderNav();renderContent();
+}
+
+// ── 결제 삭제 ──
+function delPay(id){
+  if(!confirm('삭제?'))return;
+  DB.payments=DB.payments.filter(p=>p.id!==id);
+  sdb();renderNav();renderContent();
+}
+
+// ── toast ──
+function toast(msg,dur=2200){
+  const t=document.getElementById('toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── 엑셀 내보내기 ──
+function openXL(){om('xlm');}
 </script>
 </body>
 </html>
