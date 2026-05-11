@@ -127,6 +127,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .ptab:hover{color:var(--t0)}
 .ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:500}
 .pbody{flex:1;overflow-y:auto}
+.pbody img{max-width:100%;height:auto}
 .ps{padding:14px 16px;border-bottom:1px solid var(--b)}
 .psh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .ps h3{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
@@ -155,11 +156,11 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .uz{border:1px dashed var(--b2);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .15s}
 .uz:hover{border-color:var(--ac2);background:rgba(61,143,110,.05)}
 .uzt{font-size:12px;color:var(--t2)}
-.pgr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.pgr{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}
 .ptw{position:relative;aspect-ratio:1}
-.pth{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--b)}
+.pth{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--b);max-width:100%}
 .pdel{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(0,0,0,.75);border:none;border-radius:50%;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.wothumb{width:100%;border-radius:6px;border:1px solid var(--b);margin-top:6px;display:block}
+.wothumb{width:100%;max-width:100%;border-radius:6px;border:1px solid var(--b);margin-top:6px;display:block;object-fit:contain}
 
 /* ── MODAL ── */
 .mov{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
@@ -816,6 +817,7 @@ function tblCanRedo(type,si=''){const h=TABLE_UNDO[tblKey(type,si)];return h&&h.
 
 let _fbPushTimer=null;
 function sdb(skipFb=false){
+  DB._savedAt=Date.now();
   localStorage.setItem(LKEY,JSON.stringify(DB));
   if(!skipFb){
     // 디바운스: 1초 후에 Firebase push (연속 입력 시 불필요한 push 방지)
@@ -825,6 +827,7 @@ function sdb(skipFb=false){
   saveBackup(false);
 }
 function sdbImmediate(){
+  DB._savedAt=Date.now();
   localStorage.setItem(LKEY,JSON.stringify(DB));
   clearTimeout(_fbPushTimer);
   fbPush();
@@ -862,10 +865,15 @@ function _fb(url,k,pid){
       const v=snap.val();
       if(v){
         const r=JSON.parse(v);
-        ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});
-        localStorage.setItem(LKEY,JSON.stringify(DB));
-        renderNav();renderContent();
-        if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
+        // 로컬이 더 최신이면 Firebase 데이터로 덮어쓰지 않음
+        const localTime=DB._savedAt||0;
+        const fbTime=r._savedAt||0;
+        if(fbTime>=localTime){
+          ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky]!==undefined)DB[ky]=r[ky];});
+          localStorage.setItem(LKEY,JSON.stringify(DB));
+          renderNav();renderContent();
+          if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
+        }
         // 패널 열려있으면 현재 탭 갱신
         const pov=document.getElementById('pov');
         if(pov&&pov.style.display!=='none'&&pSid&&pTab&&typeof rTab==='function')rTab(pTab);
