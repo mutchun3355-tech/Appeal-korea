@@ -475,9 +475,9 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <div class="f ff"><label>시즌 *</label><select id="nssn"><option value="">시즌 선택</option></select></div>
         <div class="f ff"><label>STYLE NO. *</label><input type="text" id="nss"></div>
         <div class="f"><label>브랜드</label>
-          <select id="nsbr" style="background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
-            <option value="">브랜드 선택</option>
-          </select>
+          <input type="text" id="nsbr" placeholder="브랜드 입력 또는 선택"
+            autocomplete="off" oninput="brandDropFilter(this.value,'nsbr','nsbr-drop')" onfocus="brandDropShow('nsbr','nsbr-drop')" onblur="setTimeout(()=>brandDropHide('nsbr-drop'),200)">
+          <div id="nsbr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
         </div>
         <div class="f"><label>공장</label><select id="nsfc"></select></div>
         <div class="f"><label>수량</label><input type="number" id="nsq"></div>
@@ -1700,9 +1700,9 @@ function rTab(tab){
         <div class="fg">
           <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
           <div class="f"><label>브랜드</label>
-            <input type="text" id="pbr" value="${s.brand||''}" list="brand-list" autocomplete="off"
-              style="background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
-            <datalist id="brand-list">${(DB.brands||[]).map(b=>`<option value="${b}">`).join('')}</datalist>
+            <input type="text" id="pbr" value="${s.brand||''}" placeholder="브랜드 입력 또는 선택"
+              autocomplete="off" oninput="brandDropFilter(this.value)" onfocus="brandDropShow()" onblur="setTimeout(brandDropHide,200)">
+            <div id="brand-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden;position:relative;z-index:10"></div>
           </div>
           <div class="f"><label>실장님</label>
             <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 선택"
@@ -2359,6 +2359,47 @@ function yKey(e,si,ri,ci){
 }
 
 // ══════════════════════════
+// PANEL RESIZE
+// ══════════════════════════
+(function initPanelResize(){
+  function setup(){
+    const handle=document.getElementById('panel-resize');
+    const panel=document.getElementById('panel');
+    if(!handle||!panel)return;
+    let dragging=false,startX=0,startW=0;
+    handle.addEventListener('mousedown',function(e){
+      e.preventDefault();
+      dragging=true;
+      startX=e.clientX;
+      startW=panel.offsetWidth;
+      handle.classList.add('dragging');
+      document.body.style.cursor='col-resize';
+      document.body.style.userSelect='none';
+    });
+    document.addEventListener('mousemove',function(e){
+      if(!dragging)return;
+      const diff=startX-e.clientX;
+      const newW=Math.max(340,Math.min(window.innerWidth*0.9,startW+diff));
+      panel.style.width=newW+'px';
+      panel.style.maxWidth='none';
+    });
+    document.addEventListener('mouseup',function(){
+      if(!dragging)return;
+      dragging=false;
+      handle.classList.remove('dragging');
+      document.body.style.cursor='';
+      document.body.style.userSelect='';
+    });
+  }
+  // DOM 준비 후 실행
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',setup);
+  } else {
+    setup();
+  }
+})();
+
+// ══════════════════════════
 // INIT
 // ══════════════════════════
 function isMobile(){return window.innerWidth<=768;}
@@ -2847,8 +2888,8 @@ function openNSM(){
   if(ss){ss.innerHTML=SL.map(s=>`<option value="${s}">${s}</option>`).join('');ss.value='샘플';}
   const sn=document.getElementById('nssn');
   if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
-  const br=document.getElementById('nsbr');
-  if(br)br.innerHTML='<option value="">브랜드 선택</option>'+(DB.brands||[]).map(b=>`<option value="${b}">${b}</option>`).join('');
+  const nsbr=document.getElementById('nsbr');
+  if(nsbr)nsbr.value='';
   om('nsm');
 }
 function confNewStyle(){
@@ -3081,6 +3122,50 @@ function saveBrand(){
   _syncBrandInputs();
   DB.brands=(DB.brands||[]).filter(Boolean);
   sdb();cm('brandm');toast('저장됨');
+}
+
+// ── 브랜드 드롭다운 ──
+function brandDropShow(inputId='pbr', dropId='brand-drop'){
+  const inp=document.getElementById(inputId);
+  const drop=document.getElementById(dropId);
+  if(!inp||!drop)return;
+  brandDropRender('', inputId, dropId);
+  drop.style.display='block';
+}
+function brandDropHide(dropId='brand-drop'){
+  const drop=document.getElementById(dropId);
+  if(drop)drop.style.display='none';
+}
+function brandDropFilter(val, inputId='pbr', dropId='brand-drop'){
+  brandDropRender(val, inputId, dropId);
+  const drop=document.getElementById(dropId);
+  if(drop)drop.style.display='block';
+}
+function brandDropRender(q, inputId='pbr', dropId='brand-drop'){
+  const drop=document.getElementById(dropId);
+  if(!drop)return;
+  const list=(DB.brands||[]).filter(b=>!q||b.toLowerCase().includes(q.toLowerCase()));
+  if(!list.length){
+    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">'+
+      (q?'없음 — 직접 입력하세요':'등록된 브랜드 없음')+'</div>';
+    return;
+  }
+  drop.innerHTML='<div style="padding:6px">'+list.map(b=>`
+    <div onclick="brandDropSelect('${b.replace(/'/g,"\'")}','${inputId}','${dropId}')"
+      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
+      onmouseout="this.style.background='';this.style.color='var(--t0)'">
+      <span style="font-size:13px">🏷</span>${b}
+    </div>`).join('')+'</div>';
+}
+function brandDropSelect(name, inputId='pbr', dropId='brand-drop'){
+  const inp=document.getElementById(inputId);
+  if(inp)inp.value=name;
+  brandDropHide(dropId);
+  // 패널 기본정보 탭이면 즉시 반영
+  if(inputId==='pbr'){
+    const s=gS(pSeas,pSid);if(s){s.brand=name;sdb();renderContent();}
+  }
 }
 </script>
 </body>
