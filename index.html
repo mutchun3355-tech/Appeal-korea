@@ -384,6 +384,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
       <div class="sync"><div class="sdot" id="sdot"></div><span id="slbl">로컬 저장</span></div>
       <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:11px;margin-top:2px">⚙ 실장님 관리</button>
       <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:11px">👤 담당자 관리</button>
+      <button class="btn sm g" onclick="openBrandModal()" style="width:100%;font-size:11px">🏷 브랜드 관리</button>
       <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:11px">☁ Firebase 설정</button>
       <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:11px;color:var(--amb)">💾 백업 & 복원</button>
     </div>
@@ -473,17 +474,25 @@ tr:hover td{background:var(--bg2);cursor:pointer}
       <div class="fg">
         <div class="f ff"><label>시즌 *</label><select id="nssn"><option value="">시즌 선택</option></select></div>
         <div class="f ff"><label>STYLE NO. *</label><input type="text" id="nss"></div>
-        <div class="f"><label>브랜드</label><input type="text" id="nsbr"></div>
+        <div class="f"><label>브랜드</label>
+          <select id="nsbr" style="background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
+            <option value="">브랜드 선택</option>
+          </select>
+        </div>
         <div class="f"><label>공장</label><select id="nsfc"></select></div>
         <div class="f"><label>수량</label><input type="number" id="nsq"></div>
         <div class="f"><label>CMT ($) 임가공비</label><input type="number" id="nscmt" step="0.01"></div>
         <div class="f"><label>FOB ($) 선적가</label><input type="number" id="nsfob" step="0.01"></div>
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
         <div class="f"><label>진행 상태</label><select id="nsss"></select></div>
-        <div class="f ff"><label>실장님</label>
+        <div class="f"><label>실장님</label>
           <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
             autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)">
           <div id="nsmgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
+        </div>
+        <div class="f"><label>담당자</label>
+          <input type="text" id="nsmember" placeholder="이름 입력 또는 선택"
+            autocomplete="off">
         </div>
       </div>
     </div>
@@ -589,6 +598,15 @@ tr:hover td{background:var(--bg2);cursor:pointer}
   </div>
 </div>
 
+<!-- ── 브랜드 관리 모달 ── -->
+<div class="mov" id="brandm">
+  <div class="modal" style="width:360px">
+    <div class="mhdr"><h2>🏷 브랜드 관리</h2><button class="btn sm g" onclick="cm('brandm')">✕</button></div>
+    <div class="mbody"><div id="brandl"></div><button class="btn sm" style="margin-top:8px" onclick="addBrand()">+ 추가</button></div>
+    <div class="mfoot"><button class="btn p sm" onclick="saveBrand()">저장</button></div>
+  </div>
+</div>
+
 <div class="ctx" id="ctx"></div>
 
 <!-- 사진 확대 뷰어 -->
@@ -667,6 +685,7 @@ let DB = null;
 function ldb(){
   try{DB=JSON.parse(localStorage.getItem(LKEY))||null;}catch{}
   if(!DB) DB={
+    brands:['APPEAL','MALBON'],
     managers:['박소라 실장님','이수연 실장님'],
     members:['김민준','이서연','박지훈'],
     factories:[
@@ -695,6 +714,7 @@ function ldb(){
   }
   // 공장 color 마이그레이션
   if(!DB.members) DB.members=['김민준','이서연','박지훈'];
+  if(!DB.brands) DB.brands=['APPEAL','MALBON'];
   // payments styles 마이그레이션
   (DB.payments||[]).forEach(p=>{if(!p.styles)p.styles=p.styleId?[{styleId:p.styleId,price:p.price||0,qty:p.qty||0}]:[];});
   // incoming styleIds 마이그레이션
@@ -793,10 +813,21 @@ function tblRedo(type, si='') {
 function tblCanUndo(type,si=''){const h=TABLE_UNDO[tblKey(type,si)];return h&&h.idx>0;}
 function tblCanRedo(type,si=''){const h=TABLE_UNDO[tblKey(type,si)];return h&&h.idx<h.history.length-1;}
 
-function sdb(){
+let _fbPushTimer=null;
+function sdb(skipFb=false){
   localStorage.setItem(LKEY,JSON.stringify(DB));
+  if(!skipFb){
+    // 디바운스: 1초 후에 Firebase push (연속 입력 시 불필요한 push 방지)
+    clearTimeout(_fbPushTimer);
+    _fbPushTimer=setTimeout(()=>fbPush(),1000);
+  }
+  saveBackup(false);
+}
+function sdbImmediate(){
+  localStorage.setItem(LKEY,JSON.stringify(DB));
+  clearTimeout(_fbPushTimer);
   fbPush();
-  saveBackup(false); // 자동 백업 (조용히)
+  saveBackup(false);
 }
 
 // ══════════════════════════
@@ -1668,7 +1699,11 @@ function rTab(tab){
         <div class="psh"><h3>스타일 기본 정보</h3><button class="btn g sm" onclick="addCF('ci')" style="font-size:11px">+ 칸 추가</button></div>
         <div class="fg">
           <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
-          <div class="f"><label>브랜드</label><input type="text" id="pbr" value="${s.brand||''}"></div>
+          <div class="f"><label>브랜드</label>
+            <input type="text" id="pbr" value="${s.brand||''}" list="brand-list" autocomplete="off"
+              style="background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
+            <datalist id="brand-list">${(DB.brands||[]).map(b=>`<option value="${b}">`).join('')}</datalist>
+          </div>
           <div class="f"><label>실장님</label>
             <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 선택"
               autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)">
@@ -2064,13 +2099,12 @@ function fmtNum(v){
 
 function pCI(ri,ci,el){
   const s=gS(pSeas,pSid);
-  // 첫 입력 시 스냅샷
   if(!el._snapDone){tblSnapshot('prod');el._snapDone=true;}
   while(s.prod.rows.length<=ri)s.prod.rows.push(new Array(s.prod.cols.length).fill(''));
   while((s.prod.rows[ri]||[]).length<=ci)s.prod.rows[ri].push('');
   s.prod.rows[ri][ci]=el.value;
   const fxEl=document.getElementById('pfx');if(fxEl)fxEl.value=el.value;
-  sdb();
+  sdb(true); // Firebase push 디바운스 - 포커스 유지
   reCalcProd(s.prod);
 }
 function pCIBlurReset(el){el._snapDone=false;}
@@ -2100,17 +2134,15 @@ function pCB(ri,ci,el){
   const result=evF(v,ri,ci,s.prod);
   const td=el.parentElement;
   if(result==='#ERR'){
-    // 에러: input 유지, 빨간색으로 표시
     td.className='pcel perr';
     el.style.color='var(--red)';
-    sdb();return;
+    sdbImmediate();return; // blur 시 즉시 저장
   }
-  // 정상: sum 셀로 변환
   td.className='sum pcel';td.setAttribute('data-raw',v);
   td.setAttribute('onclick',`pSelF(${ri},${ci})`);
   td.removeAttribute('onmousedown');td.removeAttribute('onmouseover');
   td.innerHTML=`<span style="display:block;padding:5px 7px">${result}</span>`;
-  sdb();
+  sdbImmediate(); // blur 시 즉시 저장
 }
 function pUL(ci,v){const s=gS(pSeas,pSid);if(s.prod.cols[ci])s.prod.cols[ci].l=v;sdb();}
 function pAC(){tblSnapshot('prod');const s=gS(pSeas,pSid);s.prod.cols.push({id:'c'+Date.now(),l:'새 열'});s.prod.rows.forEach(r=>{while(r.length<s.prod.cols.length)r.push('');});sdb();rTab('prod');}
@@ -2562,7 +2594,8 @@ function yCI(si,ri,ci,el){
   while(sh.rows.length<=ri)sh.rows.push(new Array(sh.cols.length).fill(''));
   while((sh.rows[ri]||[]).length<=ci)sh.rows[ri].push('');
   sh.rows[ri][ci]=el.value;
-  sdb();reCalcYarn(si,sh);
+  sdb(true); // Firebase push 디바운스 - 포커스 유지
+  reCalcYarn(si,sh);
 }
 function evFY(expr,ri,ci,sh){
   try{
@@ -2814,6 +2847,8 @@ function openNSM(){
   if(ss){ss.innerHTML=SL.map(s=>`<option value="${s}">${s}</option>`).join('');ss.value='샘플';}
   const sn=document.getElementById('nssn');
   if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
+  const br=document.getElementById('nsbr');
+  if(br)br.innerHTML='<option value="">브랜드 선택</option>'+(DB.brands||[]).map(b=>`<option value="${b}">${b}</option>`).join('');
   om('nsm');
 }
 function confNewStyle(){
@@ -2825,7 +2860,7 @@ function confNewStyle(){
   item.style=st;item.brand=document.getElementById('nsbr')?.value||'';
   item.manager=document.getElementById('nsmgr')?.value||'';
   item.member=document.getElementById('nsmember')?.value||'';
-  item.qty=+document.getElementById('nsqt')?.value||0;
+  item.qty=parseInt(document.getElementById('nsq')?.value||'0',10)||0;
   item.cmt=+document.getElementById('nscmt')?.value||0;
   item.fob=+document.getElementById('nsfob')?.value||0;
   item.deadline=document.getElementById('nsdl')?.value||'';
@@ -3013,6 +3048,39 @@ function yHighlight(si,ri,ci){
   // 선택된 셀 input에 포커스
   const inp=document.querySelector(`#yr-${si}-${ri} td[data-c="${ci}"] input`);
   if(inp)inp.focus();
+}
+
+// ── 브랜드 관리 ──
+function openBrandModal(){
+  document.getElementById('brandl').innerHTML=(DB.brands||[]).map((b,i)=>`
+    <div class="mgri">
+      <input type="text" class="brand-inp" data-i="${i}" value="${b.replace(/"/g,'&quot;')}" placeholder="브랜드명 입력">
+      <button class="btn d sm" onclick="delBrand(${i})">삭제</button>
+    </div>`).join('');
+  om('brandm');
+}
+function addBrand(){
+  _syncBrandInputs();
+  (DB.brands=DB.brands||[]).push('새 브랜드');
+  openBrandModal();
+  setTimeout(()=>{const ins=document.querySelectorAll('.brand-inp');if(ins.length)ins[ins.length-1].focus();},50);
+}
+function delBrand(i){
+  if(!confirm('삭제?'))return;
+  _syncBrandInputs();
+  DB.brands.splice(i,1);
+  openBrandModal();
+}
+function _syncBrandInputs(){
+  document.querySelectorAll('.brand-inp').forEach(el=>{
+    const i=+el.dataset.i;
+    if(i>=0&&i<(DB.brands||[]).length)DB.brands[i]=el.value.trim()||DB.brands[i];
+  });
+}
+function saveBrand(){
+  _syncBrandInputs();
+  DB.brands=(DB.brands||[]).filter(Boolean);
+  sdb();cm('brandm');toast('저장됨');
 }
 </script>
 </body>
