@@ -492,7 +492,8 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         </div>
         <div class="f"><label>담당자</label>
           <input type="text" id="nsmember" placeholder="이름 입력 또는 선택"
-            autocomplete="off">
+            autocomplete="off" oninput="memberDropFilter(this.value,'nsmember','nsmember-drop')" onfocus="memberDropShow('nsmember','nsmember-drop')" onblur="setTimeout(()=>memberDropHide('nsmember-drop'),200)">
+          <div id="nsmember-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
         </div>
       </div>
     </div>
@@ -2982,24 +2983,24 @@ function deleteBackup(i){
 
 
 // ── 담당자 드롭다운 ──
-function memberDropShow(){
-  const inp=document.getElementById('pmember');
-  const drop=document.getElementById('member-drop');
+function memberDropShow(inputId='pmember', dropId='member-drop'){
+  const inp=document.getElementById(inputId);
+  const drop=document.getElementById(dropId);
   if(!inp||!drop)return;
-  memberDropRender('');
+  memberDropRender('', inputId, dropId);
   drop.style.display='block';
 }
-function memberDropHide(){
-  const drop=document.getElementById('member-drop');
+function memberDropHide(dropId='member-drop'){
+  const drop=document.getElementById(dropId);
   if(drop)drop.style.display='none';
 }
-function memberDropFilter(val){
-  memberDropRender(val);
-  const drop=document.getElementById('member-drop');
+function memberDropFilter(val, inputId='pmember', dropId='member-drop'){
+  memberDropRender(val, inputId, dropId);
+  const drop=document.getElementById(dropId);
   if(drop)drop.style.display='block';
 }
-function memberDropRender(q){
-  const drop=document.getElementById('member-drop');
+function memberDropRender(q, inputId='pmember', dropId='member-drop'){
+  const drop=document.getElementById(dropId);
   if(!drop)return;
   const list=(DB.members||[]).filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
   if(!list.length){
@@ -3007,19 +3008,21 @@ function memberDropRender(q){
     return;
   }
   drop.innerHTML='<div style="padding:6px">'+list.map(m=>`
-    <div onclick="memberDropSelect('${m.replace(/'/g,"\'")}' )"
+    <div onclick="memberDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
       style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
       onmouseout="this.style.background='';this.style.color='var(--t0)'">
       <span style="font-size:13px">👤</span>${m}
     </div>`).join('')+'</div>';
 }
-function memberDropSelect(name){
-  const inp=document.getElementById('pmember');
-  if(inp){inp.value=name;}
-  memberDropHide();
-  const s=gS(pSeas,pSid);
-  if(s){s.member=name;sdb();renderContent();}
+function memberDropSelect(name, inputId='pmember', dropId='member-drop'){
+  const inp=document.getElementById(inputId);
+  if(inp)inp.value=name;
+  memberDropHide(dropId);
+  // 패널 기본정보 탭이면 즉시 반영
+  if(inputId==='pmember'){
+    const s=gS(pSeas,pSid);if(s){s.member=name;sdb();renderContent();}
+  }
 }
 
 // ── YARN 드래그 범위 선택 ──
