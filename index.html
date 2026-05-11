@@ -471,6 +471,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
     <div class="mhdr"><h2 id="nsmt">신규 스타일 등록</h2><button class="btn sm g" onclick="cm('nsm')">✕</button></div>
     <div class="mbody">
       <div class="fg">
+        <div class="f ff"><label>시즌 *</label><select id="nssn"><option value="">시즌 선택</option></select></div>
         <div class="f ff"><label>STYLE NO. *</label><input type="text" id="nss"></div>
         <div class="f"><label>브랜드</label><input type="text" id="nsbr"></div>
         <div class="f"><label>공장</label><select id="nsfc"></select></div>
@@ -2804,7 +2805,7 @@ function openNSM(){
 }
 function confNewStyle(){
   const sn=document.getElementById('nssn')?.value;
-  const st=document.getElementById('nsst')?.value?.trim();
+  const st=document.getElementById('nss')?.value?.trim();
   if(!sn){toast('시즌을 선택해주세요');return;}
   if(!st){toast('스타일 번호를 입력해주세요');return;}
   const item=mkS('s'+Date.now());
