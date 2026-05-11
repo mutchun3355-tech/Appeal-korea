@@ -479,7 +479,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
         <div class="f"><label>CMT ($) 임가공비</label><input type="number" id="nscmt" step="0.01"></div>
         <div class="f"><label>FOB ($) 선적가</label><input type="number" id="nsfob" step="0.01"></div>
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
-        <div class="f"><label>진행 상태</label><select id="nsst"></select></div>
+        <div class="f"><label>진행 상태</label><select id="nsss"></select></div>
         <div class="f ff"><label>실장님</label>
           <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
             autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)">
@@ -2578,7 +2578,19 @@ function evFY(expr,ri,ci,sh){
     return '#ERR';
   }catch{return '#ERR';}
 }
-function reCalcYarn(si,sh){rTab('yarn');}
+function reCalcYarn(si,sh){
+  // rTab 대신 수식 셀만 업데이트 (포커스 유지)
+  (sh.rows||[]).forEach((row,ri)=>{
+    (row||[]).forEach((v,ci)=>{
+      if(!v||!v.toString().startsWith('='))return;
+      const result=evFY(v.toString(),ri,ci,sh);
+      const td=document.querySelector(`#yr-${si}-${ri} td[data-c="${ci}"]`);
+      if(!td)return;
+      const disp=td.querySelector('div[style*="pointer-events:none"]');
+      if(disp)disp.textContent=result;
+    });
+  });
+}
 function yMoveTo(si,ri,ci){
   const s=gS(pSeas,pSid);if(!s||!s.yarnSheets[si])return;
   const sh=s.yarnSheets[si];
@@ -2798,7 +2810,8 @@ function openNSM(){
   ['nsst','nsbr','nsmgr','nsmember','nsqt','nscmt','nsfob','nsdl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const fc=document.getElementById('nsfc');
   if(fc)fc.innerHTML='<option value="">공장 선택</option>'+(DB.factories||[]).map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
-  const ss=document.getElementById('nsss');if(ss)ss.value='샘플';
+  const ss=document.getElementById('nsss');
+  if(ss){ss.innerHTML=SL.map(s=>`<option value="${s}">${s}</option>`).join('');ss.value='샘플';}
   const sn=document.getElementById('nssn');
   if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
   om('nsm');
