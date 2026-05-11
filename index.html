@@ -861,7 +861,7 @@ function _fb(url,k,pid){
       const v=snap.val();
       if(v){
         const r=JSON.parse(v);
-        ['styles','payments','incoming','factories','seasons','managers','members','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});
+        ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky])DB[ky]=r[ky];});
         localStorage.setItem(LKEY,JSON.stringify(DB));
         renderNav();renderContent();
         if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
