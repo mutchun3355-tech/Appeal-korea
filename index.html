@@ -1775,13 +1775,35 @@ function rTab(tab){
         <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t2)">비고</span><span>${p.note||'-'}</span></div>
       </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">결제 내역 없음</div>'}</div>`;
   } else if(tab==='qct'){
-    body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">QC 및 수정사항</div>
-      <button class="btn p sm" style="width:100%;margin-bottom:10px" onclick="openQCM()">QC 상세 편집 ↗</button>
-      ${(s.qc||[]).map((q,i)=>`<div style="border:1px solid var(--b);border-radius:6px;padding:10px 12px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:500;margin-bottom:4px">${q.t||((i+1)+'차 QC')}</div>
-        <div style="font-size:11px;color:var(--t2)">${q.c||'코멘트 없음'}</div>
-        ${q.p?.length?`<div style="font-size:11px;color:var(--al);margin-top:4px">사진 ${q.p.length}장</div>`:''}
-      </div>`).join('')}</div>`;
+    body.innerHTML=`<div class="ps">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
+        <button class="btn p sm" onclick="openQCM()">QC 상세 편집 ↗</button>
+      </div>
+      ${(s.qc||[]).map((q,i)=>`
+        <div style="border:1px solid var(--b);border-radius:8px;margin-bottom:12px;overflow:hidden">
+          <!-- 차수 헤더 -->
+          <div style="background:var(--bg2);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)">
+            <span style="font-size:13px;font-weight:600;color:var(--t0)">${q.t||((i+1)+'차 QC')}</span>
+            ${q.p?.length?`<span style="font-size:10px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
+          </div>
+          <!-- 사진 그리드 -->
+          ${q.p?.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;padding:10px 14px;border-bottom:1px solid var(--b)">
+            ${q.p.map(src=>`
+              <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid var(--b);cursor:zoom-in" onclick="openPhotoViewer('${src}')">
+                <img src="${src}" style="width:100%;height:100%;object-fit:cover">
+              </div>`).join('')}
+          </div>`:''}
+          <!-- 코멘트 -->
+          <div style="padding:10px 14px">
+            ${q.c
+              ?`<div style="font-size:13px;color:var(--t1);line-height:1.6;white-space:pre-wrap">${q.c}</div>`
+              :`<div style="font-size:12px;color:var(--t3);font-style:italic">코멘트 없음</div>`
+            }
+          </div>
+        </div>`).join('')}
+      ${!(s.qc||[]).length?'<div style="text-align:center;padding:24px;color:var(--t2);font-size:12px">QC 내역 없음 — QC 상세 편집에서 추가하세요</div>':''}
+    </div>`;
   } else if(tab==='prod'){
     rProd(s);
   } else if(tab==='memo'){
