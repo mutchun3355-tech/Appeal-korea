@@ -17,6 +17,8 @@
   --mono:'DM Mono',monospace;--sans:'Pretendard',-apple-system,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+select{color-scheme:dark;background:var(--bg2);color:var(--t0)}
+select option{background:var(--bg2)!important;color:var(--t0)!important}
 html,body{height:100%;background:var(--bg0);color:var(--t0);font-family:var(--sans);font-size:13px;line-height:1.5}
 button{cursor:pointer;font-family:var(--sans);font-size:13px}
 input,select,textarea{font-family:var(--sans);font-size:13px}
@@ -95,6 +97,13 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 
 /* ── BADGES ── */
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+select.bs{background:rgba(90,92,98,.25);color:#9a9da6;border:1px solid rgba(90,92,98,.3)}
+select.bq{background:rgba(37,99,175,.25);color:#60a5fa;border:1px solid rgba(37,99,175,.35)}
+select.bp{background:rgba(109,40,217,.25);color:#c084fc;border:1px solid rgba(109,40,217,.35)}
+select.bk{background:rgba(22,163,74,.25);color:#4ade80;border:1px solid rgba(22,163,74,.35)}
+select.bsh{background:rgba(234,88,12,.25);color:#fb923c;border:1px solid rgba(234,88,12,.35)}
+select.bar{background:rgba(202,138,4,.25);color:#facc15;border:1px solid rgba(202,138,4,.35)}
+select.bd{background:rgba(13,148,136,.25);color:#2dd4bf;border:1px solid rgba(13,148,136,.35)}
 /* 샘플 - 회색 */
 .bs{background:rgba(90,92,98,.25);color:#9a9da6;border:1px solid rgba(90,92,98,.3)}
 /* QC - 파란색 */
@@ -114,7 +123,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .pov{display:none;position:fixed;inset:0;z-index:100}
 .pov.open{display:flex}
 .pbk{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-.panel{position:absolute;right:0;top:0;bottom:0;width:600px;min-width:340px;max-width:92vw;background:var(--bg1);border-left:1px solid var(--b);display:flex;flex-direction:column;z-index:1;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.panel{position:absolute;right:0;top:0;bottom:0;width:50vw;min-width:420px;max-width:92vw;background:var(--bg1);border-left:1px solid var(--b);display:flex;flex-direction:column;z-index:1;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
 .pov.open .panel{transform:translateX(0)}
 /* 리사이즈 핸들 */
 .panel-resize{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center}
@@ -137,6 +146,8 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 .f input,.f select,.f textarea{background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0);transition:border-color .15s}
 .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--ac)}
 .f select option{background:var(--bg2)}
+select option{background:var(--bg2);color:var(--t0)}
+select{color-scheme:dark}
 .f textarea{resize:vertical;min-height:58px}
 .ff{grid-column:span 2}
 .pfooter{padding:12px 16px;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
@@ -404,7 +415,7 @@ tr:hover td{background:var(--bg2);cursor:pointer}
   <div class="pbk" onclick="closePanel()"></div>
   <div class="panel" id="panel">
     <div class="panel-resize" id="panel-resize" title="드래그해서 크기 조절"></div>
-    <div class="phdr"><h2 id="ptitle">—</h2><button class="btn sm g" onclick="closePanel()">✕</button></div>
+    <div class="phdr"><h2 id="ptitle" style="display:none">—</h2><button class="btn sm g" onclick="closePanel()">✕</button></div>
     <div class="ptabs">
       <button class="ptab on" onclick="goTab(this,'info')">기본정보</button>
       <button class="ptab" onclick="goTab(this,'photos')">사진</button>
@@ -469,32 +480,51 @@ tr:hover td{background:var(--bg2);cursor:pointer}
 
 <!-- ── NEW STYLE MODAL ── -->
 <div class="mov" id="nsm">
-  <div class="modal" style="width:500px">
+  <div class="modal" style="width:500px;overflow:visible">
     <div class="mhdr"><h2 id="nsmt">신규 스타일 등록</h2><button class="btn sm g" onclick="cm('nsm')">✕</button></div>
     <div class="mbody">
       <div class="fg">
         <div class="f ff"><label>시즌 *</label><select id="nssn"><option value="">시즌 선택</option></select></div>
         <div class="f ff"><label>STYLE NO. *</label><input type="text" id="nss"></div>
         <div class="f"><label>브랜드</label>
-          <input type="text" id="nsbr" placeholder="브랜드 입력 또는 선택"
-            autocomplete="off" oninput="brandDropFilter(this.value,'nsbr','nsbr-drop')" onfocus="brandDropShow('nsbr','nsbr-drop')" onblur="setTimeout(()=>brandDropHide('nsbr-drop'),200)">
-          <div id="nsbr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
+          <div style="position:relative">
+            <input type="text" id="nsbr" placeholder="브랜드 입력 또는 선택"
+              autocomplete="off" oninput="brandDropFilter(this.value,'nsbr','nsbr-drop')" onfocus="brandDropShow('nsbr','nsbr-drop')" onblur="setTimeout(()=>brandDropHide('nsbr-drop'),200)"
+              style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
+            <div id="nsbr-drop" style="display:none;position:absolute;top:100%;left:0;z-index:300;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,.6)"></div>
+          </div>
         </div>
         <div class="f"><label>공장</label><select id="nsfc"></select></div>
         <div class="f"><label>수량</label><input type="number" id="nsq"></div>
         <div class="f"><label>CMT ($) 임가공비</label><input type="number" id="nscmt" step="0.01"></div>
         <div class="f"><label>FOB ($) 선적가</label><input type="number" id="nsfob" step="0.01"></div>
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
-        <div class="f"><label>진행 상태</label><select id="nsss"></select></div>
+        <div class="f"><label>진행 상태</label>
+          <div style="position:relative">
+            <div onclick="toggleStatusDrop('nsss-drop',this)" id="nsss-badge"
+              class="badge bs"
+              style="cursor:pointer;font-size:12px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px">
+              샘플 <span style="font-size:9px;opacity:.7">▾</span>
+            </div>
+            <input type="hidden" id="nsss" value="샘플">
+            <div id="nsss-drop" style="display:none;position:absolute;top:110%;left:0;z-index:100;background:var(--bg2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,.5)"></div>
+          </div>
+        </div>
         <div class="f"><label>실장님</label>
-          <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
-            autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)">
-          <div id="nsmgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
+          <div style="position:relative">
+            <input type="text" id="nsmgr" placeholder="이름 입력 또는 아래서 선택"
+              autocomplete="off" oninput="mgrDropFilter(this.value,'nsmgr','nsmgr-drop')" onfocus="mgrDropShow('nsmgr','nsmgr-drop')" onblur="setTimeout(()=>mgrDropHide('nsmgr-drop'),200)"
+              style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
+            <div id="nsmgr-drop" style="display:none;position:absolute;top:100%;left:0;z-index:300;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,.6)"></div>
+          </div>
         </div>
         <div class="f"><label>담당자</label>
-          <input type="text" id="nsmember" placeholder="이름 입력 또는 선택"
-            autocomplete="off" oninput="memberDropFilter(this.value,'nsmember','nsmember-drop')" onfocus="memberDropShow('nsmember','nsmember-drop')" onblur="setTimeout(()=>memberDropHide('nsmember-drop'),200)">
-          <div id="nsmember-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
+          <div style="position:relative">
+            <input type="text" id="nsmember" placeholder="이름 입력 또는 선택"
+              autocomplete="off" oninput="memberDropFilter(this.value,'nsmember','nsmember-drop')" onfocus="memberDropShow('nsmember','nsmember-drop')" onblur="setTimeout(()=>memberDropHide('nsmember-drop'),200)"
+              style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0)">
+            <div id="nsmember-drop" style="display:none;position:absolute;top:100%;left:0;z-index:300;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,.6)"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1644,33 +1674,163 @@ function rTab(tab){
   const so=SL.map(st=>`<option ${s.status===st?'selected':''}>${st}</option>`).join('');
 
   if(tab==='info'){
-    const ci=(s.ci||[]).map((f,i)=>`<div class="cfr">
-      <div class="cfr-title-row">
-        <input class="cfr-title" type="text" value="${f.label||''}" placeholder="항목 제목 입력..." oninput="uCF('ci',${i},'label',this.value)">
-        <button class="dx" onclick="rCF('ci',${i})" title="삭제">×</button>
-      </div>
-      <input class="cfr-val" type="text" value="${f.val||''}" placeholder="내용을 입력하세요" oninput="uCF('ci',${i},'val',this.value)">
+    const ci=(s.ci||[]).map((f,i)=>`<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+      <input type="text" value="${f.label||''}" placeholder="항목명" oninput="uCF('ci',${i},'label',this.value)"
+        style="color:var(--t2);font-size:13px;background:none;border:none;width:150px;flex-shrink:0">
+      <input type="text" value="${f.val||''}" placeholder="내용" oninput="uCF('ci',${i},'val',this.value)"
+        style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+      <button onclick="rCF('ci',${i})" style="color:var(--t3);background:none;border:none;font-size:15px;cursor:pointer;padding:0 6px">×</button>
     </div>`).join('');
-    const cm=(s.cm2||[]).map((f,i)=>`<div class="cfr">
-      <div class="cfr-title-row">
-        <input class="cfr-title" type="text" value="${f.label||''}" placeholder="항목 제목 입력..." oninput="uCF('cm2',${i},'label',this.value)">
-        <button class="dx" onclick="rCF('cm2',${i})" title="삭제">×</button>
-      </div>
-      <input class="cfr-val" type="text" value="${f.val||''}" placeholder="내용을 입력하세요" oninput="uCF('cm2',${i},'val',this.value)">
+    const cm=(s.cm2||[]).map((f,i)=>`<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+      <input type="text" value="${f.label||''}" placeholder="항목명" oninput="uCF('cm2',${i},'label',this.value)"
+        style="color:var(--t2);font-size:13px;background:none;border:none;width:150px;flex-shrink:0">
+      <input type="text" value="${f.val||''}" placeholder="내용" oninput="uCF('cm2',${i},'val',this.value)"
+        style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+      <button onclick="rCF('cm2',${i})" style="color:var(--t3);background:none;border:none;font-size:15px;cursor:pointer;padding:0 6px">×</button>
     </div>`).join('');
+    const fobj=DB.factories.find(f=>f.id===s.factory);
+    const fcountry=fobj?.country||'';
+    const ficon=fobj?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${fobj.color||'#e74c3c'};font-size:8px;margin-right:5px">🏭</span>`:'';
+    const hasWop=(s.wop||[]).length>0;
 
     body.innerHTML=`
-      <!-- 작업지시서 -->
-      <div class="ps">
-        <div class="psh"><h3>작업지시서</h3></div>
-        <div class="uz" id="wo-dropzone"
+      <!-- ① 상단 헤더 -->
+      <div style="padding:24px 32px 0">
+        <input type="text" id="pst" value="${s.style||''}"
+          style="background:none;border:none;font-size:30px;font-weight:700;color:var(--t0);font-family:var(--mono);width:100%;letter-spacing:-.01em;margin-bottom:18px;display:block">
+
+        <!-- 진행상태 · 마감일 · 담당자 · 실장님 (테이블 레이아웃으로 정렬) -->
+        <table style="border-collapse:collapse;margin-bottom:4px">
+          <tr>
+            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">⚙ 진행상태</td>
+            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">📅 마감일</td>
+            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">👤 담당자</td>
+            <td style="font-size:11px;color:var(--t3);padding:0 0 3px 0;white-space:nowrap">⊙ 실장님</td>
+          </tr>
+          <tr style="vertical-align:middle">
+            <td style="padding:0 28px 0 0">
+              <select id="pst2" onchange="onPst2Change(this)"
+                class="${SC[s.status]||'bs'}"
+                style="border:none;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;padding:3px 10px;color-scheme:dark;outline:none">
+                ${SL.map(st=>`<option value="${st}" ${s.status===st?'selected':''}>${st}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:0 28px 0 0">
+              <input type="date" id="pdl" value="${s.deadline||''}"
+                onclick="this.showPicker&&this.showPicker()"
+                style="background:none;border:none;font-size:14px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;min-width:105px">
+            </td>
+            <td style="padding:0 28px 0 0">
+              <select id="pmember" onchange="onPmemberChange(this)"
+                style="background:none;border:none;font-size:14px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:120px">
+                <option value="">—</option>
+                ${(DB.members||[]).map(m=>`<option value="${m}" ${s.member===m?'selected':''}>${m}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:0">
+              <select id="pmgr" onchange="onPmgrChange(this)"
+                style="background:none;border:none;font-size:14px;font-weight:600;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:140px">
+                <option value="">—</option>
+                ${(DB.managers||[]).map(m=>`<option value="${m}" ${s.manager===m?'selected':''}>${m}</option>`).join('')}
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="height:1px;background:var(--b);margin:16px 0 0"></div>
+
+      <!-- ② 속성 목록 -->
+      <div style="padding:10px 32px 6px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:4px">속성</div>
+      </div>
+      <div style="padding:0 32px 10px">
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 브랜드</span>
+          <div style="position:relative;flex:1">
+            <input type="text" id="pbr" value="${s.brand||''}" placeholder="—"
+              autocomplete="off" oninput="brandDropFilter(this.value)" onfocus="brandDropShow()" onblur="setTimeout(brandDropHide,200)"
+              style="background:none;border:none;font-size:14px;color:var(--t0);width:100%">
+            <div id="brand-drop" style="display:none;position:absolute;left:0;top:100%;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">★ 수량</span>
+          <input type="number" id="pqt" value="${s.qty||''}" placeholder="—"
+            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1;font-family:var(--mono)">
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">💰 CMT/FOB</span>
+          <div style="display:flex;gap:8px;align-items:center;flex:1">
+            <input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="CMT"
+              style="background:none;border:none;font-size:14px;color:var(--al);width:80px;font-family:var(--mono)">
+            <span style="color:var(--t3);font-size:12px">/</span>
+            <input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="FOB"
+              style="background:none;border:none;font-size:14px;color:var(--t0);width:80px;font-family:var(--mono)">
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">🏭 공장</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            ${ficon}${fcountry?`<span style="font-size:12px;color:var(--t3);margin-right:6px">${fcountry}</span>`:''}
+            <select id="pfc" style="background:none;border:none;font-size:14px;color:var(--t0);cursor:pointer;color-scheme:dark">
+              <option value="">—</option>
+              ${DB.factories.map(f=>`<option value="${f.id}" ${s.factory===f.id?'selected':''}>${f.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 원사</span>
+          <input type="text" id="pyn" value="${s.yarn||''}" placeholder="—"
+            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 혼용율</span>
+          <textarea id="pmx" rows="1"
+            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1;resize:none;overflow:hidden;line-height:1.5;padding:0;font-family:var(--sans)"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${s.mix||''}</textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">⚖ 중량</span>
+          <input type="text" id="pwt" value="${s.weight||''}" placeholder="—"
+            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+        </div>
+
+        <div style="display:flex;align-items:center;padding:7px 0;${(s.ci||[]).length?'border-bottom:1px solid var(--b)':''}">
+          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">📋 HSCODE</span>
+          <input type="text" id="phs" value="${s.hs||''}" placeholder="—"
+            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+        </div>
+
+        ${ci}
+        ${(s.cm2||[]).length?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--b)">${cm}</div>`:''}
+
+        <div style="padding:10px 0;display:flex;gap:10px">
+          <button class="btn g sm" onclick="addCF('ci')" style="font-size:12px;color:var(--t3)">+ 속성 추가</button>
+          <button class="btn g sm" onclick="addCF('cm2')" style="font-size:12px;color:var(--t3)">+ 소재 정보 추가</button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--b)"></div>
+
+      <!-- ③ 작업지시서 -->
+      <div style="padding:14px 32px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">작업지시서</div>
+        ${!hasWop?`<div class="uz" id="wo-dropzone"
           onclick="document.getElementById('woi').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
           ondragleave="this.style.borderColor='';this.style.background=''"
           ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addWOPDrop(event)">
           <div class="uzt">📋 작업지시서 파일 업로드</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기 · 사진, PDF, 엑셀, 워드 등</div>
-        </div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그 · 사진, PDF, 엑셀, 워드 등</div>
+        </div>`:''}
         <input type="file" id="woi" accept="image/*,.pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.zip,.hwp" multiple style="display:none" onchange="addWOP(event)">
         <div id="wog">${(s.wop||[]).map((item,i)=>{
           const src=typeof item==='string'?item:(item.url||item.data||'');
@@ -1678,75 +1838,34 @@ function rTab(tab){
           const type=typeof item==='string'?'image/jpeg':item.type||'';
           const isPdf=type==='application/pdf'||name.toLowerCase().endsWith('.pdf');
           const isImg=type.startsWith('image/');
-          const isXls=name.match(/\.xlsx?$/i)||type.includes('spreadsheet')||type.includes('excel');
-          const isDoc=name.match(/\.docx?$/i)||type.includes('wordprocessing');
-          const isPpt=name.match(/\.pptx?$/i)||type.includes('presentation');
-          const icon=isPdf?'📄':isXls?'📊':isDoc?'📝':isPpt?'📑':'📎';
-          const shortName=name.length>20?name.slice(0,18)+'..':name;
+          const icon=isPdf?'📄':name.match(/\.xlsx?$/i)?'📊':name.match(/\.docx?$/i)?'📝':'📎';
+          const shortName=name.length>22?name.slice(0,20)+'..':name;
           return`<div style="position:relative;margin-bottom:8px">
-            ${isImg?`<img src="${src}" class="wothumb" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in" title="더블클릭하면 크게 보기">`
-              :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;overflow:hidden;cursor:pointer" onclick="openPdfViewer('${src}','${name}')" title="클릭하면 미리보기">
-                <div style="height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
-                  <span style="font-size:40px">📄</span>
-                  <span style="font-size:11px;color:var(--t2)">${shortName}</span>
-                  <span style="font-size:10px;color:var(--t3)">클릭해서 미리보기</span>
-                </div>
-              </div>`
-              :`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
-                <span style="font-size:28px">${icon}</span>
-                <div style="flex:1;min-width:0">
-                  <div style="font-size:12px;font-weight:500;color:var(--t0);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
-                  <div style="font-size:10px;color:var(--t3);margin-top:2px">${Math.round((item.size||0)/1024)}KB</div>
-                </div>
-              </div>`}
+            ${isImg?`<img src="${src}" class="wothumb" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in;border-radius:8px" title="더블클릭 확대">`
+              :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;cursor:pointer" onclick="openPdfViewer('${src}','${name}')">
+                <div style="height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+                  <span style="font-size:26px">📄</span><span style="font-size:11px;color:var(--t2)">${shortName}</span>
+                </div></div>`
+              :`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+                <span style="font-size:20px">${icon}</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+                <div style="font-size:10px;color:var(--t3)">${Math.round((item.size||0)/1024)}KB</div></div></div>`}
             <button class="pdel" style="top:6px;right:6px" onclick="rmWOP(${i})">✕</button>
           </div>`;
-        }).join('')}</div>
+        }).join('')}
+        ${hasWop?`<button class="btn g sm" style="margin-top:6px;font-size:12px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>`:''}
       </div>
-      <!-- 기본 정보 -->
-      <div class="ps">
-        <div class="psh"><h3>스타일 기본 정보</h3><button class="btn g sm" onclick="addCF('ci')" style="font-size:11px">+ 칸 추가</button></div>
-        <div class="fg">
-          <div class="f ff"><label>STYLE NO.</label><input type="text" id="pst" value="${s.style||''}"></div>
-          <div class="f"><label>브랜드</label>
-            <input type="text" id="pbr" value="${s.brand||''}" placeholder="브랜드 입력 또는 선택"
-              autocomplete="off" oninput="brandDropFilter(this.value)" onfocus="brandDropShow()" onblur="setTimeout(brandDropHide,200)">
-            <div id="brand-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden;position:relative;z-index:10"></div>
-          </div>
-          <div class="f"><label>실장님</label>
-            <input type="text" id="pmgr" value="${s.manager||''}" placeholder="이름 입력 또는 선택"
-              autocomplete="off" oninput="mgrDropFilter(this.value)" onfocus="mgrDropShow()" onblur="setTimeout(mgrDropHide,200)">
-            <div id="mgr-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
-          </div>
-          <div class="f"><label>담당자 (해외사업부)</label>
-            <input type="text" id="pmember" value="${s.member||''}" placeholder="이름 입력 또는 선택"
-              autocomplete="off" oninput="memberDropFilter(this.value)" onfocus="memberDropShow()" onblur="setTimeout(memberDropHide,200)">
-            <div id="member-drop" style="display:none;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;margin-top:4px;overflow:hidden"></div>
-          </div>
-          <div class="f"><label>수량 (장)</label><input type="number" id="pqt" value="${s.qty||''}"></div>
-          <div class="f"><label>CMT ($) — 임가공비</label><input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="공임 단가"></div>
-          <div class="f"><label>FOB ($) — 선적가</label><input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="총 선적 단가"></div>
-          <div class="f"><label>마감일</label><input type="date" id="pdl" value="${s.deadline||''}"
-            onclick="this.showPicker&&this.showPicker()"
-            style="cursor:pointer"></div>
-          <div class="f"><label>진행 상태</label><select id="pst2">${so}</select></div>
-          <div class="f ff"><label>공장</label><select id="pfc"><option value="">선택</option>${fo}</select></div>
-        </div>
-        <div id="cif" style="margin-top:10px">${ci}</div>
+
+      <!-- ④ 특이사항 (맨 아래) -->
+      <div style="height:1px;background:var(--b)"></div>
+      <div style="padding:14px 32px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:6px">특이사항</div>
+        <textarea id="pnt" rows="3" placeholder="특이사항 입력..."
+          style="width:100%;background:none;border:none;color:var(--t1);resize:vertical;font-size:14px;line-height:1.7;padding:0;font-family:var(--sans)">${s.note||''}</textarea>
       </div>
-      <!-- 소재 정보 -->
-      <div class="ps">
-        <div class="psh"><h3>소재 정보</h3><button class="btn g sm" onclick="addCF('cm2')" style="font-size:11px">+ 칸 추가</button></div>
-        <div class="fg">
-          <div class="f ff"><label>원사</label><input type="text" id="pyn" value="${s.yarn||''}"></div>
-          <div class="f ff"><label>혼용율</label><textarea id="pmx" rows="2">${s.mix||''}</textarea></div>
-          <div class="f"><label>중량</label><input type="text" id="pwt" value="${s.weight||''}"></div>
-          <div class="f ff"><label>HSCODE / 관세</label><input type="text" id="phs" value="${s.hs||''}"></div>
-        </div>
-        <div id="cmf" style="margin-top:10px">${cm}</div>
-      </div>
-      <!-- 특이사항 -->
-      <div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">특이사항</div><div class="f"><textarea id="pnt" rows="3">${s.note||''}</textarea></div></div>`;
+    `;
+
+
 
   } else if(tab==='photos'){
     body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">스타일 사진</div>
@@ -2891,7 +3010,19 @@ function addMgr(){
 }
 function delMgr(i){if(!confirm('삭제?'))return;_syncMgrInputs();DB.managers.splice(i,1);openMgr();}
 function _syncMgrInputs(){document.querySelectorAll('.mgr-inp').forEach(el=>{const i=+el.dataset.i;if(i>=0&&i<(DB.managers||[]).length)DB.managers[i]=el.value.trim()||DB.managers[i];});}
-function saveMgr(){_syncMgrInputs();DB.managers=(DB.managers||[]).filter(Boolean);sdb();cm('mgrm');toast('저장됨');}
+function saveMgr(){
+  const old=[...(DB.managers||[])];
+  _syncMgrInputs();
+  DB.managers=(DB.managers||[]).filter(Boolean);
+  // 기존 스타일에 연동 반영
+  Object.values(DB.styles).flat().forEach(s=>{
+    if(s.manager){
+      const i=old.indexOf(s.manager);
+      if(i>=0&&DB.managers[i]&&DB.managers[i]!==s.manager) s.manager=DB.managers[i];
+    }
+  });
+  sdb();cm('mgrm');toast('저장됨');
+}
 
 // ── 담당자 관리 ──
 function openMemberModal(){
@@ -2908,7 +3039,19 @@ function addMember(){
 }
 function delMember(i){if(!confirm('삭제?'))return;_syncMemberInputs();DB.members.splice(i,1);openMemberModal();}
 function _syncMemberInputs(){document.querySelectorAll('.member-inp').forEach(el=>{const i=+el.dataset.i;if(i>=0&&i<(DB.members||[]).length)DB.members[i]=el.value.trim()||DB.members[i];});}
-function saveMember(){_syncMemberInputs();DB.members=(DB.members||[]).filter(Boolean);sdb();cm('memberm');toast('저장됨');}
+function saveMember(){
+  const old=[...(DB.members||[])];
+  _syncMemberInputs();
+  DB.members=(DB.members||[]).filter(Boolean);
+  // 기존 스타일에 연동 반영
+  Object.values(DB.styles).flat().forEach(s=>{
+    if(s.member){
+      const i=old.indexOf(s.member);
+      if(i>=0&&DB.members[i]&&DB.members[i]!==s.member) s.member=DB.members[i];
+    }
+  });
+  sdb();cm('memberm');toast('저장됨');
+}
 
 // ── 새 스타일 등록 ──
 function openNSM(){
@@ -2921,6 +3064,7 @@ function openNSM(){
   if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
   const nsbr=document.getElementById('nsbr');
   if(nsbr)nsbr.value='';
+  initNsssDrop();
   om('nsm');
 }
 function confNewStyle(){
@@ -3152,8 +3296,16 @@ function _syncBrandInputs(){
   });
 }
 function saveBrand(){
+  const old=[...(DB.brands||[])];
   _syncBrandInputs();
   DB.brands=(DB.brands||[]).filter(Boolean);
+  // 기존 스타일에 연동 반영
+  Object.values(DB.styles).flat().forEach(s=>{
+    if(s.brand){
+      const i=old.indexOf(s.brand);
+      if(i>=0&&DB.brands[i]&&DB.brands[i]!==s.brand) s.brand=DB.brands[i];
+    }
+  });
   sdb();cm('brandm');toast('저장됨');
 }
 
@@ -3199,6 +3351,106 @@ function brandDropSelect(name, inputId='pbr', dropId='brand-drop'){
   if(inputId==='pbr'){
     const s=gS(pSeas,pSid);if(s){s.brand=name;sdb();renderContent();}
   }
+}
+
+// ── 진행상태 배지 드롭다운 ──
+function toggleStatusDrop(dropId, triggerEl){
+  const drop=document.getElementById(dropId);
+  if(!drop)return;
+  if(drop.style.display==='block'){drop.style.display='none';return;}
+  // 다른 드롭다운 닫기
+  document.querySelectorAll('[id$="-drop"],[id$="-pdrop"]').forEach(d=>{
+    if(d!==drop)d.style.display='none';
+  });
+  const inputId=dropId==='pst2-drop'?'pst2':'nsss';
+  const badgeId=dropId==='pst2-drop'?'pst2-badge':'nsss-badge';
+  const curVal=document.getElementById(inputId)?.value||'';
+  // 배지 색상 배경 매핑
+  const BG={
+    'bs':'rgba(90,92,98,.25)','bq':'rgba(37,99,175,.25)','bp':'rgba(109,40,217,.25)',
+    'bk':'rgba(22,163,74,.25)','bsh':'rgba(234,88,12,.25)','bar':'rgba(202,138,4,.25)','bd':'rgba(13,148,136,.25)'
+  };
+  const CL={
+    'bs':'#9a9da6','bq':'#60a5fa','bp':'#c084fc',
+    'bk':'#4ade80','bsh':'#fb923c','bar':'#facc15','bd':'#2dd4bf'
+  };
+  drop.innerHTML='';
+  SL.forEach(st=>{
+    const cls=SC[st]||'bs';
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;padding:8px 12px;cursor:pointer;gap:8px;background:'+(st===curVal?'var(--bg3)':'transparent');
+    d.onmouseover=function(){this.style.background='var(--bg3)';};
+    d.onmouseout=function(){this.style.background=st===curVal?'var(--bg3)':'transparent';};
+    d.onclick=function(){
+      // hidden input 업데이트
+      const inp=document.getElementById(inputId);if(inp)inp.value=st;
+      // 배지 업데이트
+      const badge=document.getElementById(badgeId);
+      if(badge){
+        badge.className=cls;
+        badge.innerHTML=st+' <span style="font-size:9px;opacity:.7">▾</span>';
+        // inline style 유지
+        badge.style.cursor='pointer';badge.style.fontSize='12px';
+        badge.style.padding='4px 10px';badge.style.display='inline-flex';
+        badge.style.alignItems='center';badge.style.gap='5px';
+        badge.style.borderRadius='20px';badge.style.userSelect='none';badge.style.whiteSpace='nowrap';
+      }
+      drop.style.display='none';
+      if(inputId==='pst2'){
+        const s=gS(pSeas,pSid);
+        if(s){const prev=s.status;s.status=st;if(prev&&prev!==st)autoMemoStatus(s,prev,st);sdbImmediate();renderContent();}
+      }
+    };
+    // 배지 span 생성
+    const sp=document.createElement('span');
+    sp.style.cssText='display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;background:'+(BG[cls]||BG.bs)+';color:'+(CL[cls]||CL.bs);
+    sp.textContent=st;
+    d.appendChild(sp);
+    drop.appendChild(d);
+  });
+  drop.style.display='block';
+  setTimeout(()=>{
+    function oc(e){
+      if(!drop.contains(e.target)&&e.target!==triggerEl&&!triggerEl.contains(e.target)){
+        drop.style.display='none';document.removeEventListener('mousedown',oc);
+      }
+    }
+    document.addEventListener('mousedown',oc);
+  },10);
+}
+
+function openNssDrop(el){toggleStatusDrop('nsss-drop',el);}
+
+// ── pbody 클릭 위임 ──
+document.addEventListener('mousedown', function(e){
+  const t = e.target;
+
+  // 드롭다운 외부 클릭 시 닫기
+  const isInsideDrop = t.closest('[id$="-drop"],[id$="-pdrop"]');
+  if(!isInsideDrop){
+    document.querySelectorAll('[id$="-drop"],[id$="-pdrop"]').forEach(d=>d.style.display='none');
+  }
+});
+
+// ── 기본정보 탭 select 핸들러 ──
+function onPst2Change(sel){
+  const s=gS(pSeas,pSid);if(!s)return;
+  const prev=s.status;
+  s.status=sel.value;
+  // 배지 색상 즉시 업데이트
+  sel.className=SC[sel.value]||'bs';
+  if(prev&&prev!==sel.value)autoMemoStatus(s,prev,sel.value);
+  sdbImmediate();renderContent();
+}
+function onPmemberChange(sel){
+  const s=gS(pSeas,pSid);if(!s)return;
+  s.member=sel.value;
+  sdbImmediate();renderContent();toast('담당자 저장됨');
+}
+function onPmgrChange(sel){
+  const s=gS(pSeas,pSid);if(!s)return;
+  s.manager=sel.value;
+  sdbImmediate();renderContent();toast('실장님 저장됨');
 }
 </script>
 </body>
