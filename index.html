@@ -123,18 +123,18 @@ select.bd{background:rgba(13,148,136,.25);color:#2dd4bf;border:1px solid rgba(13
 .pov{display:none;position:fixed;inset:0;z-index:100}
 .pov.open{display:flex}
 .pbk{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-.panel{position:absolute;right:0;top:0;bottom:0;width:50vw;min-width:420px;max-width:92vw;background:var(--bg1);border-left:1px solid var(--b);display:flex;flex-direction:column;z-index:1;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.panel{position:absolute;right:0;top:0;bottom:0;width:55vw;min-width:480px;max-width:92vw;background:var(--bg1);border-left:1px solid var(--b);display:flex;flex-direction:column;z-index:1;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
 .pov.open .panel{transform:translateX(0)}
 /* 리사이즈 핸들 */
 .panel-resize{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center}
 .panel-resize::after{content:'';width:3px;height:40px;background:var(--b2);border-radius:3px;transition:background .15s}
 .panel-resize:hover::after,.panel-resize.dragging::after{background:var(--ac);width:4px}
-.phdr{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--b);flex-shrink:0}
+.phdr{display:flex;align-items:center;gap:10px;padding:0;border-bottom:none;flex-shrink:0;min-height:0}
 .phdr h2{font-size:15px;font-weight:600;flex:1;font-family:var(--mono)}
-.ptabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;overflow-x:auto}
-.ptab{flex:none;padding:8px 11px;font-size:12px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
+.ptabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;overflow-x:auto;min-height:52px}
+.ptab{flex:none;padding:12px 16px;font-size:14px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
 .ptab:hover{color:var(--t0)}
-.ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:500}
+.ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:600}
 .pbody{flex:1;overflow-y:auto}
 .pbody img{max-width:100%;height:auto}
 .ps{padding:14px 16px;border-bottom:1px solid var(--b)}
@@ -415,8 +415,8 @@ select{color-scheme:dark}
   <div class="pbk" onclick="closePanel()"></div>
   <div class="panel" id="panel">
     <div class="panel-resize" id="panel-resize" title="드래그해서 크기 조절"></div>
-    <div class="phdr"><h2 id="ptitle" style="display:none">—</h2><button class="btn sm g" onclick="closePanel()">✕</button></div>
-    <div class="ptabs">
+    <div class="phdr" style="padding:0;min-height:0;border-bottom:none"><h2 id="ptitle" style="display:none">—</h2></div>
+    <div class="ptabs" style="padding-top:2px">
       <button class="ptab on" onclick="goTab(this,'info')">기본정보</button>
       <button class="ptab" onclick="goTab(this,'photos')">사진</button>
       <button class="ptab" onclick="goTab(this,'yarn')">원사</button>
@@ -1695,7 +1695,7 @@ function rTab(tab){
 
     body.innerHTML=`
       <!-- ① 상단 헤더 -->
-      <div style="padding:24px 32px 0">
+      <div style="padding:56px 48px 0">
         <input type="text" id="pst" value="${s.style||''}"
           style="background:none;border:none;font-size:30px;font-weight:700;color:var(--t0);font-family:var(--mono);width:100%;letter-spacing:-.01em;margin-bottom:18px;display:block">
 
@@ -1894,36 +1894,83 @@ function rTab(tab){
         <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t2)">비고</span><span>${p.note||'-'}</span></div>
       </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">결제 내역 없음</div>'}</div>`;
   } else if(tab==='qct'){
+    const qcEditMode = body.dataset.qcEdit === 'true';
+    body.dataset.qcEdit = body.dataset.qcEdit || 'false';
+
     body.innerHTML=`<div class="ps">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
-        <button class="btn p sm" onclick="openQCM()">QC 상세 편집 ↗</button>
+        <button class="btn ${qcEditMode?'':'p'} sm" onclick="toggleQcEdit()" id="qc-edit-btn">
+          ${qcEditMode?'✅ 편집 완료':'✏️ QC 편집'}
+        </button>
       </div>
-      ${(s.qc||[]).map((q,i)=>`
-        <div style="border:1px solid var(--b);border-radius:8px;margin-bottom:12px;overflow:hidden">
+
+      ${(s.qc||[]).map((q,qi)=>`
+        <div style="border:1px solid var(--b);border-radius:10px;margin-bottom:16px;overflow:hidden">
           <!-- 차수 헤더 -->
-          <div style="background:var(--bg2);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)">
-            <span style="font-size:13px;font-weight:600;color:var(--t0)">${q.t||((i+1)+'차 QC')}</span>
-            ${q.p?.length?`<span style="font-size:10px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
+          <div style="background:var(--bg2);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)">
+            ${qcEditMode
+              ?`<input type="text" value="${(q.t||'').replace(/"/g,'&quot;')}" oninput="sqT(${qi},this.value)"
+                  style="font-size:14px;font-weight:700;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b2);flex:1;outline:none">`
+              :`<span style="font-size:14px;font-weight:700;color:var(--t0)">${q.t||((qi+1)+'차 QC')}</span>`
+            }
+            ${q.p?.length?`<span style="font-size:11px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
+            ${qcEditMode?`<button onclick="rmQCR(${qi})" style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.3);border-radius:6px;color:var(--red);font-size:11px;padding:3px 8px;cursor:pointer;margin-left:4px">삭제</button>`:''}
           </div>
-          <!-- 사진 그리드 -->
-          ${q.p?.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;padding:10px 14px;border-bottom:1px solid var(--b)">
-            ${q.p.map(src=>`
-              <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid var(--b);cursor:zoom-in" onclick="openPhotoViewer('${src}')">
-                <img src="${src}" style="width:100%;height:100%;object-fit:cover">
+
+          <!-- 사진 -->
+          <div style="padding:12px 16px;${(q.p?.length||qcEditMode)?'border-bottom:1px solid var(--b)':''}">
+            ${(q.p||[]).map((src,pi)=>`
+              <div style="position:relative;margin-bottom:10px;border-radius:8px;overflow:hidden;border:1px solid var(--b)">
+                <img src="${src}" style="width:100%;display:block;object-fit:contain;max-height:400px;background:#000;cursor:zoom-in"
+                  onclick="openPhotoViewer('${src}')">
+                ${qcEditMode?`<button onclick="rmQCP(${qi},${pi})"
+                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:11px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`:''}
               </div>`).join('')}
-          </div>`:''}
+            ${qcEditMode?`<div style="border:1px dashed var(--b2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-top:4px"
+              onclick="document.getElementById('qci${qi}').click()"
+              ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
+              ondragleave="this.style.borderColor='var(--b2)'"
+              ondrop="event.preventDefault();this.style.borderColor='var(--b2)';qcDropPh(event,${qi})">
+              <span style="font-size:12px;color:var(--t3)">📷 사진 추가 (클릭 또는 드래그)</span>
+            </div>
+            <input type="file" id="qci${qi}" accept="image/*" multiple style="display:none" onchange="qcAddPh(event,${qi})">`:''}
+          </div>
+
           <!-- 코멘트 -->
-          <div style="padding:10px 14px">
-            ${q.c
-              ?`<div style="font-size:13px;color:var(--t1);line-height:1.6;white-space:pre-wrap">${q.c}</div>`
-              :`<div style="font-size:12px;color:var(--t3);font-style:italic">코멘트 없음</div>`
+          <div style="padding:12px 16px">
+            ${qcEditMode
+              ?`<textarea oninput="sqC(${qi},this.value)" rows="3"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:13px;line-height:1.6;font-family:var(--sans)"
+                  >${q.c||''}</textarea>`
+              :`<div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                  <span style="font-size:10px;color:var(--t3)">색상:</span>
+                  ${['#f0f1f3','#60a5fa','#4ade80','#fb923c','#f87171','#c084fc','#facc15'].map(c=>
+                    `<div onclick="setQcColor(${qi},'${c}')"
+                      style="width:16px;height:16px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(q.color||'#f0f1f3')===c?'#fff':'transparent'};flex-shrink:0"></div>`
+                  ).join('')}
+                </div>
+                ${q.c
+                  ?`<div style="font-size:13px;line-height:1.7;color:${q.color||'var(--t1)'};white-space:pre-wrap">${q.c}</div>`
+                  :`<div style="font-size:12px;color:var(--t3);font-style:italic">코멘트 없음</div>`}
+              </div>`
             }
           </div>
         </div>`).join('')}
-      ${!(s.qc||[]).length?'<div style="text-align:center;padding:24px;color:var(--t2);font-size:12px">QC 내역 없음 — QC 상세 편집에서 추가하세요</div>':''}
+
+      ${!(s.qc||[]).length?`<div style="text-align:center;padding:32px;color:var(--t2);font-size:12px">
+        QC 내역 없음${qcEditMode?' — 아래 버튼으로 차수를 추가하세요':''}
+      </div>`:''}
+
+      <!-- + 차수 추가 버튼 - 편집 모드일 때만, 맨 아래 빨간색 -->
+      ${qcEditMode?`<button onclick="addQCR()"
+        style="width:100%;padding:12px;border:1px dashed var(--red);border-radius:8px;background:rgba(201,64,64,.06);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">
+        + 차수 추가
+      </button>`:''}
     </div>`;
-  } else if(tab==='prod'){
+
+} else if(tab==='prod'){
     rProd(s);
   } else if(tab==='memo'){
     rMemoTab(s);
@@ -3451,6 +3498,27 @@ function onPmgrChange(sel){
   const s=gS(pSeas,pSid);if(!s)return;
   s.manager=sel.value;
   sdbImmediate();renderContent();toast('실장님 저장됨');
+}
+
+// ── QC 코멘트 색상 변경 ──
+function setQcColor(qi, color){
+  const s=gS(pSeas,pSid);if(!s||!s.qc[qi])return;
+  s.qc[qi].color=color;
+  sdb();rTab('qct');
+}
+
+// ── QC 편집 모드 토글 ──
+function toggleQcEdit(){
+  const body=document.getElementById('pbody');
+  if(!body)return;
+  const current=body.dataset.qcEdit==='true';
+  body.dataset.qcEdit=current?'false':'true';
+  if(current) sdb(); // 편집 완료 시 저장
+  rTab('qct');
+}
+function setQcColor(qi,color){
+  const s=gS(pSeas,pSid);if(!s||!s.qc[qi])return;
+  s.qc[qi].color=color;sdb();rTab('qct');
 }
 </script>
 </body>
