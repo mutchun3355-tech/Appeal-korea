@@ -406,12 +406,19 @@ select{color-scheme:dark}
     <div class="nav-body" id="navBody"></div>
     <div class="nav-foot">
       <div class="sync"><div class="sdot" id="sdot"></div><span id="slbl">로컬 저장</span></div>
-      <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:17px;margin-top:2px">⚙ 실장님 관리</button>
-      <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:17px">👤 담당자 관리</button>
-      <button class="btn sm g" onclick="openBrandModal()" style="width:100%;font-size:17px">🏷 브랜드 관리</button>
-      <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:17px">☁ Firebase 설정</button>
-      <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:17px;color:var(--amb)">💾 백업 & 복원</button>
-      <button id="theme-toggle-btn" class="btn sm g" onclick="toggleTheme()" style="width:100%;font-size:17px;margin-top:2px">🌙 다크 모드</button>
+      <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:13px;margin-top:2px">⚙ 실장님 관리</button>
+      <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:13px">👤 담당자 관리</button>
+      <button class="btn sm g" onclick="openBrandModal()" style="width:100%;font-size:13px">🏷 브랜드 관리</button>
+      <button id="theme-toggle-btn" class="btn sm g" onclick="toggleTheme()" style="width:100%;font-size:13px">🌙 다크 모드</button>
+      <!-- 관리자 전용 버튼 - 1줄에 3개 -->
+      <div style="display:flex;gap:3px;margin-top:6px">
+        <button class="btn sm g" onclick="adminOpenFBM()"
+          style="flex:1;font-size:11px;padding:5px 3px;color:var(--t1);font-weight:600">☁ Firebase</button>
+        <button class="btn sm g" onclick="adminOpenBackupModal()"
+          style="flex:1;font-size:11px;padding:5px 3px;color:var(--t1);font-weight:600">💾 백업</button>
+        <button class="btn sm g" onclick="changeAdminPW()"
+          style="flex:1;font-size:11px;padding:5px 3px;color:var(--t1);font-weight:600">🔑 비번</button>
+      </div>
     </div>
   </div>
   <div class="main">
@@ -635,11 +642,34 @@ select{color-scheme:dark}
     <div class="mbody" style="display:flex;flex-direction:column;gap:14px">
 
       <!-- 상단: 수동백업 + JSON 내보내기/가져오기 -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn p sm" onclick="saveBackup(true)" style="flex:1">📸 지금 백업</button>
-        <button class="btn sm" onclick="exportJSON()" style="flex:1">⬇ JSON 내보내기</button>
-        <button class="btn sm" onclick="document.getElementById('import-json-input').click()" style="flex:1">⬆ JSON 가져오기</button>
-        <input type="file" id="import-json-input" accept=".json" style="display:none" onchange="importJSON(event)">
+      <!-- 전체 백업 -->
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px">📦 전체 데이터</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn p sm" onclick="saveBackup(true)" style="flex:1">📸 지금 백업</button>
+          <button class="btn sm" onclick="exportJSON()" style="flex:1">⬇ 전체 내보내기</button>
+          <button class="btn sm" onclick="document.getElementById('import-json-input').click()" style="flex:1">⬆ 전체 가져오기</button>
+          <input type="file" id="import-json-input" accept=".json" style="display:none" onchange="importJSON(event)">
+        </div>
+      </div>
+      <!-- 시즌별 내보내기/가져오기 -->
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px">🗂 시즌별 관리</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <select id="season-backup-sel"
+            style="flex:1;background:var(--bg3);border:1px solid var(--b2);border-radius:6px;padding:6px 10px;color:var(--t0);font-size:14px;color-scheme:dark">
+            ${(DB.seasons||[]).map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sm" onclick="exportSeasonJSON()" style="flex:1">⬇ 내보내기</button>
+          <button class="btn sm" onclick="document.getElementById('import-season-input').click()" style="flex:1">⬆ 가져오기</button>
+          <button class="btn d sm" onclick="deleteSeasonData()" style="flex:1">🗑 시즌 삭제</button>
+          <input type="file" id="import-season-input" accept=".json" style="display:none" onchange="importSeasonJSON(event)">
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">
+          내보내기: JSON 저장만 (삭제 안됨) · 삭제: 비밀번호 확인 후 Firebase 자동 삭제
+        </div>
       </div>
 
       <!-- 자동 백업 주기 설정 -->
@@ -1012,7 +1042,7 @@ function renderNav(){
         <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
     }
   });
-  h+=`<div class="na" onclick="om('seasm')">+ 시즌 추가</div>
+  h+=`<div class="na" onclick="adminOpenSeasM(null)">+ 시즌 추가</div>
     <div class="nsl" style="margin-top:8px">관리</div>
     <div class="ni ${view==='factories'?'on':''}" onclick="nav('factories')">🏭 공장 정보<span class="nc">${DB.factories.length}</span></div>`;
   document.getElementById('navBody').innerHTML=h;
@@ -3323,6 +3353,11 @@ function openBackupModal(){
   if(sel)sel.value=String(BACKUP_INTERVAL);
   const maxSel=document.getElementById('backup-max-sel');
   if(maxSel)maxSel.value=String(MAX_BACKUPS);
+  // 시즌 select 업데이트
+  const ssel=document.getElementById('season-backup-sel');
+  if(ssel){
+    ssel.innerHTML=(DB.seasons||[]).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  }
   om('backupm');
 }
 
@@ -3821,6 +3856,228 @@ function hangulMatch(text, query){
   // 3. 입력 중인 한글 (마지막 자음이 받침으로 쓰인 경우)
   // 예: "문상주" 입력 중 → "문상준" 매치
   return false;
+}
+
+// ── 시즌별 내보내기 / 가져오기 ──
+function exportSeasonJSON(){
+  const sel=document.getElementById('season-backup-sel');
+  const sid=sel?.value;
+  if(!sid){toast('시즌을 선택해주세요');return;}
+  const sobj=(DB.seasons||[]).find(s=>s.id===sid);
+  if(!sobj){toast('시즌을 찾을 수 없어요');return;}
+
+  if(!confirm('"'+sobj.name+'" 시즌을 내보내고 삭제할까요? (JSON 파일 저장 + Firebase 자동 삭제)'))return;
+
+  // 내보낼 데이터 구성
+  const exportData={
+    _type:'season_backup',
+    _version:'1.0',
+    _exportedAt:new Date().toISOString(),
+    season:sobj,
+    styles:DB.styles[sid]||[],
+    payments:(DB.payments||[]).filter(p=>p.season===sid),
+    incoming:(DB.incoming||[]).filter(i=>i.season===sid),
+  };
+
+  // JSON 파일 다운로드
+  try{
+    const json=JSON.stringify(exportData,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const fname=`appeal_korea_${sobj.name}_${new Date().toISOString().slice(0,10)}.json`;
+    a.href=url;a.download=fname;a.click();
+    URL.revokeObjectURL(url);
+    toast('"'+sobj.name+'" 내보내기 완료! 파일 저장 후 삭제하세요.');
+  }catch(e){toast('내보내기 실패 ❌');return;}
+
+  // 잠시 후 삭제 확인
+  setTimeout(()=>{
+    if(!confirm('파일이 저장됐나요? 확인되면 "'+sobj.name+'" 데이터를 삭제합니다.'))return;
+    _deleteSeasonData(sid, sobj.name);
+  }, 1000);
+}
+
+function _deleteSeasonData(sid, sname){
+  // DB에서 시즌 삭제
+  DB.seasons=(DB.seasons||[]).filter(s=>s.id!==sid);
+  delete DB.styles[sid];
+  DB.payments=(DB.payments||[]).filter(p=>p.season!==sid);
+  DB.incoming=(DB.incoming||[]).filter(i=>i.season!==sid);
+
+  // Firebase에 즉시 반영
+  sdbImmediate();
+  renderNav();renderContent();
+  cm('backupm');
+  toast(`✅ "${sname}" 삭제 완료! Firebase에도 반영됐어요.`);
+}
+
+function importSeasonJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+
+      // 시즌 백업 파일인지 확인
+      if(data._type!=='season_backup'){
+        toast('시즌 백업 파일이 아니에요 ❌');return;
+      }
+
+      const sobj=data.season;
+      const sid=sobj?.id;
+      if(!sid||!sobj){toast('올바른 파일 형식이 아니에요 ❌');return;}
+
+      // 이미 같은 시즌이 있는지 확인
+      const exists=(DB.seasons||[]).find(s=>s.id===sid);
+      if(exists){
+        if(!confirm('"'+sobj.name+'" 시즌이 이미 있어요. 덮어쓸까요?'))return;
+        // 기존 데이터 삭제
+        DB.styles[sid]=[];
+        DB.payments=(DB.payments||[]).filter(p=>p.season!==sid);
+        DB.incoming=(DB.incoming||[]).filter(i=>i.season!==sid);
+      } else {
+        // 시즌 추가
+        (DB.seasons=DB.seasons||[]).push(sobj);
+        DB.styles[sid]=[];
+      }
+
+      // 스타일/결제/입고 데이터 추가
+      DB.styles[sid]=data.styles||[];
+      DB.payments=[...(DB.payments||[]),...(data.payments||[])];
+      DB.incoming=[...(DB.incoming||[]),...(data.incoming||[])];
+
+      // Firebase에 즉시 반영
+      sdbImmediate();
+      renderNav();renderContent();
+      cm('backupm');
+      toast(`✅ "${sobj.name}" 가져오기 완료! Firebase에도 반영됐어요.`);
+    }catch(e){toast('파일 읽기 실패 ❌');}
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+// ── 관리자 비밀번호 ──
+const DEFAULT_ADMIN_PW = 'appeal2024';
+function getAdminPW(){
+  return localStorage.getItem('ak_admin_pw') || DEFAULT_ADMIN_PW;
+}
+function checkAdminPW(action){
+  const pw = prompt('🔒 관리자 비밀번호를 입력하세요\n(' + action + ')');
+  if(pw === null) return false; // 취소
+  if(pw === getAdminPW()) return true;
+  toast('❌ 비밀번호가 틀렸어요');
+  return false;
+}
+function changeAdminPW(){
+  const cur = prompt('현재 비밀번호를 입력하세요');
+  if(cur === null) return;
+  if(cur !== getAdminPW()){toast('❌ 현재 비밀번호가 틀렸어요');return;}
+  const nw = prompt('새 비밀번호를 입력하세요');
+  if(!nw){toast('비밀번호를 입력해주세요');return;}
+  const nw2 = prompt('새 비밀번호를 다시 입력하세요');
+  if(nw !== nw2){toast('❌ 비밀번호가 일치하지 않아요');return;}
+  localStorage.setItem('ak_admin_pw', nw);
+  toast('✅ 비밀번호가 변경됐어요');
+}
+
+// 관리자 기능 래퍼
+function adminOpenSeasM(id){
+  if(!checkAdminPW('시즌 추가/수정')) return;
+  openSeasM(id);
+}
+function adminOpenFBM(){
+  if(!checkAdminPW('Firebase 설정')) return;
+  openFBM();
+}
+function adminOpenBackupModal(){
+  if(!checkAdminPW('백업 & 복원')) return;
+  openBackupModal();
+}
+
+// ── 시즌별 내보내기 / 가져오기 ──
+function exportSeasonJSON(){
+  const sel=document.getElementById('season-backup-sel');
+  const sid=sel?.value;
+  if(!sid){toast('시즌을 선택해주세요');return;}
+  const sobj=(DB.seasons||[]).find(s=>s.id===sid);
+  if(!sobj){toast('시즌을 찾을 수 없어요');return;}
+
+  // 내보낼 데이터 구성
+  const exportData={
+    _type:'season_backup',
+    _version:'1.0',
+    _exportedAt:new Date().toISOString(),
+    season:sobj,
+    styles:DB.styles[sid]||[],
+    payments:(DB.payments||[]).filter(p=>p.season===sid),
+    incoming:(DB.incoming||[]).filter(i=>i.season===sid),
+  };
+
+  // JSON 파일 다운로드만 (삭제 안함)
+  try{
+    const json=JSON.stringify(exportData,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const fname='appeal_korea_'+sobj.name+'_'+new Date().toISOString().slice(0,10)+'.json';
+    a.href=url;a.download=fname;a.click();
+    URL.revokeObjectURL(url);
+    toast('"'+sobj.name+'" 내보내기 완료! ✅ (삭제는 별도로 진행하세요)');
+  }catch(e){toast('내보내기 실패 ❌');}
+}
+
+function deleteSeasonData(){
+  const sel=document.getElementById('season-backup-sel');
+  const sid=sel?.value;
+  if(!sid){toast('시즌을 선택해주세요');return;}
+  const sobj=(DB.seasons||[]).find(s=>s.id===sid);
+  if(!sobj){toast('시즌을 찾을 수 없어요');return;}
+  if(!checkAdminPW('시즌 삭제')) return;
+  if(!confirm('"'+sobj.name+'" 시즌을 완전히 삭제할까요? 이 작업은 되돌릴 수 없어요.'))return;
+  // DB에서 시즌 삭제
+  DB.seasons=(DB.seasons||[]).filter(s=>s.id!==sid);
+  delete DB.styles[sid];
+  DB.payments=(DB.payments||[]).filter(p=>p.season!==sid);
+  DB.incoming=(DB.incoming||[]).filter(i=>i.season!==sid);
+  sdbImmediate();
+  renderNav();renderContent();
+  cm('backupm');
+  toast('"'+sobj.name+'" 삭제 완료! Firebase에도 반영됐어요. ✅');
+}
+
+function importSeasonJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data._type!=='season_backup'){toast('시즌 백업 파일이 아니에요 ❌');return;}
+      const sobj=data.season;
+      const sid=sobj?.id;
+      if(!sid||!sobj){toast('올바른 파일 형식이 아니에요 ❌');return;}
+      const exists=(DB.seasons||[]).find(s=>s.id===sid);
+      if(exists){
+        if(!confirm('"'+sobj.name+'" 시즌이 이미 있어요. 덮어쓸까요?'))return;
+        DB.styles[sid]=[];
+        DB.payments=(DB.payments||[]).filter(p=>p.season!==sid);
+        DB.incoming=(DB.incoming||[]).filter(i=>i.season!==sid);
+      } else {
+        (DB.seasons=DB.seasons||[]).push(sobj);
+        DB.styles[sid]=[];
+      }
+      DB.styles[sid]=data.styles||[];
+      DB.payments=[...(DB.payments||[]),...(data.payments||[])];
+      DB.incoming=[...(DB.incoming||[]),...(data.incoming||[])];
+      sdbImmediate();
+      renderNav();renderContent();
+      cm('backupm');
+      toast('"'+sobj.name+'" 가져오기 완료! Firebase에도 반영됐어요. ✅');
+    }catch(e){toast('파일 읽기 실패 ❌');}
+  };
+  r.readAsText(file);
+  e.target.value='';
 }
 </script>
 </body>
