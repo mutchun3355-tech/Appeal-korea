@@ -419,6 +419,7 @@ select{color-scheme:dark}
       <div class="bc" id="bc"></div>
       <div class="ta" id="ta"></div>
     </div>
+    <div id="tb-container"></div>
     <div class="content" id="content"></div>
   </div>
 </div>
@@ -629,19 +630,54 @@ select{color-scheme:dark}
 
 <!-- ── 백업 & 복원 모달 ── -->
 <div class="mov" id="backupm">
-  <div class="modal" style="width:520px">
+  <div class="modal" style="width:560px">
     <div class="mhdr"><h2>💾 백업 & 복원</h2><button class="btn sm g" onclick="cm('backupm')">✕</button></div>
-    <div class="mbody" style="display:flex;flex-direction:column;gap:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:17px;font-weight:500;margin-bottom:3px">자동 백업</div>
-          <div style="font-size:17px;color:var(--t2)">저장할 때마다 자동으로 스냅샷 생성 · 최근 10개 보관</div>
-        </div>
-        <button class="btn p sm" onclick="saveBackup(true)">지금 백업</button>
+    <div class="mbody" style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- 상단: 수동백업 + JSON 내보내기/가져오기 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn p sm" onclick="saveBackup(true)" style="flex:1">📸 지금 백업</button>
+        <button class="btn sm" onclick="exportJSON()" style="flex:1">⬇ JSON 내보내기</button>
+        <button class="btn sm" onclick="document.getElementById('import-json-input').click()" style="flex:1">⬆ JSON 가져오기</button>
+        <input type="file" id="import-json-input" accept=".json" style="display:none" onchange="importJSON(event)">
       </div>
-      <div style="border-top:1px solid var(--b);padding-top:12px">
-        <div style="font-size:16px;font-weight:600;color:var(--t2);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">백업 목록</div>
-        <div id="backup-list"></div>
+
+      <!-- 자동 백업 주기 설정 -->
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:2px">⏱ 자동 백업 주기</div>
+            <div style="font-size:13px;color:var(--t2)">저장 시 자동 스냅샷 생성 간격</div>
+          </div>
+          <select id="backup-interval-sel" onchange="setBackupInterval(this.value)"
+            style="background:var(--bg3);border:1px solid var(--b2);border-radius:6px;padding:5px 10px;color:var(--t0);font-size:14px;cursor:pointer;color-scheme:dark">
+            <option value="0">매번 저장 시</option>
+            <option value="60000">1분마다</option>
+            <option value="300000">5분마다</option>
+            <option value="600000">10분마다</option>
+            <option value="1800000">30분마다</option>
+          </select>
+        </div>
+        <!-- 보관 개수 + 용량 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;color:var(--t2)">최대 보관:</span>
+            <select id="backup-max-sel" onchange="setBackupMax(this.value)"
+              style="background:var(--bg3);border:1px solid var(--b2);border-radius:6px;padding:4px 8px;color:var(--t0);font-size:13px;cursor:pointer;color-scheme:dark">
+              <option value="5">5개</option>
+              <option value="10" selected>10개</option>
+              <option value="20">20개</option>
+              <option value="30">30개</option>
+            </select>
+          </div>
+          <div id="backup-storage-info" style="font-size:12px;color:var(--t3)">계산 중...</div>
+        </div>
+      </div>
+
+      <!-- 백업 목록 -->
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">백업 목록</div>
+        <div id="backup-list" style="max-height:280px;overflow-y:auto"></div>
       </div>
     </div>
     <div class="mfoot"><button class="btn sm" onclick="cm('backupm')">닫기</button></div>
@@ -1000,11 +1036,65 @@ function renderTA(){
 }
 function renderContent(){
   const el=document.getElementById('content');
+  // tb-container: season 뷰일 때만 표시, 검색바는 한 번만 렌더링
+  const tbc=document.getElementById('tb-container');
+  if(tbc){
+    if(view==='season'){
+      if(!document.getElementById('sq')){
+        // 처음 한 번만 생성
+        renderTb();
+      } else {
+        // 필터 옵션만 업데이트 (sq input은 건드리지 않음)
+        updateTbOptions();
+      }
+      tbc.style.display='';
+    } else {
+      tbc.style.display='none';
+    }
+  }
   if(view==='home') el.innerHTML=renderHome();
   else if(view==='season') el.innerHTML=renderSeason();
   else if(view==='factories') el.innerHTML=renderFactories();
   else if(view==='payments') el.innerHTML=renderPayments();
   else if(view==='incoming') el.innerHTML=renderIncoming();
+}
+function renderTb(){
+  const tbc=document.getElementById('tb-container');
+  if(!tbc)return;
+  const vw=document.getElementById('svw')?.value||'table';
+  tbc.innerHTML=`<div class="tb">
+    <input type="text" id="sq" placeholder="스타일번호, 브랜드 검색..." oninput="renderContent()" style="flex:1;min-width:130px">
+    <select id="sfs" onchange="renderContent()"><option value="">전체 상태</option>${SL.map(s=>`<option>${s}</option>`).join('')}</select>
+    <select id="sfb" onchange="renderContent()"><option value="">전체 브랜드</option></select>
+    <select id="sfmem" onchange="renderContent()"><option value="">전체 담당자</option></select>
+    <select id="sfm" onchange="renderContent()"><option value="">전체 실장님</option></select>
+    <select id="sffc" onchange="renderContent()"><option value="">전체 공장</option></select>
+    <select id="svw" onchange="renderContent()" style="flex:none;min-width:75px"><option value="table">테이블</option><option value="board">보드</option></select>
+  </div>`;
+  updateTbOptions();
+}
+function updateTbOptions(){
+  const all=DB.styles[season]||[];
+  const brands=[...new Set(all.map(s=>s.brand).filter(Boolean))].sort();
+  const mems=[...new Set(all.map(s=>s.member).filter(Boolean))].sort();
+  const mgrs=[...new Set(all.map(s=>s.manager).filter(Boolean))].sort();
+  const curFs=document.getElementById('sfs')?.value||'';
+  const curFb=document.getElementById('sfb')?.value||'';
+  const curFmem=document.getElementById('sfmem')?.value||'';
+  const curFm=document.getElementById('sfm')?.value||'';
+  const curFfc=document.getElementById('sffc')?.value||'';
+  const curVw=document.getElementById('svw')?.value||'table';
+  const setOpts=(id,opts,cur,valFn,lblFn)=>{
+    const el=document.getElementById(id);if(!el)return;
+    const first=el.options[0].text;
+    el.innerHTML=`<option value="">${first}</option>`+opts.map(o=>`<option value="${valFn?valFn(o):o}" ${(valFn?valFn(o):o)===cur?'selected':''}>${lblFn?lblFn(o):o}</option>`).join('');
+  };
+  setOpts('sfb',brands,curFb);
+  setOpts('sfmem',mems,curFmem);
+  setOpts('sfm',mgrs,curFm);
+  setOpts('sffc',DB.factories||[],curFfc,f=>f.id,f=>f.name);
+  const vw=document.getElementById('svw');
+  if(vw)vw.value=curVw;
 }
 
 // ══════════════════════════
@@ -1043,16 +1133,23 @@ function renderSeason(){
   const fb=document.getElementById('sfb')?.value||'';
   const fm=document.getElementById('sfm')?.value||'';
   const fmem=document.getElementById('sfmem')?.value||'';
+  const ffc=document.getElementById('sffc')?.value||'';
   const vw=document.getElementById('svw')?.value||'table';
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
   const ficon=id=>{const f=DB.factories.find(f=>f.id===id);if(!f)return'';return`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:4px;flex-shrink:0">🏭</span>`;};
 
   let rows=all.filter(s=>{
-    if(q&&!(s.style||'').toLowerCase().includes(q)&&!(s.brand||'').toLowerCase().includes(q))return false;
+    if(q){
+      const fn=id=>(DB.factories.find(f=>f.id===id)||{name:''}).name;
+      const fields=[s.style,s.brand,fn(s.factory),s.member,s.manager,s.yarn];
+      const matched=fields.some(v=>hangulMatch(v||'',q));
+      if(!matched)return false;
+    }
     if(fs&&s.status!==fs)return false;
     if(fb&&s.brand!==fb)return false;
     if(fm&&!(s.manager||'').includes(fm))return false;
     if(fmem&&!(s.member||'').includes(fmem))return false;
+    if(ffc&&s.factory!==ffc)return false;
     return true;
   }).sort((a,b)=>{let av=a[sk]||'',bv=b[sk]||'';if(['qty','cmt','fob'].includes(sk)){av=+av||0;bv=+bv||0;}return av<bv?-sd:av>bv?sd:0;});
 
@@ -1161,14 +1258,7 @@ function renderSeason(){
     <div class="sc"><div class="sl">총 CMT 금액</div><div class="sv" style="font-size:16px">$${Math.round(tCMT).toLocaleString()}</div></div>
     <div class="sc"><div class="sl">입고완료</div><div class="sv">${done}건</div></div>
   </div>
-  <div class="tb">
-    <input type="text" id="sq" placeholder="스타일번호, 브랜드 검색..." oninput="renderContent()" style="flex:1;min-width:130px">
-    <select id="sfs" onchange="renderContent()"><option value="">전체 상태</option>${SL.map(s=>`<option ${fs===s?'selected':''}>${s}</option>`).join('')}</select>
-    <select id="sfb" onchange="renderContent()"><option value="">전체 브랜드</option>${brands.map(b=>`<option ${fb===b?'selected':''}>${b}</option>`).join('')}</select>
-    <select id="sfmem" onchange="renderContent()"><option value="">전체 담당자</option>${mems.map(m=>`<option ${fmem===m?'selected':''}>${m}</option>`).join('')}</select>
-    <select id="sfm" onchange="renderContent()"><option value="">전체 실장님</option>${mgrs.map(m=>`<option ${fm===m?'selected':''}>${m}</option>`).join('')}</select>
-    <select id="svw" onchange="renderContent()" style="flex:none;min-width:75px"><option value="table" ${vw==='table'?'selected':''}>테이블</option><option value="board" ${vw==='board'?'selected':''}>보드</option></select>
-  </div>
+
   <div class="sbs">
   <span style="font-size:17px;color:var(--t3);margin-right:4px">${isGrouped?'그룹:':'정렬:'}</span>
   ${sbts}
@@ -3200,47 +3290,162 @@ function delSeas(){
 }
 
 // ── 백업 ──
-const BKEY='ak_backups';const MAX_BACKUPS=10;
+const BKEY='ak_backups';
+let MAX_BACKUPS=parseInt(localStorage.getItem('ak_backup_max')||'10');
+let BACKUP_INTERVAL=parseInt(localStorage.getItem('ak_backup_interval')||'0');
+let _lastAutoBackup=0;
+
 function saveBackup(manual=false){
   try{
     const backups=getBackups();const now=new Date();
     const label=manual?'수동 백업 — '+now.toLocaleString('ko-KR'):now.toLocaleString('ko-KR');
-    if(!manual&&backups.length>0&&(now-new Date(backups[0].ts))<30000)return;
+    // 주기 체크
+    if(!manual){
+      const interval=BACKUP_INTERVAL||30000;
+      if((now-_lastAutoBackup)<interval)return;
+    }
+    _lastAutoBackup=Date.now();
     const snap={ts:now.toISOString(),label,manual,data:JSON.stringify(DB)};
     backups.unshift(snap);
-    const m=backups.filter(b=>b.manual),a=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
+    const m=backups.filter(b=>b.manual);
+    const a=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
     localStorage.setItem(BKEY,JSON.stringify([...m,...a].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
-    if(manual)toast('백업 완료');
+    if(manual)toast('백업 완료 ✅');
   }catch(e){}
 }
 function getBackups(){try{return JSON.parse(localStorage.getItem(BKEY))||[];}catch{return[];}}
-function openBackupModal(){renderBackupList();om('backupm');}
+
+function openBackupModal(){
+  renderBackupList();
+  updateStorageInfo();
+  // 주기 설정 UI 동기화
+  const sel=document.getElementById('backup-interval-sel');
+  if(sel)sel.value=String(BACKUP_INTERVAL);
+  const maxSel=document.getElementById('backup-max-sel');
+  if(maxSel)maxSel.value=String(MAX_BACKUPS);
+  om('backupm');
+}
+
 function renderBackupList(){
   const el=document.getElementById('backup-list');if(!el)return;
   const backups=getBackups();
-  if(!backups.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:16px">백업 없음</div>';return;}
+  if(!backups.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:15px">백업 없음</div>';
+    return;
+  }
   el.innerHTML=backups.map((b,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--b);border-radius:7px;margin-bottom:6px;background:var(--bg2)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:16px;font-weight:500;color:var(--t0)">${b.label}</div>
-        <div style="font-size:16px;color:var(--t2);margin-top:2px">${b.manual?'<span style="color:var(--al)">● 수동</span>':'<span style="color:var(--t3)">● 자동</span>'} · ${new Date(b.ts).toLocaleString('ko-KR')}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--t0)">${b.label}</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px">
+          ${b.manual?'<span style="color:var(--al)">● 수동</span>':'<span style="color:var(--t3)">● 자동</span>'}
+          · ${new Date(b.ts).toLocaleString('ko-KR')}
+          · ${(JSON.stringify(b.data).length/1024).toFixed(1)}KB
+        </div>
       </div>
-      <button class="btn sm" onclick="previewBackup(${i})" style="font-size:17px">미리보기</button>
-      <button class="btn p sm" onclick="restoreBackup(${i})" style="font-size:17px">복원</button>
-      <button class="btn d sm" onclick="deleteBackup(${i})" style="font-size:17px">삭제</button>
+      <button class="btn sm" onclick="previewBackup(${i})">미리보기</button>
+      <button class="btn p sm" onclick="restoreBackup(${i})">복원</button>
+      <button class="btn d sm" onclick="deleteBackup(${i})">삭제</button>
     </div>`).join('');
 }
+
 function previewBackup(i){
   const b=getBackups()[i];if(!b)return;
-  try{const d=JSON.parse(b.data);alert('날짜: '+new Date(b.ts).toLocaleString('ko-KR')+'  |  시즌: '+(d.seasons||[]).length+'개  |  스타일: '+Object.values(d.styles||{}).flat().length+'개  |  공장: '+(d.factories||[]).length+'개');}catch{alert('미리보기 실패');}
+  try{
+    const d=JSON.parse(b.data);
+    const styles=Object.values(d.styles||{}).flat().length;
+    const size=(new Blob([b.data]).size/1024).toFixed(1);
+    alert(`📅 ${new Date(b.ts).toLocaleString('ko-KR')}
+시즌: ${(d.seasons||[]).length}개
+스타일: ${styles}개
+공장: ${(d.factories||[]).length}개
+크기: ${size}KB`);
+  }catch{alert('미리보기 실패');}
 }
+
 function restoreBackup(i){
-  const b=getBackups()[i];if(!b||!confirm('복원할까요? 현재 데이터는 자동 백업됩니다.'))return;
-  try{saveBackup(true);DB=JSON.parse(b.data);localStorage.setItem(LKEY,JSON.stringify(DB));fbPush();cm('backupm');renderNav();renderContent();toast('복원 완료!');}catch{toast('복원 실패');}
+  const b=getBackups()[i];
+  if(!b||!confirm('이 시점으로 복원할까요? 현재 데이터는 자동으로 백업됩니다.'))return;
+  try{
+    saveBackup(true);
+    DB=JSON.parse(b.data);
+    localStorage.setItem(LKEY,JSON.stringify(DB));
+    fbPush();cm('backupm');renderNav();renderContent();
+    toast('복원 완료! ✅');
+  }catch{toast('복원 실패 ❌');}
 }
+
 function deleteBackup(i){
-  if(!confirm('삭제?'))return;
-  const b=getBackups();b.splice(i,1);localStorage.setItem(BKEY,JSON.stringify(b));renderBackupList();toast('삭제됨');
+  if(!confirm('이 백업을 삭제할까요?'))return;
+  const b=getBackups();b.splice(i,1);
+  localStorage.setItem(BKEY,JSON.stringify(b));
+  renderBackupList();updateStorageInfo();toast('삭제됨');
+}
+
+// ── JSON 내보내기 / 가져오기 ──
+function exportJSON(){
+  try{
+    const json=JSON.stringify(DB,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const now=new Date();
+    const fname='appeal_korea_'+now.toISOString().slice(0,10)+'.json';
+    a.href=url;a.download=fname;a.click();
+    URL.revokeObjectURL(url);
+    toast('JSON 내보내기 완료 ✅ — '+fname);
+  }catch(e){toast('내보내기 실패 ❌');}
+}
+
+function importJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  if(!confirm(`"${file.name}" 파일로 데이터를 가져올까요?
+현재 데이터는 자동으로 백업됩니다.`))return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const imported=JSON.parse(ev.target.result);
+      if(!imported.styles||!imported.seasons){toast('올바른 백업 파일이 아닙니다');return;}
+      saveBackup(true);
+      DB=imported;
+      localStorage.setItem(LKEY,JSON.stringify(DB));
+      fbPush();cm('backupm');renderNav();renderContent();
+      toast('JSON 가져오기 완료! ✅');
+    }catch{toast('파일 읽기 실패 ❌');}
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+// ── 자동 백업 주기 설정 ──
+function setBackupInterval(val){
+  BACKUP_INTERVAL=parseInt(val)||0;
+  localStorage.setItem('ak_backup_interval',String(BACKUP_INTERVAL));
+  const labels={0:'매번 저장 시',60000:'1분마다',300000:'5분마다',600000:'10분마다',1800000:'30분마다'};
+  toast('백업 주기: '+(labels[BACKUP_INTERVAL]||'설정됨'));
+}
+
+function setBackupMax(val){
+  MAX_BACKUPS=parseInt(val)||10;
+  localStorage.setItem('ak_backup_max',String(MAX_BACKUPS));
+  // 초과분 정리
+  const backups=getBackups();
+  const m=backups.filter(b=>b.manual);
+  const a=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
+  localStorage.setItem(BKEY,JSON.stringify([...m,...a].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
+  renderBackupList();updateStorageInfo();
+  toast('최대 보관 '+MAX_BACKUPS+'개로 설정됨');
+}
+
+function updateStorageInfo(){
+  const el=document.getElementById('backup-storage-info');if(!el)return;
+  try{
+    const backups=getBackups();
+    const totalBytes=new Blob([JSON.stringify(backups)]).size;
+    const lsTotal=new Blob([JSON.stringify(localStorage)]).size;
+    const pct=Math.round(totalBytes/51200*100); // 50KB 기준
+    el.textContent=`백업 ${backups.length}개 · ${(totalBytes/1024).toFixed(1)}KB 사용`;
+  }catch{el.textContent='';}
 }
 
 
@@ -3584,6 +3789,39 @@ function toggleTheme(){
     });
   }
 })();
+
+// renderContentKeepFocus deprecated
+
+// ── 한글 초성/자모 검색 ──
+function cho(ch){
+  const chos='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const code=ch.charCodeAt(0)-0xAC00;
+  if(code<0||code>11171)return ch;
+  return chos[Math.floor(code/21/28)];
+}
+function toCho(str){
+  return (str||'').split('').map(c=>{
+    const code=c.charCodeAt(0);
+    if(code>=0xAC00&&code<=0xD7A3)return cho(c);
+    return c;
+  }).join('');
+}
+function hangulMatch(text, query){
+  if(!text||!query)return !query;
+  const t=text.toLowerCase();
+  const q=query.toLowerCase();
+  // 1. 일반 포함 검색
+  if(t.includes(q))return true;
+  // 2. 초성 검색 (query가 모두 자음이면)
+  const isChoQuery=/^[ㄱ-ㅎ]+$/.test(q);
+  if(isChoQuery){
+    const tCho=toCho(t);
+    if(tCho.includes(q))return true;
+  }
+  // 3. 입력 중인 한글 (마지막 자음이 받침으로 쓰인 경우)
+  // 예: "문상주" 입력 중 → "문상준" 매치
+  return false;
+}
 </script>
 </body>
 </html>
