@@ -153,7 +153,7 @@ select.bd{background:rgba(13,148,136,.25);color:#2dd4bf;border:1px solid rgba(13
 .psh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .ps h3{font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f{display:flex;flex-direction:column;gap:4px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
 .f label{font-size:17px;color:var(--t2)}
 .f input,.f select,.f textarea{background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0);transition:border-color .15s}
 .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--ac)}
@@ -493,9 +493,9 @@ select{color-scheme:dark}
 
 <!-- ── NEW STYLE MODAL ── -->
 <div class="mov" id="nsm">
-  <div class="modal" style="width:500px;overflow:visible">
+  <div class="modal" style="width:620px;overflow:visible;max-width:96vw">
     <div class="mhdr"><h2 id="nsmt">신규 스타일 등록</h2><button class="btn sm g" onclick="cm('nsm')">✕</button></div>
-    <div class="mbody">
+    <div class="mbody" style="overflow:visible">
       <div class="fg">
         <div class="f ff"><label>시즌 *</label><select id="nssn"><option value="">시즌 선택</option></select></div>
         <div class="f ff"><label>STYLE NO. *</label><input type="text" id="nss"></div>
@@ -513,15 +513,20 @@ select{color-scheme:dark}
         <div class="f"><label>FOB ($) 선적가</label><input type="number" id="nsfob" step="0.01"></div>
         <div class="f"><label>마감일</label><input type="date" id="nsdl"></div>
         <div class="f"><label>진행 상태</label>
-          <div style="position:relative">
-            <div onclick="toggleStatusDrop('nsss-drop',this)" id="nsss-badge"
-              class="badge bs"
-              style="cursor:pointer;font-size:16px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px">
-              샘플 <span style="font-size:9px;opacity:.7">▾</span>
-            </div>
-            <input type="hidden" id="nsss" value="샘플">
-            <div id="nsss-drop" style="display:none;position:absolute;top:110%;left:0;z-index:100;background:var(--bg2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,.5)"></div>
-          </div>
+          <select id="nsss" onchange="this.className=SC[this.value]||'bs'"
+            style="background:var(--bg2);border:1px solid var(--b);border-radius:20px;padding:6px 12px;color-scheme:dark;font-size:15px;font-weight:600;cursor:pointer;width:100%;color:var(--t0)">
+            <option value="샘플">샘플</option>
+            <option value="QC 진행">QC 진행</option>
+            <option value="QC 완료">QC 완료</option>
+            <option value="PP 진행">PP 진행</option>
+            <option value="PP 완료">PP 완료</option>
+            <option value="수납 진행">수납 진행</option>
+            <option value="수납 완료">수납 완료</option>
+            <option value="선적진행">선적진행</option>
+            <option value="선적완료">선적완료</option>
+            <option value="입고예정">입고예정</option>
+            <option value="입고완료">입고완료</option>
+          </select>
         </div>
         <div class="f"><label>실장님</label>
           <div style="position:relative">
@@ -549,7 +554,7 @@ select{color-scheme:dark}
 <div class="mov" id="factm">
   <div class="modal" style="width:460px">
     <div class="mhdr"><h2 id="factmt">공장 등록</h2><button class="btn sm g" onclick="cm('factm')">✕</button></div>
-    <div class="mbody">
+    <div class="mbody" style="overflow:visible">
       <div class="fg">
         <div class="f ff" style="grid-column:span 2">
           <label>공장 아이콘 색상</label>
@@ -2475,22 +2480,31 @@ function rCF(k,i){const s=gS(pSeas,pSid);s[k].splice(i,1);sdb();rTab('info');}
 
 // ── PHOTOS ──
 function addWOP(e){
-  const s=gS(pSeas,pSid);
-  Array.from(e.target.files).forEach(f=>{
+  const s=gS(pSeas,pSid);if(!s)return;
+  const files=Array.from(e.target.files);
+  if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
     r.onload=ev=>{
       (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
-      sdb();rTab('info');
+      done++;
+      if(done===files.length){sdb();rTab('info');}
     };
     r.readAsDataURL(f);
   });
+  e.target.value='';
 }function addWOPDrop(e){
-  const s=gS(pSeas,pSid);
-  Array.from(e.dataTransfer.files).forEach(f=>{
+  const s=gS(pSeas,pSid);if(!s)return;
+  const files=Array.from(e.dataTransfer.files);
+  if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
     r.onload=ev=>{
       (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
-      sdb();rTab('info');
+      done++;
+      if(done===files.length){sdb();rTab('info');}
     };
     r.readAsDataURL(f);
   });
@@ -3040,17 +3054,32 @@ document.addEventListener('keydown',e=>{
 // ── 사진 추가 ──
 function addPh(e){
   const s=gS(pSeas,pSid);if(!s)return;
-  Array.from(e.target.files).forEach(f=>{
+  const files=Array.from(e.target.files);
+  if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
-    r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};
+    r.onload=ev=>{
+      (s.photos=s.photos||[]).push(ev.target.result);
+      done++;
+      if(done===files.length){sdb();rTab('photos');}
+    };
     r.readAsDataURL(f);
   });
+  e.target.value='';
 }
 function addPhDrop(e){
   const s=gS(pSeas,pSid);if(!s)return;
-  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
+  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+  if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
-    r.onload=ev=>{(s.photos=s.photos||[]).push(ev.target.result);sdb();rTab('photos');};
+    r.onload=ev=>{
+      (s.photos=s.photos||[]).push(ev.target.result);
+      done++;
+      if(done===files.length){sdb();rTab('photos');}
+    };
     r.readAsDataURL(f);
   });
 }
@@ -3115,7 +3144,7 @@ function saveMember(){
 
 // ── 새 스타일 등록 ──
 function openNSM(){
-  ['nsst','nsbr','nsmgr','nsmember','nsqt','nscmt','nsfob','nsdl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['nss','nsbr','nsmgr','nsmember','nsq','nscmt','nsfob','nsdl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const fc=document.getElementById('nsfc');
   if(fc)fc.innerHTML='<option value="">공장 선택</option>'+(DB.factories||[]).map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
   const ss=document.getElementById('nsss');
@@ -3124,7 +3153,6 @@ function openNSM(){
   if(sn)sn.innerHTML='<option value="">시즌 선택</option>'+(DB.seasons||[]).map(s=>`<option value="${s.id}" ${s.id===season?'selected':''}>${s.name}</option>`).join('');
   const nsbr=document.getElementById('nsbr');
   if(nsbr)nsbr.value='';
-  initNsssDrop();
   om('nsm');
 }
 function confNewStyle(){
