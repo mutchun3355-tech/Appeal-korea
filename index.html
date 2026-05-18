@@ -16,12 +16,24 @@
   --red:#c94040;--amb:#b87a2a;
   --mono:'DM Mono',monospace;--sans:'Pretendard',-apple-system,sans-serif;
 }
+/* 라이트 모드 - 라이트 그레이 */
+body.light-mode{
+  --bg0:#e8eaed;--bg1:#f2f3f5;--bg2:#e4e6ea;--bg3:#d8dbe0;--bg4:#cdd0d6;
+  --b:rgba(0,0,0,.09);--b2:rgba(0,0,0,.16);
+  --t0:#1c1e21;--t1:#3a3d42;--t2:#65686e;--t3:#9399a0;
+  --ac:#3d8f6e;--ac2:#2d6b52;--al:#2d7a5a;
+  --red:#c94040;--amb:#b87a2a;
+}
+body.light-mode select{color-scheme:light}
+body.light-mode ::-webkit-scrollbar-thumb{background:var(--bg4)}
+body.light-mode .toast{border-color:var(--b2);box-shadow:0 4px 20px rgba(0,0,0,.12)}
+body.light-mode .ctx{box-shadow:0 4px 16px rgba(0,0,0,.15)}
 *{box-sizing:border-box;margin:0;padding:0}
 select{color-scheme:dark;background:var(--bg2);color:var(--t0)}
 select option{background:var(--bg2)!important;color:var(--t0)!important}
-html,body{height:100%;background:var(--bg0);color:var(--t0);font-family:var(--sans);font-size:13px;line-height:1.5}
-button{cursor:pointer;font-family:var(--sans);font-size:13px}
-input,select,textarea{font-family:var(--sans);font-size:13px}
+html,body{height:100%;background:var(--bg0);color:var(--t0);font-family:var(--sans);font-size:15px;line-height:1.5}
+button{cursor:pointer;font-family:var(--sans);font-size:17px}
+input,select,textarea{font-family:var(--sans);font-size:17px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
 a{color:var(--al)}
@@ -30,18 +42,18 @@ a{color:var(--al)}
 /* ── NAV ── */
 .nav{width:218px;min-width:218px;background:var(--bg1);border-right:1px solid var(--b);display:flex;flex-direction:column}
 .nav-hdr{padding:15px 14px 10px;border-bottom:1px solid var(--b)}
-.nav-logo{font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--t2);text-transform:uppercase;margin-bottom:3px}
-.nav-title{font-size:14px;font-weight:600}
+.nav-logo{font-size:16px;font-weight:600;letter-spacing:.12em;color:var(--t2);text-transform:uppercase;margin-bottom:3px}
+.nav-title{font-size:16px;font-weight:600}
 .nav-body{flex:1;overflow-y:auto;padding:8px 0;min-height:0}
-.nsl{padding:6px 14px 3px;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
+.nsl{padding:6px 14px 3px;font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
 .ni{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;color:var(--t1);border-left:2px solid transparent;transition:all .15s}
 .ni:hover{background:var(--bg2);color:var(--t0)}
 .ni.on{background:var(--bg2);color:var(--al);border-left-color:var(--ac);font-weight:500}
-.nc{margin-left:auto;font-size:10px;background:var(--bg3);color:var(--t2);padding:1px 5px;border-radius:10px;font-family:var(--mono)}
-.na{display:flex;align-items:center;gap:6px;padding:6px 14px;color:var(--t3);font-size:12px;cursor:pointer}
+.nc{margin-left:auto;font-size:16px;background:var(--bg3);color:var(--t2);padding:1px 5px;border-radius:10px;font-family:var(--mono)}
+.na{display:flex;align-items:center;gap:6px;padding:6px 14px;color:var(--t3);font-size:16px;cursor:pointer}
 .na:hover{color:var(--al)}
 .nav-foot{padding:10px 14px;border-top:1px solid var(--b);display:flex;flex-direction:column;gap:5px}
-.sync{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.sync{display:flex;align-items:center;gap:5px;font-size:17px;color:var(--t2)}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--t3)}
 .sdot.on{background:var(--al)}
 .sdot.sy{background:var(--amb);animation:pulse .8s infinite}
@@ -50,7 +62,7 @@ a{color:var(--al)}
 /* ── MAIN ── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--bg1);border-bottom:1px solid var(--b);gap:12px;flex-shrink:0}
-.bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
+.bc{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--t2)}
 .bc .c{cursor:pointer}.bc .c:hover{color:var(--t0)}
 .bc .sep{color:var(--t3)}.bc .cur{color:var(--t0);font-weight:500}
 .ta{display:flex;gap:8px;align-items:center}
@@ -61,7 +73,7 @@ a{color:var(--al)}
 .btn:hover{background:var(--bg4)}
 .btn.p{background:var(--ac);border-color:var(--ac);color:#fff}
 .btn.p:hover{background:var(--al)}
-.btn.sm{padding:4px 9px;font-size:12px}
+.btn.sm{padding:4px 9px;font-size:16px}
 .btn.d{background:rgba(201,64,64,.12);border-color:rgba(201,64,64,.3);color:var(--red)}
 .btn.d:hover{background:rgba(201,64,64,.22)}
 .btn.g{background:none;border-color:transparent;color:var(--t1)}
@@ -70,7 +82,7 @@ a{color:var(--al)}
 /* ── STATS ── */
 .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .sc{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:14px 16px}
-.sl{font-size:11px;color:var(--t2);margin-bottom:5px}
+.sl{font-size:17px;color:var(--t2);margin-bottom:5px}
 .sv{font-size:22px;font-weight:600;font-family:var(--mono)}
 
 /* ── TOOLBAR ── */
@@ -79,24 +91,24 @@ a{color:var(--al)}
 .tb input:focus,.tb select:focus{outline:none;border-color:var(--ac)}
 .tb select option{background:var(--bg2)}
 .sbs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
-.sb{background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:4px 9px;font-size:11px;color:var(--t1)}
+.sb{background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:4px 9px;font-size:17px;color:var(--t1)}
 .sb:hover{color:var(--t0)}.sb.on{background:var(--bg3);border-color:var(--ac2);color:var(--al)}
 
 /* ── TABLE ── */
 .tw{background:var(--bg1);border:1px solid var(--b);border-radius:8px;overflow:auto}
 table{border-collapse:collapse;white-space:nowrap}
 table.fw{width:100%}
-th{background:var(--bg2);padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
+th{background:var(--bg2);padding:9px 12px;text-align:left;font-size:17px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
 th:hover{color:var(--t0)}
 th.dov{background:var(--bg3);outline:2px dashed var(--ac2)}
 th.dg{opacity:.25}
 td{padding:9px 12px;border-bottom:1px solid var(--b);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg2);cursor:pointer}
-.slink{color:var(--al);font-weight:500;font-family:var(--mono);font-size:12px}
+.slink{color:var(--al);font-weight:500;font-family:var(--mono);font-size:16px}
 
 /* ── BADGES ── */
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:17px;font-weight:500;white-space:nowrap}
 select.bs{background:rgba(90,92,98,.25);color:#9a9da6;border:1px solid rgba(90,92,98,.3)}
 select.bq{background:rgba(37,99,175,.25);color:#60a5fa;border:1px solid rgba(37,99,175,.35)}
 select.bp{background:rgba(109,40,217,.25);color:#c084fc;border:1px solid rgba(109,40,217,.35)}
@@ -130,19 +142,19 @@ select.bd{background:rgba(13,148,136,.25);color:#2dd4bf;border:1px solid rgba(13
 .panel-resize::after{content:'';width:3px;height:40px;background:var(--b2);border-radius:3px;transition:background .15s}
 .panel-resize:hover::after,.panel-resize.dragging::after{background:var(--ac);width:4px}
 .phdr{display:flex;align-items:center;gap:10px;padding:0;border-bottom:none;flex-shrink:0;min-height:0}
-.phdr h2{font-size:15px;font-weight:600;flex:1;font-family:var(--mono)}
+.phdr h2{font-size:17px;font-weight:600;flex:1;font-family:var(--mono)}
 .ptabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;overflow-x:auto;min-height:52px}
-.ptab{flex:none;padding:12px 16px;font-size:14px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
+.ptab{flex:none;padding:12px 16px;font-size:16px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
 .ptab:hover{color:var(--t0)}
 .ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:600}
 .pbody{flex:1;overflow-y:auto}
 .pbody img{max-width:100%;height:auto}
 .ps{padding:14px 16px;border-bottom:1px solid var(--b)}
 .psh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.ps h3{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
+.ps h3{font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f{display:flex;flex-direction:column;gap:4px}
-.f label{font-size:11px;color:var(--t2)}
+.f label{font-size:17px;color:var(--t2)}
 .f input,.f select,.f textarea{background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:6px 9px;color:var(--t0);transition:border-color .15s}
 .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--ac)}
 .f select option{background:var(--bg2)}
@@ -155,10 +167,10 @@ select{color-scheme:dark}
 /* ── CUSTOM FIELDS ── */
 .cfr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--bg2);border:1px solid var(--b);border-radius:8px;margin-bottom:8px;position:relative}
 .cfr-title-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.cfr-title{flex:1;font-size:12px;font-weight:600;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b);padding:3px 0;font-family:var(--sans)}
+.cfr-title{flex:1;font-size:16px;font-weight:600;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b);padding:3px 0;font-family:var(--sans)}
 .cfr-title:focus{outline:none;border-bottom-color:var(--ac)}
 .cfr-title::placeholder{color:var(--t3)}
-.cfr-val{background:var(--bg1)!important;border:1px solid var(--b)!important;border-radius:5px;padding:7px 9px!important;color:var(--t0);width:100%;font-size:13px;font-family:var(--sans)}
+.cfr-val{background:var(--bg1)!important;border:1px solid var(--b)!important;border-radius:5px;padding:7px 9px!important;color:var(--t0);width:100%;font-size:17px;font-family:var(--sans)}
 .cfr-val:focus{outline:none!important;border-color:var(--ac)!important}
 .cfr .dx{position:absolute;top:8px;right:8px;color:var(--t3);background:none;border:none;font-size:16px;padding:2px 5px;line-height:1;border-radius:4px}
 .cfr .dx:hover{color:var(--red);background:rgba(201,64,64,.1)}
@@ -166,11 +178,11 @@ select{color-scheme:dark}
 /* ── PHOTOS ── */
 .uz{border:1px dashed var(--b2);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .15s}
 .uz:hover{border-color:var(--ac2);background:rgba(61,143,110,.05)}
-.uzt{font-size:12px;color:var(--t2)}
+.uzt{font-size:16px;color:var(--t2)}
 .pgr{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}
 .ptw{position:relative;aspect-ratio:1}
 .pth{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--b);max-width:100%}
-.pdel{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(0,0,0,.75);border:none;border-radius:50%;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pdel{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(0,0,0,.75);border:none;border-radius:50%;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .wothumb{width:100%;max-width:100%;border-radius:6px;border:1px solid var(--b);margin-top:6px;display:block;object-fit:contain}
 
 /* ── MODAL ── */
@@ -178,7 +190,7 @@ select{color-scheme:dark}
 .mov.open{display:flex}
 .modal{background:var(--bg1);border:1px solid var(--b);border-radius:10px;max-width:100%}
 .mhdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--b)}
-.mhdr h2{font-size:14px;font-weight:600;font-family:var(--mono)}
+.mhdr h2{font-size:16px;font-weight:600;font-family:var(--mono)}
 .mbody{padding:16px 18px}
 .mfoot{padding:12px 18px;border-top:1px solid var(--b);display:flex;justify-content:flex-end;gap:8px}
 
@@ -186,40 +198,40 @@ select{color-scheme:dark}
 .qcbl{border:1px solid var(--b);border-radius:8px;margin-bottom:12px;overflow:hidden}
 .qcbh{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);cursor:pointer}
 .qcbh:hover{background:var(--bg3)}
-.qcbt{font-size:13px;font-weight:500;flex:1}
+.qcbt{font-size:17px;font-weight:500;flex:1}
 .qcbb{padding:14px;display:none}
 .qcbb.open{display:block}
 .qcpg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
-.qcpc{aspect-ratio:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);cursor:pointer;overflow:hidden}
+.qcpc{aspect-ratio:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--t3);cursor:pointer;overflow:hidden}
 .qcpc:hover{border-color:var(--ac2)}
 .qcpc img{width:100%;height:100%;object-fit:cover}
 
 /* ── PRODUCTION SPREADSHEET ── */
 .plw{overflow:auto;border:1px solid var(--b);border-radius:8px;margin-top:8px}
-.plt{border-collapse:collapse;font-size:12px;min-width:100%}
-.plt th{background:var(--bg3);padding:6px 8px;border:1px solid var(--b);font-size:11px;font-weight:500;color:var(--t2);text-align:center;min-width:75px;white-space:nowrap}
+.plt{border-collapse:collapse;font-size:16px;min-width:100%}
+.plt th{background:var(--bg3);padding:6px 8px;border:1px solid var(--b);font-size:17px;font-weight:500;color:var(--t2);text-align:center;min-width:75px;white-space:nowrap}
 .plt td{border:1px solid var(--b);padding:0;min-width:75px}
-.plt td input{width:100%;height:100%;padding:5px 7px;background:transparent;border:none;color:var(--t0);font-family:var(--mono);font-size:12px}
+.plt td input{width:100%;height:100%;padding:5px 7px;background:transparent;border:none;color:var(--t0);font-family:var(--mono);font-size:16px}
 .plt td input:focus{outline:none;background:rgba(61,143,110,.08)}
-.plt td.sum{background:rgba(61,143,110,.1);text-align:right;padding:5px 8px;color:var(--al);font-family:var(--mono);font-size:12px;font-weight:500}
-.plt th input{background:none;border:none;color:var(--t2);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;width:100%;text-align:center}
-.rn{width:26px;min-width:26px;background:var(--bg3);text-align:center;font-size:10px;color:var(--t3);padding:5px 3px;border:1px solid var(--b);user-select:none}
+.plt td.sum{background:rgba(61,143,110,.1);text-align:right;padding:5px 8px;color:var(--al);font-family:var(--mono);font-size:16px;font-weight:500}
+.plt th input{background:none;border:none;color:var(--t2);font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;width:100%;text-align:center}
+.rn{width:26px;min-width:26px;background:var(--bg3);text-align:center;font-size:16px;color:var(--t3);padding:5px 3px;border:1px solid var(--b);user-select:none}
 
 /* ── BOARD ── */
 .bw{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
 .bcol{min-width:185px;background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:10px;flex-shrink:0}
 .bch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.bcc{font-size:11px;background:var(--bg3);color:var(--t2);padding:1px 6px;border-radius:10px;font-family:var(--mono)}
+.bcc{font-size:17px;background:var(--bg3);color:var(--t2);padding:1px 6px;border-radius:10px;font-family:var(--mono)}
 .bcard{background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:9px 11px;margin-bottom:7px;cursor:pointer;transition:border-color .15s}
 .bcard:hover{border-color:var(--ac2)}
-.bcst{font-size:12px;font-weight:600;color:var(--al);font-family:var(--mono);margin-bottom:3px}
-.bcin{font-size:11px;color:var(--t2)}
+.bcst{font-size:16px;font-weight:600;color:var(--al);font-family:var(--mono);margin-bottom:3px}
+.bcin{font-size:17px;color:var(--t2)}
 
 /* ── FACTORY ── */
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .fcard{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
 .fcard:hover{border-color:var(--b2)}
-.fr{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--b)}
+.fr{display:flex;justify-content:space-between;font-size:16px;padding:5px 0;border-bottom:1px solid var(--b)}
 .fr:last-child{border-bottom:none}
 .frl{color:var(--t2)}
 
@@ -227,23 +239,23 @@ select{color-scheme:dark}
 .hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .hcard{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:18px;cursor:pointer;transition:all .15s}
 .hcard:hover{border-color:var(--b2);background:var(--bg3)}
-.hcn{font-size:13px;font-weight:600;margin-bottom:3px}
-.hcm{font-size:11px;color:var(--t2)}
+.hcn{font-size:17px;font-weight:600;margin-bottom:3px}
+.hcm{font-size:17px;color:var(--t2)}
 .hadd{border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;color:var(--t3)}
 .hadd:hover{border-color:var(--ac2);color:var(--al)}
 
 /* ── CTX MENU ── */
 .ctx{position:fixed;background:var(--bg3);border:1px solid var(--b2);border-radius:7px;padding:4px;z-index:500;min-width:155px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none}
-.ctxi{padding:7px 12px;font-size:12px;color:var(--t1);cursor:pointer;border-radius:4px}
+.ctxi{padding:7px 12px;font-size:16px;color:var(--t1);cursor:pointer;border-radius:4px}
 .ctxi:hover{background:var(--bg4);color:var(--t0)}
 .ctxs{height:1px;background:var(--b);margin:4px 0}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--t0);opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 18px;font-size:17px;color:var(--t0);opacity:0;transition:all .3s;z-index:999;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── MISC ── */
-.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;background:var(--bg3);color:var(--t2);border:1px solid var(--b)}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:16px;background:var(--bg3);color:var(--t2);border:1px solid var(--b)}
 .mgri{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b)}
 .mgri input{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0)}
 
@@ -252,27 +264,27 @@ select{color-scheme:dark}
 .mob-app{display:none;flex-direction:column;height:100vh;background:var(--bg0);overflow:hidden}
 .mob-topbar{background:var(--bg1);padding:12px 14px 10px;border-bottom:1px solid var(--b);flex-shrink:0}
 .mob-topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.mob-title{font-size:15px;font-weight:700;color:var(--t0)}
-.mob-sub{font-size:11px;color:var(--t2)}
-.mob-search{margin:10px 12px 0;background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--t2);display:flex;align-items:center;gap:8px}
-.mob-search input{flex:1;background:none;border:none;color:var(--t0);font-size:13px;outline:none}
+.mob-title{font-size:17px;font-weight:700;color:var(--t0)}
+.mob-sub{font-size:17px;color:var(--t2)}
+.mob-search{margin:10px 12px 0;background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:9px 12px;font-size:17px;color:var(--t2);display:flex;align-items:center;gap:8px}
+.mob-search input{flex:1;background:none;border:none;color:var(--t0);font-size:17px;outline:none}
 .mob-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mob-season-hdr{display:flex;align-items:center;padding:10px 14px 6px;border-bottom:1px solid var(--b);position:sticky;top:0;background:var(--bg1);z-index:5}
-.mob-season-hdr-style{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;flex:1}
-.mob-season-hdr-qty{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;min-width:52px;text-align:right}
+.mob-season-hdr-style{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.08em;flex:1}
+.mob-season-hdr-qty{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.08em;min-width:52px;text-align:right}
 .mob-row{border-bottom:1px solid var(--b);overflow:hidden;transition:background .1s}
 .mob-row-main{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mob-row-main:active{background:var(--bg2)}
 .mob-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .mob-check-dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
-.mob-row-style{font-size:13px;font-weight:700;color:var(--al);font-family:var(--mono);flex:1}
-.mob-row-qty{font-size:12px;color:var(--t1);font-family:var(--mono);min-width:52px;text-align:right}
+.mob-row-style{font-size:17px;font-weight:700;color:var(--al);font-family:var(--mono);flex:1}
+.mob-row-qty{font-size:16px;color:var(--t1);font-family:var(--mono);min-width:52px;text-align:right}
 .mob-detail{display:none;padding:10px 14px 14px;background:var(--bg2);border-top:1px solid var(--b)}
 .mob-detail.open{display:block}
 .mob-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .mob-detail-card{background:var(--bg1);border-radius:8px;padding:9px 11px}
 .mob-detail-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
-.mob-detail-val{font-size:12px;font-weight:500;color:var(--t0)}
+.mob-detail-val{font-size:16px;font-weight:500;color:var(--t0)}
 .mob-detail-btns{display:flex;gap:8px}
 .mob-tabbar{background:var(--bg1);border-top:1px solid var(--b);display:flex;padding:8px 0 20px;flex-shrink:0}
 .mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -283,19 +295,19 @@ select{color-scheme:dark}
 .mob-panel{position:absolute;inset:0;background:var(--bg0);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .mob-panel.open{transform:translateX(0)}
 .mob-panel-hdr{background:var(--bg1);padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.mob-panel-back{font-size:13px;color:var(--al);font-weight:500;cursor:pointer;padding:4px 0}
-.mob-panel-title{font-size:14px;font-weight:700;color:var(--t0);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mob-panel-save{font-size:13px;color:var(--al);font-weight:600;cursor:pointer;padding:4px 0}
+.mob-panel-back{font-size:17px;color:var(--al);font-weight:500;cursor:pointer;padding:4px 0}
+.mob-panel-title{font-size:16px;font-weight:700;color:var(--t0);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-panel-save{font-size:17px;color:var(--al);font-weight:600;cursor:pointer;padding:4px 0}
 .mob-ptabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .mob-ptabs::-webkit-scrollbar{display:none}
-.mob-ptab{flex:none;padding:9px 11px;font-size:11px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
+.mob-ptab{flex:none;padding:9px 11px;font-size:17px;border:none;background:none;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap}
 .mob-ptab.on{color:var(--al);border-bottom-color:var(--ac);background:var(--bg1);font-weight:600}
 .mob-panel-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mob-panel-footer{padding:10px 14px 24px;border-top:1px solid var(--b);display:flex;gap:8px;flex-shrink:0}
-.mob-add-row{display:flex;align-items:center;gap:8px;padding:11px 14px;color:var(--t3);font-size:13px;cursor:pointer;border-bottom:1px solid var(--b)}
+.mob-add-row{display:flex;align-items:center;gap:8px;padding:11px 14px;color:var(--t3);font-size:17px;cursor:pointer;border-bottom:1px solid var(--b)}
 .mob-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px}
 .mob-stat{background:var(--bg2);border-radius:8px;padding:10px 12px}
-.mob-stat-l{font-size:10px;color:var(--t2);margin-bottom:4px}
+.mob-stat-l{font-size:16px;color:var(--t2);margin-bottom:4px}
 .mob-stat-v{font-size:17px;font-weight:700;color:var(--t0);font-family:var(--mono)}
 
 @media(max-width:768px){
@@ -312,7 +324,7 @@ select{color-scheme:dark}
 .plt td.perr{background:rgba(201,64,64,.08)}
 .plt td.perr input{color:var(--red)!important}
 .plch{cursor:context-menu}
-.plt thead th .col-letter{font-size:10px;color:var(--al);font-family:var(--mono);font-weight:700;display:block;text-align:center;margin-bottom:1px}
+.plt thead th .col-letter{font-size:16px;color:var(--al);font-family:var(--mono);font-weight:700;display:block;text-align:center;margin-bottom:1px}
 </style>
 </head>
 <body>
@@ -327,12 +339,12 @@ select{color-scheme:dark}
           <div class="mob-sub" id="mob-sub">로딩 중...</div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn sm" onclick="mobOpenXL()" style="font-size:11px;padding:5px 9px">📥</button>
-          <button class="btn p sm" onclick="mobNewStyle()" style="font-size:11px;padding:5px 9px">+ 등록</button>
+          <button class="btn sm" onclick="mobOpenXL()" style="font-size:17px;padding:5px 9px">📥</button>
+          <button class="btn p sm" onclick="mobNewStyle()" style="font-size:17px;padding:5px 9px">+ 등록</button>
         </div>
       </div>
       <div class="mob-search">
-        <span style="font-size:14px;color:var(--t3)">🔍</span>
+        <span style="font-size:16px;color:var(--t3)">🔍</span>
         <input type="text" id="mob-search-input" placeholder="스타일번호, 브랜드 검색..." oninput="mobRenderList()">
       </div>
     </div>
@@ -377,9 +389,9 @@ select{color-scheme:dark}
       </div>
       <div class="mob-panel-body" id="mob-panel-body"></div>
       <div class="mob-panel-footer">
-        <button class="btn d sm" onclick="mobDelStyle()" style="flex:1;padding:10px;font-size:13px">삭제</button>
-        <button class="btn sm" onclick="closeMobPanel()" style="flex:1;padding:10px;font-size:13px">닫기</button>
-        <button class="btn p sm" onclick="mobSaveStyle()" style="flex:2;padding:10px;font-size:13px;font-weight:600">저장</button>
+        <button class="btn d sm" onclick="mobDelStyle()" style="flex:1;padding:10px;font-size:17px">삭제</button>
+        <button class="btn sm" onclick="closeMobPanel()" style="flex:1;padding:10px;font-size:17px">닫기</button>
+        <button class="btn p sm" onclick="mobSaveStyle()" style="flex:2;padding:10px;font-size:17px;font-weight:600">저장</button>
       </div>
     </div>
   </div>
@@ -394,11 +406,12 @@ select{color-scheme:dark}
     <div class="nav-body" id="navBody"></div>
     <div class="nav-foot">
       <div class="sync"><div class="sdot" id="sdot"></div><span id="slbl">로컬 저장</span></div>
-      <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:11px;margin-top:2px">⚙ 실장님 관리</button>
-      <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:11px">👤 담당자 관리</button>
-      <button class="btn sm g" onclick="openBrandModal()" style="width:100%;font-size:11px">🏷 브랜드 관리</button>
-      <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:11px">☁ Firebase 설정</button>
-      <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:11px;color:var(--amb)">💾 백업 & 복원</button>
+      <button class="btn sm g" onclick="openMgr()" style="width:100%;font-size:17px;margin-top:2px">⚙ 실장님 관리</button>
+      <button class="btn sm g" onclick="openMemberModal()" style="width:100%;font-size:17px">👤 담당자 관리</button>
+      <button class="btn sm g" onclick="openBrandModal()" style="width:100%;font-size:17px">🏷 브랜드 관리</button>
+      <button class="btn sm g" onclick="openFBM()" style="width:100%;font-size:17px">☁ Firebase 설정</button>
+      <button class="btn sm g" onclick="openBackupModal()" style="width:100%;font-size:17px;color:var(--amb)">💾 백업 & 복원</button>
+      <button id="theme-toggle-btn" class="btn sm g" onclick="toggleTheme()" style="width:100%;font-size:17px;margin-top:2px">🌙 다크 모드</button>
     </div>
   </div>
   <div class="main">
@@ -503,7 +516,7 @@ select{color-scheme:dark}
           <div style="position:relative">
             <div onclick="toggleStatusDrop('nsss-drop',this)" id="nsss-badge"
               class="badge bs"
-              style="cursor:pointer;font-size:12px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px">
+              style="cursor:pointer;font-size:16px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px">
               샘플 <span style="font-size:9px;opacity:.7">▾</span>
             </div>
             <input type="hidden" id="nsss" value="샘플">
@@ -541,15 +554,15 @@ select{color-scheme:dark}
         <div class="f ff" style="grid-column:span 2">
           <label>공장 아이콘 색상</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="fcolor-wrap">
-            <div onclick="selFColor('#e74c3c')" class="fcolor-btn" data-color="#e74c3c" style="width:28px;height:28px;border-radius:6px;background:#e74c3c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#e67e22')" class="fcolor-btn" data-color="#e67e22" style="width:28px;height:28px;border-radius:6px;background:#e67e22;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#f1c40f')" class="fcolor-btn" data-color="#f1c40f" style="width:28px;height:28px;border-radius:6px;background:#f1c40f;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#2ecc71')" class="fcolor-btn" data-color="#2ecc71" style="width:28px;height:28px;border-radius:6px;background:#2ecc71;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#3498db')" class="fcolor-btn" data-color="#3498db" style="width:28px;height:28px;border-radius:6px;background:#3498db;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#9b59b6')" class="fcolor-btn" data-color="#9b59b6" style="width:28px;height:28px;border-radius:6px;background:#9b59b6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#1abc9c')" class="fcolor-btn" data-color="#1abc9c" style="width:28px;height:28px;border-radius:6px;background:#1abc9c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#e91e63')" class="fcolor-btn" data-color="#e91e63" style="width:28px;height:28px;border-radius:6px;background:#e91e63;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
-            <div onclick="selFColor('#607d8b')" class="fcolor-btn" data-color="#607d8b" style="width:28px;height:28px;border-radius:6px;background:#607d8b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#e74c3c')" class="fcolor-btn" data-color="#e74c3c" style="width:28px;height:28px;border-radius:6px;background:#e74c3c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#e67e22')" class="fcolor-btn" data-color="#e67e22" style="width:28px;height:28px;border-radius:6px;background:#e67e22;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#f1c40f')" class="fcolor-btn" data-color="#f1c40f" style="width:28px;height:28px;border-radius:6px;background:#f1c40f;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#2ecc71')" class="fcolor-btn" data-color="#2ecc71" style="width:28px;height:28px;border-radius:6px;background:#2ecc71;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#3498db')" class="fcolor-btn" data-color="#3498db" style="width:28px;height:28px;border-radius:6px;background:#3498db;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#9b59b6')" class="fcolor-btn" data-color="#9b59b6" style="width:28px;height:28px;border-radius:6px;background:#9b59b6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#1abc9c')" class="fcolor-btn" data-color="#1abc9c" style="width:28px;height:28px;border-radius:6px;background:#1abc9c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#e91e63')" class="fcolor-btn" data-color="#e91e63" style="width:28px;height:28px;border-radius:6px;background:#e91e63;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
+            <div onclick="selFColor('#607d8b')" class="fcolor-btn" data-color="#607d8b" style="width:28px;height:28px;border-radius:6px;background:#607d8b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid transparent">🏭</div>
           </div>
           <input type="hidden" id="fcolor" value="#e74c3c">
         </div>
@@ -576,7 +589,7 @@ select{color-scheme:dark}
   <div class="modal" style="width:480px">
     <div class="mhdr"><h2>☁ Firebase 실시간 동기화</h2><button class="btn sm g" onclick="cm('fbm')">✕</button></div>
     <div class="mbody" style="display:flex;flex-direction:column;gap:12px">
-      <div style="background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;color:var(--t2);line-height:1.8">
+      <div style="background:var(--bg2);border-radius:8px;padding:12px;font-size:16px;color:var(--t2);line-height:1.8">
         <strong style="color:var(--t0);display:block;margin-bottom:4px">설정 방법</strong>
         1. <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a>에서 프로젝트 생성<br>
         2. Realtime Database 생성 → 규칙: read/write = true<br>
@@ -585,7 +598,7 @@ select{color-scheme:dark}
       <div class="f"><label>Database URL</label><input type="text" id="fbu" placeholder="https://project.firebaseio.com"></div>
       <div class="f"><label>API Key</label><input type="text" id="fbk" placeholder="AIza..."></div>
       <div class="f"><label>Project ID</label><input type="text" id="fbpid" placeholder="my-project"></div>
-      <div id="fbst" style="font-size:12px;color:var(--t2)"></div>
+      <div id="fbst" style="font-size:16px;color:var(--t2)"></div>
     </div>
     <div class="mfoot">
       <button class="btn sm" onclick="discFB()">연결 해제</button>
@@ -616,13 +629,13 @@ select{color-scheme:dark}
     <div class="mbody" style="display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
-          <div style="font-size:13px;font-weight:500;margin-bottom:3px">자동 백업</div>
-          <div style="font-size:11px;color:var(--t2)">저장할 때마다 자동으로 스냅샷 생성 · 최근 10개 보관</div>
+          <div style="font-size:17px;font-weight:500;margin-bottom:3px">자동 백업</div>
+          <div style="font-size:17px;color:var(--t2)">저장할 때마다 자동으로 스냅샷 생성 · 최근 10개 보관</div>
         </div>
         <button class="btn p sm" onclick="saveBackup(true)">지금 백업</button>
       </div>
       <div style="border-top:1px solid var(--b);padding-top:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">백업 목록</div>
+        <div style="font-size:16px;font-weight:600;color:var(--t2);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">백업 목록</div>
         <div id="backup-list"></div>
       </div>
     </div>
@@ -646,15 +659,15 @@ select{color-scheme:dark}
   onclick="closePhotoViewer()">
   <img id="photo-viewer-img" src="" style="max-width:92vw;max-height:92vh;border-radius:8px;object-fit:contain">
   <div style="position:absolute;top:16px;right:20px;color:#fff;font-size:22px;cursor:pointer;opacity:.7" onclick="closePhotoViewer()">✕</div>
-  <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:12px">클릭하면 닫힘</div>
+  <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:16px">클릭하면 닫힘</div>
 </div>
 
 <!-- PDF 뷰어 -->
 <div id="pdf-viewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;align-items:center;justify-content:center;flex-direction:column">
   <div style="display:flex;align-items:center;justify-content:space-between;width:90vw;max-width:900px;padding:10px 0;flex-shrink:0">
-    <span id="pdf-viewer-name" style="color:#fff;font-size:13px;font-weight:500"></span>
+    <span id="pdf-viewer-name" style="color:#fff;font-size:17px;font-weight:500"></span>
     <div style="display:flex;gap:10px;align-items:center">
-      <a id="pdf-download-btn" download style="padding:5px 14px;background:var(--ac);border-radius:6px;color:#fff;font-size:12px;text-decoration:none">⬇ 다운로드</a>
+      <a id="pdf-download-btn" download style="padding:5px 14px;background:var(--ac);border-radius:6px;color:#fff;font-size:16px;text-decoration:none">⬇ 다운로드</a>
       <span style="color:#fff;font-size:22px;cursor:pointer;opacity:.7" onclick="closePdfViewer()">✕</span>
     </div>
   </div>
@@ -666,7 +679,7 @@ select{color-scheme:dark}
   <div class="modal" style="width:420px">
     <div class="mhdr"><h2>스타일 선택</h2><button class="btn sm g" onclick="cm('inc-style-picker')">✕</button></div>
     <div class="mbody">
-      <div style="font-size:11px;color:var(--t2);margin-bottom:10px">선적진행 · 선적완료 · 입고예정 상태 스타일만 표시</div>
+      <div style="font-size:17px;color:var(--t2);margin-bottom:10px">선적진행 · 선적완료 · 입고예정 상태 스타일만 표시</div>
       <div id="inc-style-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
     </div>
     <div class="mfoot"><button class="btn sm" onclick="cm('inc-style-picker')">닫기</button></div>
@@ -944,16 +957,16 @@ function renderNav(){
     const isOpen=season===s.id&&['season','payments','incoming'].includes(view);
     // 시즌 행 - 클릭 시 펼치기/접기 + season view 이동
     h+=`<div class="ni ${view==='season'&&season===s.id?'on':''}" onclick="nav('season','${s.id}')">
-      <span style="color:var(--t3);font-size:10px;margin-right:3px">${isOpen?'▾':'▸'}</span>${s.icon} ${s.name}
+      <span style="color:var(--t3);font-size:16px;margin-right:3px">${isOpen?'▾':'▸'}</span>${s.icon} ${s.name}
       <span class="nc">${c}</span></div>`;
     // 현재 선택된 시즌만 하위 메뉴 표시
     if(isOpen){
       h+=`<div class="ni ${view==='payments'&&season===s.id?'on':''}" onclick="navSub('payments','${s.id}')"
-        style="padding-left:28px;font-size:12px;border-left:2px solid ${view==='payments'&&season===s.id?'var(--ac)':'transparent'}">
+        style="padding-left:28px;font-size:16px;border-left:2px solid ${view==='payments'&&season===s.id?'var(--ac)':'transparent'}">
         <span style="width:4px;height:4px;border-radius:50%;background:${view==='payments'&&season===s.id?'var(--al)':'var(--t3)'};display:inline-block;margin-right:8px;flex-shrink:0"></span>결제 현황
         <span class="nc">${(DB.payments||[]).filter(p=>p.season===s.id).length}</span></div>`;
       h+=`<div class="ni ${view==='incoming'&&season===s.id?'on':''}" onclick="navSub('incoming','${s.id}')"
-        style="padding-left:28px;font-size:12px;border-left:2px solid ${view==='incoming'&&season===s.id?'var(--ac)':'transparent'}">
+        style="padding-left:28px;font-size:16px;border-left:2px solid ${view==='incoming'&&season===s.id?'var(--ac)':'transparent'}">
         <span style="width:4px;height:4px;border-radius:50%;background:${view==='incoming'&&season===s.id?'var(--al)':'var(--t3)'};display:inline-block;margin-right:8px;flex-shrink:0"></span>입고 계획
         <span class="nc">${(DB.incoming||[]).filter(i=>i.season===s.id).length}</span></div>`;
     }
@@ -999,14 +1012,14 @@ function renderHome(){
     const c=(DB.styles[s.id]||[]).length,cmt=(DB.styles[s.id]||[]).reduce((a,x)=>a+(x.qty||0)*(x.cmt||0),0);
     return`<div class="hcard" onclick="nav('season','${s.id}')"><div style="font-size:26px;margin-bottom:10px">${s.icon}</div><div class="hcn">${s.name}</div><div class="hcm">${c}개 스타일 · CMT $${Math.round(cmt).toLocaleString()}</div></div>`;
   }).join('');
-  return`<div style="margin-bottom:20px"><div style="font-size:20px;font-weight:700;margin-bottom:4px">APPEAL KOREA MAIN</div><div style="font-size:13px;color:var(--t2)">${tot}개 스타일 · ${DB.seasons.length}개 시즌</div></div>
+  return`<div style="margin-bottom:20px"><div style="font-size:20px;font-weight:700;margin-bottom:4px">APPEAL KOREA MAIN</div><div style="font-size:17px;color:var(--t2)">${tot}개 스타일 · ${DB.seasons.length}개 시즌</div></div>
   <div class="sg">
     <div class="sc"><div class="sl">전체 스타일</div><div class="sv">${tot}</div></div>
     <div class="sc"><div class="sl">시즌 수</div><div class="sv">${DB.seasons.length}</div></div>
     <div class="sc"><div class="sl">총 CMT 금액</div><div class="sv" style="font-size:16px">$${Math.round(tCMT).toLocaleString()}</div></div>
     <div class="sc"><div class="sl">등록 공장</div><div class="sv">${DB.factories.length}</div></div>
   </div>
-  <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">폴더</div>
+  <div style="font-size:17px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">폴더</div>
   <div class="hgrid">${cards}
     <div class="hcard" onclick="nav('factories')"><div style="font-size:26px;margin-bottom:10px">🏭</div><div class="hcn">공장 정보</div><div class="hcm">${DB.factories.length}개</div></div>
     <div class="hcard" onclick="nav('payments')"><div style="font-size:26px;margin-bottom:10px">💳</div><div class="hcn">결제 현황</div><div class="hcm">${DB.payments.length}건</div></div>
@@ -1081,16 +1094,16 @@ function renderSeason(){
 
     const tdr=s=>visibleCols.map(c=>{
       if(c.k==='style')return`<td><span class="slink">${s.style||'-'}</span></td>`;
-      if(c.k==='factory')return`<td style="font-size:11px;color:var(--t2)"><span style="display:inline-flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</span></td>`;
+      if(c.k==='factory')return`<td style="font-size:17px;color:var(--t2)"><span style="display:inline-flex;align-items:center">${ficon(s.factory)}${fn(s.factory)}</span></td>`;
       if(c.k==='qty')return`<td style="font-family:var(--mono)">${(s.qty||0).toLocaleString()}</td>`;
       if(c.k==='cmt')return`<td style="font-family:var(--mono)">${s.cmt?'$'+(+s.cmt).toFixed(2):'-'}</td>`;
       if(c.k==='fob')return`<td style="font-family:var(--mono)">${s.fob?'$'+(+s.fob).toFixed(2):'-'}</td>`;
       if(c.k==='status')return`<td><span class="badge ${SC[s.status]||'bs'}">${s.status||'-'}</span></td>`;
-      if(c.k==='deadline'||c.k==='updated')return`<td style="font-size:11px">${s[c.k]||'-'}</td>`;
-      if(c.k==='manager')return`<td style="font-size:11px;color:var(--t2)">${s.manager||'-'}</td>`;
-      if(c.k==='member')return`<td style="font-size:11px;color:var(--al)">${s.member||'-'}</td>`;
-      if(c.k==='yarn')return`<td style="font-size:11px;color:var(--t2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${s.yarn||'-'}</td>`;
-      if(c.k==='mix')return`<td style="font-size:11px;color:var(--t2);max-width:110px;overflow:hidden;text-overflow:ellipsis">${s.mix||'-'}</td>`;
+      if(c.k==='deadline'||c.k==='updated')return`<td style="font-size:17px">${s[c.k]||'-'}</td>`;
+      if(c.k==='manager')return`<td style="font-size:17px;color:var(--t2)">${s.manager||'-'}</td>`;
+      if(c.k==='member')return`<td style="font-size:17px;color:var(--al)">${s.member||'-'}</td>`;
+      if(c.k==='yarn')return`<td style="font-size:17px;color:var(--t2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${s.yarn||'-'}</td>`;
+      if(c.k==='mix')return`<td style="font-size:17px;color:var(--t2);max-width:110px;overflow:hidden;text-overflow:ellipsis">${s.mix||'-'}</td>`;
       return`<td>${s[c.k]||'-'}</td>`;
     }).join('');
 
@@ -1116,9 +1129,9 @@ function renderSeason(){
               <td colspan="${visibleCols.length+1}" style="background:var(--bg2);padding:8px 12px;border-bottom:1px solid var(--b)">
                 <div style="display:flex;align-items:center;gap:8px">
                   <span style="font-size:12px;font-weight:700;color:var(--t0)">${sk==='factory'?`${(()=>{const f=DB.factories.find(x=>fn(x.id)===gv||x.name===gv);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:5px">🏭</span>`:''})()}`:''}<span>${gv}</span></span>
-                  <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${gRows.length}개</span>
-                  <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">수량 합계 ${totalQty.toLocaleString()}</span>
-                  ${sk==='status'?`<span class="badge ${SC[gv]||'bs'}" style="font-size:10px">${gv}</span>`:''}
+                  <span style="font-size:16px;color:var(--t3);font-family:var(--mono)">${gRows.length}개</span>
+                  <span style="font-size:16px;color:var(--t3);font-family:var(--mono)">수량 합계 ${totalQty.toLocaleString()}</span>
+                  ${sk==='status'?`<span class="badge ${SC[gv]||'bs'}" style="font-size:16px">${gv}</span>`:''}
                 </div>
               </td>
             </tr>
@@ -1152,9 +1165,9 @@ function renderSeason(){
     <select id="svw" onchange="renderContent()" style="flex:none;min-width:75px"><option value="table" ${vw==='table'?'selected':''}>테이블</option><option value="board" ${vw==='board'?'selected':''}>보드</option></select>
   </div>
   <div class="sbs">
-  <span style="font-size:11px;color:var(--t3);margin-right:4px">${isGrouped?'그룹:':'정렬:'}</span>
+  <span style="font-size:17px;color:var(--t3);margin-right:4px">${isGrouped?'그룹:':'정렬:'}</span>
   ${sbts}
-  ${isGrouped?`<button class="sb" onclick="setSt('style')" style="margin-left:8px;color:var(--red);font-size:10px">✕ 그룹 해제</button>`:''}
+  ${isGrouped?`<button class="sb" onclick="setSt('style')" style="margin-left:8px;color:var(--red);font-size:16px">✕ 그룹 해제</button>`:''}
 </div>
   ${main}`;
 }
@@ -1179,17 +1192,17 @@ function renderFactories(){
     <div class="fcard" onclick="openFactM('${f.id}')">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:28px;height:28px;border-radius:6px;background:${f.color||'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🏭</div>
-          <div style="font-size:14px;font-weight:600">${f.name}</div>
+          <div style="width:28px;height:28px;border-radius:6px;background:${f.color||'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏭</div>
+          <div style="font-size:16px;font-weight:600">${f.name}</div>
         </div>
         <span class="badge bs">${f.country||'-'}</span>
       </div>
-      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">${f.eng||''}</div>
+      <div style="font-size:17px;color:var(--t2);margin-bottom:8px">${f.eng||''}</div>
       <div class="fr"><span class="frl">항구</span><span>${f.port||'-'}</span></div>
       <div class="fr"><span class="frl">주소</span><span style="text-align:right;max-width:160px;word-break:break-all;white-space:normal">${f.addr||'-'}</span></div>
       <div class="fr"><span class="frl">연락처</span><span>${f.tel||'-'}</span></div>
       <div class="fr"><span class="frl">담당자</span><span>${f.liaison||'-'}</span></div>
-      ${f.remark?`<div class="fr" style="border-bottom:none"><span class="frl">비고</span><span style="color:var(--t2);font-size:11px;max-width:160px;word-break:break-all;white-space:normal">${f.remark}</span></div>`:''}
+      ${f.remark?`<div class="fr" style="border-bottom:none"><span class="frl">비고</span><span style="color:var(--t2);font-size:17px;max-width:160px;word-break:break-all;white-space:normal">${f.remark}</span></div>`:''}
       <div class="fr" style="border-bottom:none"><span class="frl">연결 스타일</span><span style="color:var(--al);font-weight:500">${Object.values(DB.styles).flat().filter(s=>s.factory===f.id).length}건</span></div>
     </div>`).join('')}</div>`;
 }
@@ -1243,19 +1256,19 @@ function renderPayments(){
       const sObj=Object.values(DB.styles).flat().find(s=>s.id===sx.styleId);
       return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--b)">
         <select onchange="updPayStyleItem(this)" data-pid="${p.id}" data-si="${si}"
-          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:11px;color:var(--al);font-family:var(--mono);flex:1;min-width:0">
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 6px;font-size:17px;color:var(--al);font-family:var(--mono);flex:1;min-width:0">
           <option value="">스타일 선택</option>
           ${allS.map(s=>`<option value="${s.id}" ${sx.styleId===s.id?'selected':''}>${s.style}</option>`).join('')}
         </select>
         <input type="number" value="${sx.price||0}" step="0.01" placeholder="단가"
           onchange="updPayStyleField(this)" data-pid="${p.id}" data-si="${si}" data-field="price"
-          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:65px;font-size:11px;color:var(--al);font-family:var(--mono)">
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:65px;font-size:17px;color:var(--al);font-family:var(--mono)">
         <input type="number" value="${sx.qty||0}" placeholder="수량"
           onchange="updPayStyleField(this)" data-pid="${p.id}" data-si="${si}" data-field="qty"
-          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:60px;font-size:11px;color:var(--t0);font-family:var(--mono)">
-        <span style="font-size:11px;color:var(--al);font-family:var(--mono);min-width:65px;text-align:right">$${Math.round((sx.price||0)*(sx.qty||0)).toLocaleString()}</span>
+          style="background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:3px 5px;width:60px;font-size:17px;color:var(--t0);font-family:var(--mono)">
+        <span style="font-size:17px;color:var(--al);font-family:var(--mono);min-width:65px;text-align:right">$${Math.round((sx.price||0)*(sx.qty||0)).toLocaleString()}</span>
         <button onclick="rmPayStyle(this)" data-pid="${p.id}" data-si="${si}"
-          style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:4px;color:var(--red);font-size:11px;padding:2px 6px;cursor:pointer;flex-shrink:0">✕</button>
+          style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:4px;color:var(--red);font-size:17px;padding:2px 6px;cursor:pointer;flex-shrink:0">✕</button>
       </div>`;
     }).join('');
 
@@ -1263,24 +1276,24 @@ function renderPayments(){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
         <input type="text" value="${p.title||''}" placeholder="결제 내용 입력..."
           onchange="updPayField(this.dataset.pid,'title',this.value)" data-pid="${p.id}"
-          style="flex:1;min-width:150px;background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:6px 10px;color:var(--t0);font-size:13px;font-weight:600">
+          style="flex:1;min-width:150px;background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:6px 10px;color:var(--t0);font-size:17px;font-weight:600">
         <span class="tag">${p.season}</span>
         <input type="date" value="${p.date||''}"
           onchange="updPayField(this.dataset.pid,'date',this.value)" data-pid="${p.id}"
           onclick="this.showPicker&&this.showPicker()"
-          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t1);font-size:11px;cursor:pointer">
+          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t1);font-size:17px;cursor:pointer">
         <input type="text" value="${p.note||''}" placeholder="비고"
           onchange="updPayField(this.dataset.pid,'note',this.value)" data-pid="${p.id}"
-          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t2);font-size:11px;width:100px">
-        <button onclick="delPay('${p.id}')" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:6px;color:var(--red);font-size:11px;padding:5px 10px;cursor:pointer">삭제</button>
+          style="background:var(--bg1);border:1px solid var(--b);border-radius:6px;padding:5px 8px;color:var(--t2);font-size:17px;width:100px">
+        <button onclick="delPay('${p.id}')" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:6px;color:var(--red);font-size:17px;padding:5px 10px;cursor:pointer">삭제</button>
       </div>
       <div style="margin-bottom:6px">${styleRows}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px">
         <button onclick="addPayStyle('${p.id}')"
-          style="background:var(--bg3);border:1px dashed var(--b2);border-radius:5px;color:var(--t2);font-size:11px;padding:4px 12px;cursor:pointer">
+          style="background:var(--bg3);border:1px dashed var(--b2);border-radius:5px;color:var(--t2);font-size:17px;padding:4px 12px;cursor:pointer">
           + 스타일 추가
         </button>
-        <div style="font-size:13px;font-weight:700;color:var(--al);font-family:var(--mono)">
+        <div style="font-size:17px;font-weight:700;color:var(--al);font-family:var(--mono)">
           합계: $${Math.round(payTotal).toLocaleString()}
         </div>
       </div>
@@ -1372,7 +1385,7 @@ function renderIncoming(){
       <option value="all">전체 상태</option>
       ${INC_STATUS.map(s=>`<option value="${s}">${s}</option>`).join('')}
     </select>
-    <span style="font-size:12px;color:var(--t2);align-self:center;margin-left:4px">총 ${rows.length}건 · ${totalQty.toLocaleString()}장</span>
+    <span style="font-size:16px;color:var(--t2);align-self:center;margin-left:4px">총 ${rows.length}건 · ${totalQty.toLocaleString()}장</span>
   </div>
 
   ${calView==='list'?`<div class="tw"><table class="fw">
@@ -1380,11 +1393,11 @@ function renderIncoming(){
     <tbody>${rows.length?rows.map(i=>{
       const isDelayed=i.status!=='입고완료'&&i.date&&new Date(i.date)<today;
       const wk=getWeek(i.date);
-      const wkLabel=wk==='past'?'<span style="color:var(--red);font-size:10px">⚠ 지연</span>':wk==='this'?'<span style="color:var(--al);font-size:10px">이번주</span>':wk==='next'?'<span style="color:var(--amb);font-size:10px">다음주</span>':'';
+      const wkLabel=wk==='past'?'<span style="color:var(--red);font-size:16px">⚠ 지연</span>':wk==='this'?'<span style="color:var(--al);font-size:16px">이번주</span>':wk==='next'?'<span style="color:var(--amb);font-size:16px">다음주</span>':'';
       const styleObj=allS.find(s=>s.id===i.styleId);
       return`<tr style="${isDelayed?'background:rgba(201,64,64,.04)':''}">
         <td>
-          <div style="font-weight:500;margin-bottom:3px;font-size:12px">${i.title||'스타일을 선택하세요'}</div>
+          <div style="font-weight:500;margin-bottom:3px;font-size:16px">${i.title||'스타일을 선택하세요'}</div>
           ${wkLabel}
         </td>
         <td><span class="tag">${i.season||'-'}</span></td>
@@ -1392,31 +1405,31 @@ function renderIncoming(){
           <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
             ${(i.styleIds||[i.styleId]).filter(Boolean).map((sid,idx2)=>{
               const sObj=Object.values(DB.styles).flat().find(s=>s.id===sid);
-              return`<span style="background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:2px 6px;font-size:10px;color:var(--al);font-family:var(--mono)">${sObj?.style||sid}</span>`;
+              return`<span style="background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:2px 6px;font-size:16px;color:var(--al);font-family:var(--mono)">${sObj?.style||sid}</span>`;
             }).join('')}
             <button onclick="openIncStylePicker(this)" data-iid="${i.id}"
-              style="background:var(--ac);border:none;border-radius:4px;color:#fff;font-size:11px;padding:2px 7px;cursor:pointer;flex-shrink:0">+</button>
+              style="background:var(--ac);border:none;border-radius:4px;color:#fff;font-size:17px;padding:2px 7px;cursor:pointer;flex-shrink:0">+</button>
           </div>
         </td>
-        <td style="font-size:11px"><span style="display:inline-flex;align-items:center">${ficon(i.factory)}${fn(i.factory)}</span></td>
+        <td style="font-size:17px"><span style="display:inline-flex;align-items:center">${ficon(i.factory)}${fn(i.factory)}</span></td>
         <td>
           <input type="date" value="${i.date||''}"
             onchange="updIncField(this.dataset.iid,'date',this.value)" data-iid="${i.id}"
             onclick="this.showPicker&&this.showPicker()"
-            style="background:none;border:none;color:${isDelayed?'var(--red)':'var(--t1)'};font-size:11px;font-weight:${isDelayed?'600':'400'};cursor:pointer;min-width:100px">
+            style="background:none;border:none;color:${isDelayed?'var(--red)':'var(--t1)'};font-size:17px;font-weight:${isDelayed?'600':'400'};cursor:pointer;min-width:100px">
         </td>
         <td><input type="number" value="${i.qty||0}"
             onchange="updIncField(this.dataset.iid,'qty',+this.value)" data-iid="${i.id}"
-            style="background:none;border:none;width:65px;color:var(--t0);font-family:var(--mono);font-size:12px"></td>
+            style="background:none;border:none;width:65px;color:var(--t0);font-family:var(--mono);font-size:16px"></td>
         <td>
           <select onchange="updIncStatus(this.dataset.sid,this.value)" data-sid="${i.id}"
-            style="background:none;border:none;font-size:11px;color:${i.status==='입고완료'?'var(--al)':i.status==='확정'?'#60a5fa':'var(--t2)'}">
+            style="background:none;border:none;font-size:17px;color:${i.status==='입고완료'?'var(--al)':i.status==='확정'?'#60a5fa':'var(--t2)'}">
             ${INC_STATUS.map(s=>`<option value="${s}" ${i.status===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </td>
         <td><input type="text" value="${i.note||''}" placeholder="비고"
           onchange="updIncField(this.dataset.iid,'note',this.value)" data-iid="${i.id}"
-          style="background:none;border:none;width:90px;color:var(--t2);font-size:11px"></td>
+          style="background:none;border:none;width:90px;color:var(--t2);font-size:17px"></td>
         <td><button class="btn g sm" onclick="delInc('${i.id}')">삭제</button></td>
       </tr>`;
     }).join(''):'<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--t2)">입고 계획 없음</td></tr>'}</tbody>
@@ -1458,11 +1471,11 @@ function renderIncCal(rows){
     const items=byDate[d]||[];
     const hasDelayed=items.some(i=>i.status!=='입고완료');
     cells+=`<div style="min-height:80px;background:${isToday?'rgba(61,143,110,.1)':'var(--bg2)'};border:1px solid ${isToday?'var(--ac)':'var(--b)'};border-radius:6px;padding:6px">
-      <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--al)':'var(--t2)'};margin-bottom:4px">${d}</div>
+      <div style="font-size:17px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--al)':'var(--t2)'};margin-bottom:4px">${d}</div>
       ${items.map(i=>{
         const styleObj=allS.find(s=>s.id===i.styleId);
         return`<div style="background:${i.status==='입고완료'?'rgba(61,143,110,.2)':i.status==='확정'?'rgba(37,99,175,.2)':'rgba(110,115,125,.2)'};
-          border-radius:4px;padding:2px 5px;margin-bottom:2px;font-size:10px;color:var(--t0);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+          border-radius:4px;padding:2px 5px;margin-bottom:2px;font-size:16px;color:var(--t0);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
           onclick="navSub('incoming','${i.season}')" title="${styleObj?.style||i.title}">
           ${styleObj?.style||i.title||'-'}
         </div>`;
@@ -1472,15 +1485,15 @@ function renderIncCal(rows){
 
   return`<div style="margin-top:16px;background:var(--bg1);border:1px solid var(--b);border-radius:8px;padding:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:700;color:var(--t0)">${monthName} 입고 계획</div>
-      <div style="display:flex;gap:8px;font-size:11px;color:var(--t2)">
+      <div style="font-size:16px;font-weight:700;color:var(--t0)">${monthName} 입고 계획</div>
+      <div style="display:flex;gap:8px;font-size:17px;color:var(--t2)">
         <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(110,115,125,.4);display:inline-block"></span>예정</span>
         <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(37,99,175,.4);display:inline-block"></span>확정</span>
         <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(61,143,110,.4);display:inline-block"></span>완료</span>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
-      ${dayNames.map((d,i)=>`<div style="text-align:center;font-size:10px;font-weight:600;color:${i===0?'var(--red)':i===6?'var(--al)':'var(--t3)'};padding:3px">${d}</div>`).join('')}
+      ${dayNames.map((d,i)=>`<div style="text-align:center;font-size:16px;font-weight:600;color:${i===0?'var(--red)':i===6?'var(--al)':'var(--t3)'};padding:3px">${d}</div>`).join('')}
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells}</div>
   </div>`;
@@ -1576,7 +1589,7 @@ function openIncStylePicker(btn){
   const styles=(DB.styles[i.season||season]||[]).filter(s=>eligible.includes(s.status));
   const list=document.getElementById('inc-style-list');
   if(!styles.length){
-    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">선적진행/선적완료/입고예정 상태 스타일 없음</div>';
+    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:16px">선적진행/선적완료/입고예정 상태 스타일 없음</div>';
   } else {
     list.innerHTML=styles.map(s=>{
       const isSelected=curIds.includes(s.id);
@@ -1587,10 +1600,10 @@ function openIncStylePicker(btn){
       return`<div onclick="addIncStyleItem('${s.id}')"
         style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--b);border-radius:7px;cursor:pointer;background:${isSelected?'rgba(61,143,110,.08)':'var(--bg2)'}"
         onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--b)'">
-        <span style="flex:1;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--al)">${s.style}</span>
+        <span style="flex:1;font-family:var(--mono);font-size:17px;font-weight:600;color:var(--al)">${s.style}</span>
         ${badge}
-        <span class="badge ${SC[s.status]||'bs'}" style="font-size:10px">${s.status}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--t2)">${(s.qty||0).toLocaleString()}장</span>
+        <span class="badge ${SC[s.status]||'bs'}" style="font-size:16px">${s.status}</span>
+        <span style="font-family:var(--mono);font-size:17px;color:var(--t2)">${(s.qty||0).toLocaleString()}장</span>
       </div>`;
     }).join('');
   }
@@ -1676,17 +1689,17 @@ function rTab(tab){
   if(tab==='info'){
     const ci=(s.ci||[]).map((f,i)=>`<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
       <input type="text" value="${f.label||''}" placeholder="항목명" oninput="uCF('ci',${i},'label',this.value)"
-        style="color:var(--t2);font-size:13px;background:none;border:none;width:150px;flex-shrink:0">
+        style="color:var(--t2);font-size:17px;background:none;border:none;width:150px;flex-shrink:0">
       <input type="text" value="${f.val||''}" placeholder="내용" oninput="uCF('ci',${i},'val',this.value)"
-        style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
-      <button onclick="rCF('ci',${i})" style="color:var(--t3);background:none;border:none;font-size:15px;cursor:pointer;padding:0 6px">×</button>
+        style="background:none;border:none;font-size:16px;color:var(--t0);flex:1">
+      <button onclick="rCF('ci',${i})" style="color:var(--t3);background:none;border:none;font-size:17px;cursor:pointer;padding:0 6px">×</button>
     </div>`).join('');
     const cm=(s.cm2||[]).map((f,i)=>`<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
       <input type="text" value="${f.label||''}" placeholder="항목명" oninput="uCF('cm2',${i},'label',this.value)"
-        style="color:var(--t2);font-size:13px;background:none;border:none;width:150px;flex-shrink:0">
+        style="color:var(--t2);font-size:17px;background:none;border:none;width:150px;flex-shrink:0">
       <input type="text" value="${f.val||''}" placeholder="내용" oninput="uCF('cm2',${i},'val',this.value)"
-        style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
-      <button onclick="rCF('cm2',${i})" style="color:var(--t3);background:none;border:none;font-size:15px;cursor:pointer;padding:0 6px">×</button>
+        style="background:none;border:none;font-size:16px;color:var(--t0);flex:1">
+      <button onclick="rCF('cm2',${i})" style="color:var(--t3);background:none;border:none;font-size:17px;cursor:pointer;padding:0 6px">×</button>
     </div>`).join('');
     const fobj=DB.factories.find(f=>f.id===s.factory);
     const fcountry=fobj?.country||'';
@@ -1697,39 +1710,39 @@ function rTab(tab){
       <!-- ① 상단 헤더 -->
       <div style="padding:56px 48px 0">
         <input type="text" id="pst" value="${s.style||''}"
-          style="background:none;border:none;font-size:30px;font-weight:700;color:var(--t0);font-family:var(--mono);width:100%;letter-spacing:-.01em;margin-bottom:18px;display:block">
+          style="background:none;border:none;font-size:32px;font-weight:800;color:var(--t0);font-family:var(--mono);width:100%;letter-spacing:-.01em;margin-bottom:18px;display:block">
 
         <!-- 진행상태 · 마감일 · 담당자 · 실장님 (테이블 레이아웃으로 정렬) -->
         <table style="border-collapse:collapse;margin-bottom:4px">
           <tr>
-            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">⚙ 진행상태</td>
-            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">📅 마감일</td>
-            <td style="font-size:11px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">👤 담당자</td>
-            <td style="font-size:11px;color:var(--t3);padding:0 0 3px 0;white-space:nowrap">⊙ 실장님</td>
+            <td style="font-size:17px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">⚙ 진행상태</td>
+            <td style="font-size:17px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">📅 마감일</td>
+            <td style="font-size:17px;color:var(--t3);padding:0 28px 3px 0;white-space:nowrap">👤 담당자</td>
+            <td style="font-size:17px;color:var(--t3);padding:0 0 3px 0;white-space:nowrap">⊙ 실장님</td>
           </tr>
           <tr style="vertical-align:middle">
             <td style="padding:0 28px 0 0">
               <select id="pst2" onchange="onPst2Change(this)"
                 class="${SC[s.status]||'bs'}"
-                style="border:none;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;padding:3px 10px;color-scheme:dark;outline:none">
+                style="border:none;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;padding:3px 10px;color-scheme:dark;outline:none">
                 ${SL.map(st=>`<option value="${st}" ${s.status===st?'selected':''}>${st}</option>`).join('')}
               </select>
             </td>
             <td style="padding:0 28px 0 0">
               <input type="date" id="pdl" value="${s.deadline||''}"
                 onclick="this.showPicker&&this.showPicker()"
-                style="background:none;border:none;font-size:14px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;min-width:105px">
+                style="background:none;border:none;font-size:16px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;min-width:105px">
             </td>
             <td style="padding:0 28px 0 0">
               <select id="pmember" onchange="onPmemberChange(this)"
-                style="background:none;border:none;font-size:14px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:120px">
+                style="background:none;border:none;font-size:16px;font-weight:500;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:120px">
                 <option value="">—</option>
                 ${(DB.members||[]).map(m=>`<option value="${m}" ${s.member===m?'selected':''}>${m}</option>`).join('')}
               </select>
             </td>
             <td style="padding:0">
               <select id="pmgr" onchange="onPmgrChange(this)"
-                style="background:none;border:none;font-size:14px;font-weight:600;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:140px">
+                style="background:none;border:none;font-size:16px;font-weight:600;color:var(--t0);cursor:pointer;padding:0;color-scheme:dark;max-width:140px">
                 <option value="">—</option>
                 ${(DB.managers||[]).map(m=>`<option value="${m}" ${s.manager===m?'selected':''}>${m}</option>`).join('')}
               </select>
@@ -1742,42 +1755,42 @@ function rTab(tab){
 
       <!-- ② 속성 목록 -->
       <div style="padding:10px 32px 6px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:4px">속성</div>
+        <div style="font-size:17px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:4px">속성</div>
       </div>
       <div style="padding:0 32px 10px">
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 브랜드</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">☰ 브랜드</span>
           <div style="position:relative;flex:1">
             <input type="text" id="pbr" value="${s.brand||''}" placeholder="—"
               autocomplete="off" oninput="brandDropFilter(this.value)" onfocus="brandDropShow()" onblur="setTimeout(brandDropHide,200)"
-              style="background:none;border:none;font-size:14px;color:var(--t0);width:100%">
+              style="background:none;border:none;font-size:16px;color:var(--t0);width:100%">
             <div id="brand-drop" style="display:none;position:absolute;left:0;top:100%;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,.4)"></div>
           </div>
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">★ 수량</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">★ 수량</span>
           <input type="number" id="pqt" value="${s.qty||''}" placeholder="—"
-            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1;font-family:var(--mono)">
+            style="background:none;border:none;font-size:16px;color:var(--t0);flex:1;font-family:var(--mono)">
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">💰 CMT/FOB</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">💰 CMT/FOB</span>
           <div style="display:flex;gap:8px;align-items:center;flex:1">
             <input type="number" id="pcmt" value="${s.cmt||''}" step="0.01" placeholder="CMT"
-              style="background:none;border:none;font-size:14px;color:var(--al);width:80px;font-family:var(--mono)">
-            <span style="color:var(--t3);font-size:12px">/</span>
+              style="background:none;border:none;font-size:16px;color:var(--al);width:80px;font-family:var(--mono)">
+            <span style="color:var(--t3);font-size:16px">/</span>
             <input type="number" id="pfob" value="${s.fob||''}" step="0.01" placeholder="FOB"
-              style="background:none;border:none;font-size:14px;color:var(--t0);width:80px;font-family:var(--mono)">
+              style="background:none;border:none;font-size:16px;color:var(--t0);width:80px;font-family:var(--mono)">
           </div>
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">🏭 공장</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">🏭 공장</span>
           <div style="display:flex;align-items:center;gap:4px">
-            ${ficon}${fcountry?`<span style="font-size:12px;color:var(--t3);margin-right:6px">${fcountry}</span>`:''}
-            <select id="pfc" style="background:none;border:none;font-size:14px;color:var(--t0);cursor:pointer;color-scheme:dark">
+            ${ficon}${fcountry?`<span style="font-size:16px;color:var(--t3);margin-right:6px">${fcountry}</span>`:''}
+            <select id="pfc" style="background:none;border:none;font-size:16px;color:var(--t0);cursor:pointer;color-scheme:dark">
               <option value="">—</option>
               ${DB.factories.map(f=>`<option value="${f.id}" ${s.factory===f.id?'selected':''}>${f.name}</option>`).join('')}
             </select>
@@ -1785,36 +1798,36 @@ function rTab(tab){
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 원사</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">☰ 원사</span>
           <input type="text" id="pyn" value="${s.yarn||''}" placeholder="—"
-            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+            style="background:none;border:none;font-size:16px;color:var(--t0);flex:1">
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">☰ 혼용율</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">☰ 혼용율</span>
           <textarea id="pmx" rows="1"
-            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1;resize:none;overflow:hidden;line-height:1.5;padding:0;font-family:var(--sans)"
+            style="background:none;border:none;font-size:16px;color:var(--t0);flex:1;resize:none;overflow:hidden;line-height:1.5;padding:0;font-family:var(--sans)"
             oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${s.mix||''}</textarea>
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">⚖ 중량</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">⚖ 중량</span>
           <input type="text" id="pwt" value="${s.weight||''}" placeholder="—"
-            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+            style="background:none;border:none;font-size:16px;color:var(--t0);flex:1">
         </div>
 
         <div style="display:flex;align-items:center;padding:7px 0;${(s.ci||[]).length?'border-bottom:1px solid var(--b)':''}">
-          <span style="font-size:13px;color:var(--t2);width:150px;flex-shrink:0">📋 HSCODE</span>
+          <span style="font-size:17px;color:var(--t2);width:150px;flex-shrink:0">📋 HSCODE</span>
           <input type="text" id="phs" value="${s.hs||''}" placeholder="—"
-            style="background:none;border:none;font-size:14px;color:var(--t0);flex:1">
+            style="background:none;border:none;font-size:16px;color:var(--t0);flex:1">
         </div>
 
         ${ci}
         ${(s.cm2||[]).length?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--b)">${cm}</div>`:''}
 
         <div style="padding:10px 0;display:flex;gap:10px">
-          <button class="btn g sm" onclick="addCF('ci')" style="font-size:12px;color:var(--t3)">+ 속성 추가</button>
-          <button class="btn g sm" onclick="addCF('cm2')" style="font-size:12px;color:var(--t3)">+ 소재 정보 추가</button>
+          <button class="btn g sm" onclick="addCF('ci')" style="font-size:16px;color:var(--t3)">+ 속성 추가</button>
+          <button class="btn g sm" onclick="addCF('cm2')" style="font-size:16px;color:var(--t3)">+ 소재 정보 추가</button>
         </div>
       </div>
 
@@ -1822,14 +1835,14 @@ function rTab(tab){
 
       <!-- ③ 작업지시서 -->
       <div style="padding:14px 32px">
-        <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">작업지시서</div>
+        <div style="font-size:16px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">작업지시서</div>
         ${!hasWop?`<div class="uz" id="wo-dropzone"
           onclick="document.getElementById('woi').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
           ondragleave="this.style.borderColor='';this.style.background=''"
           ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addWOPDrop(event)">
           <div class="uzt">📋 작업지시서 파일 업로드</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그 · 사진, PDF, 엑셀, 워드 등</div>
+          <div style="font-size:17px;color:var(--t3);margin-top:2px">클릭 또는 드래그 · 사진, PDF, 엑셀, 워드 등</div>
         </div>`:''}
         <input type="file" id="woi" accept="image/*,.pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.zip,.hwp" multiple style="display:none" onchange="addWOP(event)">
         <div id="wog">${(s.wop||[]).map((item,i)=>{
@@ -1844,38 +1857,38 @@ function rTab(tab){
             ${isImg?`<img src="${src}" class="wothumb" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in;border-radius:8px" title="더블클릭 확대">`
               :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;cursor:pointer" onclick="openPdfViewer('${src}','${name}')">
                 <div style="height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
-                  <span style="font-size:26px">📄</span><span style="font-size:11px;color:var(--t2)">${shortName}</span>
+                  <span style="font-size:26px">📄</span><span style="font-size:17px;color:var(--t2)">${shortName}</span>
                 </div></div>`
               :`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
                 <span style="font-size:20px">${icon}</span>
-                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
-                <div style="font-size:10px;color:var(--t3)">${Math.round((item.size||0)/1024)}KB</div></div></div>`}
+                <div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+                <div style="font-size:16px;color:var(--t3)">${Math.round((item.size||0)/1024)}KB</div></div></div>`}
             <button class="pdel" style="top:6px;right:6px" onclick="rmWOP(${i})">✕</button>
           </div>`;
         }).join('')}
-        ${hasWop?`<button class="btn g sm" style="margin-top:6px;font-size:12px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>`:''}
+        ${hasWop?`<button class="btn g sm" style="margin-top:6px;font-size:16px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>`:''}
       </div>
 
       <!-- ④ 특이사항 (맨 아래) -->
       <div style="height:1px;background:var(--b)"></div>
       <div style="padding:14px 32px">
-        <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:6px">특이사항</div>
+        <div style="font-size:16px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:6px">특이사항</div>
         <textarea id="pnt" rows="3" placeholder="특이사항 입력..."
-          style="width:100%;background:none;border:none;color:var(--t1);resize:vertical;font-size:14px;line-height:1.7;padding:0;font-family:var(--sans)">${s.note||''}</textarea>
+          style="width:100%;background:none;border:none;color:var(--t1);resize:vertical;font-size:16px;line-height:1.7;padding:0;font-family:var(--sans)">${s.note||''}</textarea>
       </div>
     `;
 
 
 
   } else if(tab==='photos'){
-    body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">스타일 사진</div>
+    body.innerHTML=`<div class="ps"><div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">스타일 사진</div>
       <div class="uz" id="ph-dropzone"
         onclick="document.getElementById('phi').click()"
         ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
         ondragleave="this.style.borderColor='';this.style.background=''"
         ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addPhDrop(event)">
         <div class="uzt">사진 업로드</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기</div>
+        <div style="font-size:17px;color:var(--t3);margin-top:2px">클릭 또는 드래그해서 놓기</div>
       </div>
       <input type="file" id="phi" accept="image/*" multiple style="display:none" onchange="addPh(event)">
       <div class="pgr" id="phg">${(s.photos||[]).map((src,i)=>`<div class="ptw"><img src="${src}" class="pth" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in" title="더블클릭하면 크게 보기"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')}</div>
@@ -1885,21 +1898,21 @@ function rTab(tab){
   } else if(tab==='pay'){
     const list=DB.payments.filter(p=>p.styleId===pSid);
     const tot2=list.reduce((a,p)=>a+(p.price||0)*(p.qty||0),0);
-    body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">결제 현황</div>
-      <div style="font-size:11px;color:var(--t2);margin-bottom:10px">총 결제: <strong style="color:var(--t0);font-family:var(--mono)">$${Math.round(tot2).toLocaleString()}</strong></div>
+    body.innerHTML=`<div class="ps"><div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">결제 현황</div>
+      <div style="font-size:17px;color:var(--t2);margin-bottom:10px">총 결제: <strong style="color:var(--t0);font-family:var(--mono)">$${Math.round(tot2).toLocaleString()}</strong></div>
       ${list.map(p=>`<div style="border:1px solid var(--b);border-radius:6px;padding:10px 12px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:500;margin-bottom:5px">${p.title}</div>
-        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t2)">날짜</span><span>${p.date||'-'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t2)">금액</span><span style="font-family:var(--mono)">$${Math.round((p.price||0)*(p.qty||0)).toLocaleString()}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t2)">비고</span><span>${p.note||'-'}</span></div>
-      </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">결제 내역 없음</div>'}</div>`;
+        <div style="font-size:16px;font-weight:500;margin-bottom:5px">${p.title}</div>
+        <div style="display:flex;justify-content:space-between;font-size:16px"><span style="color:var(--t2)">날짜</span><span>${p.date||'-'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px"><span style="color:var(--t2)">금액</span><span style="font-family:var(--mono)">$${Math.round((p.price||0)*(p.qty||0)).toLocaleString()}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px"><span style="color:var(--t2)">비고</span><span>${p.note||'-'}</span></div>
+      </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:16px">결제 내역 없음</div>'}</div>`;
   } else if(tab==='qct'){
     const qcEditMode = body.dataset.qcEdit === 'true';
     body.dataset.qcEdit = body.dataset.qcEdit || 'false';
 
     body.innerHTML=`<div class="ps">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
+        <div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
         <button class="btn ${qcEditMode?'':'p'} sm" onclick="toggleQcEdit()" id="qc-edit-btn">
           ${qcEditMode?'✅ 편집 완료':'✏️ QC 편집'}
         </button>
@@ -1911,11 +1924,11 @@ function rTab(tab){
           <div style="background:var(--bg2);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)">
             ${qcEditMode
               ?`<input type="text" value="${(q.t||'').replace(/"/g,'&quot;')}" oninput="sqT(${qi},this.value)"
-                  style="font-size:14px;font-weight:700;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b2);flex:1;outline:none">`
-              :`<span style="font-size:14px;font-weight:700;color:var(--t0)">${q.t||((qi+1)+'차 QC')}</span>`
+                  style="font-size:16px;font-weight:700;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b2);flex:1;outline:none">`
+              :`<span style="font-size:16px;font-weight:700;color:var(--t0)">${q.t||((qi+1)+'차 QC')}</span>`
             }
-            ${q.p?.length?`<span style="font-size:11px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
-            ${qcEditMode?`<button onclick="rmQCR(${qi})" style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.3);border-radius:6px;color:var(--red);font-size:11px;padding:3px 8px;cursor:pointer;margin-left:4px">삭제</button>`:''}
+            ${q.p?.length?`<span style="font-size:17px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
+            ${qcEditMode?`<button onclick="rmQCR(${qi})" style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.3);border-radius:6px;color:var(--red);font-size:17px;padding:3px 8px;cursor:pointer;margin-left:4px">삭제</button>`:''}
           </div>
 
           <!-- 사진 -->
@@ -1925,14 +1938,14 @@ function rTab(tab){
                 <img src="${src}" style="width:100%;display:block;object-fit:contain;max-height:400px;background:#000;cursor:zoom-in"
                   onclick="openPhotoViewer('${src}')">
                 ${qcEditMode?`<button onclick="rmQCP(${qi},${pi})"
-                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:11px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`:''}
+                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:17px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`:''}
               </div>`).join('')}
             ${qcEditMode?`<div style="border:1px dashed var(--b2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-top:4px"
               onclick="document.getElementById('qci${qi}').click()"
               ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
               ondragleave="this.style.borderColor='var(--b2)'"
               ondrop="event.preventDefault();this.style.borderColor='var(--b2)';qcDropPh(event,${qi})">
-              <span style="font-size:12px;color:var(--t3)">📷 사진 추가 (클릭 또는 드래그)</span>
+              <span style="font-size:16px;color:var(--t3)">📷 사진 추가 (클릭 또는 드래그)</span>
             </div>
             <input type="file" id="qci${qi}" accept="image/*" multiple style="display:none" onchange="qcAddPh(event,${qi})">`:''}
           </div>
@@ -1941,31 +1954,31 @@ function rTab(tab){
           <div style="padding:12px 16px">
             ${qcEditMode
               ?`<textarea oninput="sqC(${qi},this.value)" rows="3"
-                  style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:13px;line-height:1.6;font-family:var(--sans)"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:15px;line-height:1.6;font-family:var(--sans)"
                   >${q.c||''}</textarea>`
               :`<div>
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                  <span style="font-size:10px;color:var(--t3)">색상:</span>
+                  <span style="font-size:16px;color:var(--t3)">색상:</span>
                   ${['#f0f1f3','#60a5fa','#4ade80','#fb923c','#f87171','#c084fc','#facc15'].map(c=>
                     `<div onclick="setQcColor(${qi},'${c}')"
                       style="width:16px;height:16px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(q.color||'#f0f1f3')===c?'#fff':'transparent'};flex-shrink:0"></div>`
                   ).join('')}
                 </div>
                 ${q.c
-                  ?`<div style="font-size:13px;line-height:1.7;color:${q.color||'var(--t1)'};white-space:pre-wrap">${q.c}</div>`
-                  :`<div style="font-size:12px;color:var(--t3);font-style:italic">코멘트 없음</div>`}
+                  ?`<div style="font-size:15px;line-height:1.7;color:${q.color||'var(--t1)'};white-space:pre-wrap">${q.c}</div>`
+                  :`<div style="font-size:16px;color:var(--t3);font-style:italic">코멘트 없음</div>`}
               </div>`
             }
           </div>
         </div>`).join('')}
 
-      ${!(s.qc||[]).length?`<div style="text-align:center;padding:32px;color:var(--t2);font-size:12px">
+      ${!(s.qc||[]).length?`<div style="text-align:center;padding:32px;color:var(--t2);font-size:16px">
         QC 내역 없음${qcEditMode?' — 아래 버튼으로 차수를 추가하세요':''}
       </div>`:''}
 
       <!-- + 차수 추가 버튼 - 편집 모드일 때만, 맨 아래 빨간색 -->
       ${qcEditMode?`<button onclick="addQCR()"
-        style="width:100%;padding:12px;border:1px dashed var(--red);border-radius:8px;background:rgba(201,64,64,.06);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">
+        style="width:100%;padding:12px;border:1px dashed var(--red);border-radius:8px;background:rgba(201,64,64,.06);color:var(--red);font-size:17px;font-weight:600;cursor:pointer;margin-top:4px">
         + 차수 추가
       </button>`:''}
     </div>`;
@@ -1976,27 +1989,27 @@ function rTab(tab){
     rMemoTab(s);
   } else if(tab==='etc'){
     const tasks=s.tasks||[];
-    body.innerHTML=`<div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">지원 파일</div>
+    body.innerHTML=`<div class="ps"><div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">지원 파일</div>
       <div class="uz" onclick="document.getElementById('etcf').click()"><div class="uzt">파일 업로드</div></div>
       <input type="file" id="etcf" multiple style="display:none" onchange="addEtc(event)">
       <div style="margin-top:8px">${(s.files||[]).map((f,i)=>{
         const isImg=f.type&&f.type.startsWith('image/');
         const isPdf=f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf');
         const icon=isPdf?'📄':isImg?'🖼':f.name.match(/\.xlsx?$/i)?'📊':f.name.match(/\.docx?$/i)?'📝':f.name.match(/\.pptx?$/i)?'📑':'📎';
-        return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--b);border-radius:6px;margin-bottom:5px;font-size:12px">
+        return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--b);border-radius:6px;margin-bottom:5px;font-size:16px">
           <span style="font-size:16px">${icon}</span>
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
-          <span style="font-size:10px;color:var(--t3)">${Math.round((f.size||0)/1024)}KB</span>
+          <span style="font-size:16px;color:var(--t3)">${Math.round((f.size||0)/1024)}KB</span>
           ${(isImg&&(f.url||f.data))?`<button class="btn g sm" onclick="openPhotoViewer('${f.url||f.data||''}')">🔍</button>`:''}
           ${(isPdf&&(f.url||f.data))?`<button class="btn g sm" onclick="openPdfViewer('${f.url||f.data||''}','${f.name}')">👁</button>`:''}
           <button class="btn g sm" onclick="rEtc(${i})">✕</button>
         </div>`;
       }).join('')}</div>
     </div>
-    <div class="ps"><div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">하위 작업</div>
+    <div class="ps"><div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">하위 작업</div>
       <div>${tasks.map((t,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <input type="checkbox" ${t.done?'checked':''} onchange="togTask(${i},this.checked)">
-        <input type="text" value="${t.text||''}" oninput="uTask(${i},this.value)" style="flex:1;background:none;border:none;color:var(--t0);font-size:12px;border-bottom:1px solid var(--b)">
+        <input type="text" value="${t.text||''}" oninput="uTask(${i},this.value)" style="flex:1;background:none;border:none;color:var(--t0);font-size:16px;border-bottom:1px solid var(--b)">
         <button class="btn g sm" onclick="rTask(${i})">✕</button>
       </div>`).join('')}</div>
       <button class="btn sm" style="margin-top:4px" onclick="addTask()">+ 추가</button></div>`;
@@ -2020,22 +2033,22 @@ function rProd(s){
   <div style="padding:14px 16px;border-bottom:1px solid var(--b)">
     <!-- 수식 입력바 -->
     <div style="display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:5px 10px;margin-bottom:10px">
-      <span id="pcell-ref" style="font-family:var(--mono);font-size:11px;color:var(--al);min-width:36px;font-weight:600">—</span>
-      <span style="color:var(--t3);font-size:13px">fx</span>
+      <span id="pcell-ref" style="font-family:var(--mono);font-size:17px;color:var(--al);min-width:36px;font-weight:600">—</span>
+      <span style="color:var(--t3);font-size:17px">fx</span>
       <input type="text" id="pfx" placeholder="셀 선택 후 입력하거나 =SUM( 입력 후 드래그로 범위 지정"
-        style="flex:1;background:none;border:none;color:var(--t0);font-family:var(--mono);font-size:12px"
+        style="flex:1;background:none;border:none;color:var(--t0);font-family:var(--mono);font-size:16px"
         oninput="pfxInput(this.value)" onkeydown="pfxKey(event)">
     </div>
     <!-- 버튼 바 -->
     <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-      <span style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-right:2px">편직일보</span>
+      <span style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;margin-right:2px">편직일보</span>
       <button class="btn sm" onclick="pAC()">+ 열</button>
       <button class="btn sm" onclick="pDC()">− 열</button>
       <button class="btn sm" onclick="pAR()">+ 행</button>
       <button class="btn sm" onclick="pDR()">− 행</button>
       <button class="btn sm" onclick="tblUndo('prod')" title="되돌리기 (Ctrl+Z)" style="color:var(--t1)">↩</button>
       <button class="btn sm" onclick="tblRedo('prod')" title="다시실행 (Ctrl+Y)" style="color:var(--t1)">↪</button>
-      <button class="btn g sm" onclick="pHelp()" style="font-size:11px">함수</button>
+      <button class="btn g sm" onclick="pHelp()" style="font-size:17px">함수</button>
     </div>
     <!-- 스프레드시트 -->
     <div class="plw" id="plw">
@@ -2045,16 +2058,16 @@ function rProd(s){
             <th class="rn" style="background:var(--bg3)">#</th>
             ${p.cols.map((c,ci)=>`<th class="plch" data-ci="${ci}" oncontextmenu="pCC(event,${ci})" style="min-width:${c.w||80}px;position:relative">
               <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
-                <span style="font-size:10px;color:var(--al);font-family:var(--mono);font-weight:700;letter-spacing:.05em">${colLetter(ci)}</span>
+                <span style="font-size:16px;color:var(--al);font-family:var(--mono);font-weight:700;letter-spacing:.05em">${colLetter(ci)}</span>
                 <input type="text" value="${esc(c.l||'')}" oninput="pUL(${ci},this.value)"
-                  style="background:none;border:none;color:var(--t2);font-size:10px;font-weight:600;text-transform:uppercase;width:100%;text-align:center;padding:0">
+                  style="background:none;border:none;color:var(--t2);font-size:16px;font-weight:600;text-transform:uppercase;width:100%;text-align:center;padding:0">
               </div>
             </th>`).join('')}
           </tr>
         </thead>
         <tbody>
           ${p.rows.map((row,ri)=>`<tr id="pr-${ri}">
-            <td class="rn" oncontextmenu="pRC(event,${ri})" style="font-size:10px;font-family:var(--mono);color:var(--al);font-weight:600">${ri+1}</td>
+            <td class="rn" oncontextmenu="pRC(event,${ri})" style="font-size:16px;font-family:var(--mono);color:var(--al);font-weight:600">${ri+1}</td>
             ${p.cols.map((c,ci)=>{
               const raw=(row[ci]||'').toString();
               const isF=raw.startsWith('=');
@@ -2074,7 +2087,7 @@ function rProd(s){
                     oninput="pCI(${ri},${ci},this)"
                     onblur="pCB(${ri},${ci},this)"
                     onkeydown="pKey(event,${ri},${ci})"
-                    style="width:100%;padding:5px 7px;background:transparent;border:none;color:${isErr?'var(--red)':'var(--t0)'};font-family:var(--mono);font-size:12px">
+                    style="width:100%;padding:5px 7px;background:transparent;border:none;color:${isErr?'var(--red)':'var(--t0)'};font-family:var(--mono);font-size:16px">
                 </td>`;
               }
             }).join('')}
@@ -2082,7 +2095,7 @@ function rProd(s){
         </tbody>
       </table>
     </div>
-    <div style="font-size:11px;color:var(--t2);margin-top:8px">
+    <div style="font-size:17px;color:var(--t2);margin-top:8px">
       열 헤더/행 번호 우클릭 → 추가/삭제 메뉴 · #ERR 셀 클릭 → 직접 수정 가능 · =SUM( 입력 후 드래그로 범위 지정
     </div>
   </div>`;
@@ -2143,7 +2156,7 @@ function pSelF(ri,ci){
     oninput="pCI(${ri},${ci},this)"
     onblur="pCB(${ri},${ci},this)"
     onkeydown="pKey(event,${ri},${ci})"
-    style="width:100%;padding:5px 7px;background:transparent;border:none;color:var(--t0);font-family:var(--mono);font-size:12px">`;
+    style="width:100%;padding:5px 7px;background:transparent;border:none;color:var(--t0);font-family:var(--mono);font-size:16px">`;
   const inp=td.querySelector('input');inp.focus();inp.select();
   pSel={r:ri,c:ci};
   document.getElementById('pcell-ref').textContent=colLetter(ci)+(ri+1);
@@ -2432,16 +2445,16 @@ function mgrDropRender(q, inputId='pmgr', dropId='mgr-drop'){
   if(!drop)return;
   const list=DB.managers.filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
   if(!list.length){
-    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">목록 없음</div>';
+    drop.innerHTML='<div style="padding:10px 12px;font-size:16px;color:var(--t2);text-align:center">목록 없음</div>';
     return;
   }
   // 전체 리스트를 버튼 형태로 표시 - 스크롤 없이 전부 보임
   drop.innerHTML=`<div style="padding:6px">`+list.map((m,i)=>`
     <div onclick="mgrDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
-      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      style="padding:9px 12px;font-size:17px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
       onmouseout="this.style.background='';this.style.color='var(--t0)'">
-      <span style="font-size:13px">👤</span>
+      <span style="font-size:17px">👤</span>
       ${m}
     </div>`).join('')+`</div>`;
 }
@@ -2496,16 +2509,16 @@ function renderQCM(s){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <input type="text" value="${(q.t||'').replace(/"/g,'&quot;')}" placeholder="차수명"
           oninput="sqT(${i},this.value)"
-          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0);font-size:13px;font-weight:600">
-        <button onclick="rmQCR(${i})" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:5px;color:var(--red);font-size:11px;padding:4px 8px;cursor:pointer">삭제</button>
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0);font-size:17px;font-weight:600">
+        <button onclick="rmQCR(${i})" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);border-radius:5px;color:var(--red);font-size:17px;padding:4px 8px;cursor:pointer">삭제</button>
       </div>
       <textarea placeholder="코멘트 입력..." rows="2" oninput="sqC(${i},this.value)"
-        style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:7px 9px;color:var(--t0);resize:vertical;font-size:12px;margin-bottom:8px"
+        style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:7px 9px;color:var(--t0);resize:vertical;font-size:16px;margin-bottom:8px"
         >${q.c||''}</textarea>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
         ${(q.p||[]).map((src,pi)=>`<div style="position:relative">
           <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;cursor:zoom-in" ondblclick="openPhotoViewer('${src}')">
-          <button onclick="rmQCP(${i},${pi})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:10px;width:18px;height:18px;cursor:pointer">✕</button>
+          <button onclick="rmQCP(${i},${pi})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:16px;width:18px;height:18px;cursor:pointer">✕</button>
         </div>`).join('')}
       </div>
       <div style="border:1px dashed var(--b2);border-radius:6px;padding:10px;text-align:center;cursor:pointer"
@@ -2513,7 +2526,7 @@ function renderQCM(s){
         ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
         ondragleave="this.style.borderColor='var(--b2)'"
         ondrop="event.preventDefault();this.style.borderColor='var(--b2)';qcDropPh(event,${i})">
-        <span style="font-size:11px;color:var(--t2)">📷 사진 추가 (클릭 또는 드래그)</span>
+        <span style="font-size:17px;color:var(--t2)">📷 사진 추가 (클릭 또는 드래그)</span>
       </div>
       <input type="file" id="qci${i}" accept="image/*" multiple style="display:none" onchange="qcAddPh(event,${i})">
     </div>`).join('');
@@ -2631,8 +2644,8 @@ function mobRenderHome(){
   el.innerHTML=`<div style="padding:10px 12px">${DB.seasons.map(s=>{
     const cnt=(DB.styles[s.id]||[]).length;
     return`<div onclick="mobSeason='${s.id}';mobNav('season')" style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-size:15px;font-weight:700;margin-bottom:3px">${s.icon} ${s.name}</div>
-      <div style="font-size:11px;color:var(--t2)">${cnt}개 스타일</div></div>
+      <div><div style="font-size:17px;font-weight:700;margin-bottom:3px">${s.icon} ${s.name}</div>
+      <div style="font-size:17px;color:var(--t2)">${cnt}개 스타일</div></div>
       <span style="color:var(--t3);font-size:18px">›</span>
     </div>`;}).join('')}</div>`;
 }
@@ -2645,7 +2658,7 @@ function mobRenderSeason(){
   document.getElementById('mob-sub').textContent=all.length+'개 스타일';
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
   const seasonTabs=DB.seasons.map(s=>`<button onclick="mobSeason='${s.id}';mobRenderSeason()"
-    style="flex:none;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:none;margin-right:6px;
+    style="flex:none;padding:5px 12px;border-radius:20px;font-size:17px;font-weight:600;border:none;margin-right:6px;
     background:${s.id===mobSeason?'var(--ac)':'var(--bg3)'};color:${s.id===mobSeason?'#fff':'var(--t2)'}">
     ${s.name}</button>`).join('');
   el.innerHTML=`
@@ -2674,11 +2687,11 @@ function mobRenderFactories(){
   el.innerHTML=`<div style="padding:10px 12px">
     ${DB.factories.map(f=>`<div onclick="openFactM('${f.id}')" style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
       <div style="width:36px;height:36px;border-radius:8px;background:${f.color||'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏭</div>
-      <div style="flex:1"><div style="font-size:14px;font-weight:700;margin-bottom:3px">${f.name}</div>
-      <div style="font-size:11px;color:var(--t2)">${f.country||'-'} · ${f.liaison||'-'}</div></div>
+      <div style="flex:1"><div style="font-size:16px;font-weight:700;margin-bottom:3px">${f.name}</div>
+      <div style="font-size:17px;color:var(--t2)">${f.country||'-'} · ${f.liaison||'-'}</div></div>
       <span style="color:var(--t3);font-size:18px">›</span>
     </div>`).join('')}
-    <button class="btn p sm" onclick="openFactM()" style="width:100%;padding:12px;font-size:13px;margin-top:4px">+ 공장 추가</button>
+    <button class="btn p sm" onclick="openFactM()" style="width:100%;padding:12px;font-size:17px;margin-top:4px">+ 공장 추가</button>
   </div>`;
 }
 function mobRenderPayments(){
@@ -2687,8 +2700,8 @@ function mobRenderPayments(){
   document.getElementById('mob-sub').textContent=DB.payments.length+'건';
   el.innerHTML=`<div style="padding:10px 12px">
     ${DB.payments.filter(p=>!mobSeason||p.season===mobSeason).map(p=>`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${p.title||'-'}</div>
-      <div style="font-size:11px;color:var(--t2)">${p.date||'-'}</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:6px">${p.title||'-'}</div>
+      <div style="font-size:17px;color:var(--t2)">${p.date||'-'}</div>
     </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--t2)">결제 내역 없음</div>'}
   </div>`;
 }
@@ -2728,9 +2741,9 @@ function mobQuickStatus(sid){
   const s=(DB.styles[mobSeason]||[]).find(x=>x.id===sid);if(!s)return;
   const sheet=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end" onclick="this.remove()">
     <div style="background:var(--bg1);width:100%;border-radius:16px 16px 0 0;padding:16px;max-height:70vh;overflow-y:auto" onclick="event.stopPropagation()">
-      <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--t0)">${s.style} — 진행상태 변경</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--t0)">${s.style} — 진행상태 변경</div>
       ${SL.map(st=>`<div onclick="mobSetStatus('${sid}','${st}');this.closest('[style*=fixed]').remove()"
-        style="padding:12px 14px;border-radius:8px;margin-bottom:4px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between;background:${s.status===st?'var(--bg3)':'var(--bg2)'};cursor:pointer">
+        style="padding:12px 14px;border-radius:8px;margin-bottom:4px;font-size:17px;font-weight:500;display:flex;align-items:center;justify-content:space-between;background:${s.status===st?'var(--bg3)':'var(--bg2)'};cursor:pointer">
         <span class="badge ${SC[st]||'bs'}">${st}</span>
         ${s.status===st?'<span style="color:var(--al)">✓ 현재</span>':''}
       </div>`).join('')}
@@ -2787,7 +2800,7 @@ function rYarnTab(s){
     <div class="ps" style="margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <input type="text" value="${sh.title||'발주 현황표'}" oninput="yTitle(${si},this.value)"
-          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0);font-size:13px;font-weight:600">
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:5px;padding:5px 8px;color:var(--t0);font-size:17px;font-weight:600">
         <button class="btn sm" onclick="yAC(${si})">+ 열</button>
         <button class="btn sm" onclick="yDC(${si})">− 열</button>
         <button class="btn sm" onclick="yAR(${si})">+ 행</button>
@@ -2797,8 +2810,8 @@ function rYarnTab(s){
         ${si>0?`<button class="btn d sm" onclick="rmYarnSheet(${si})">시트 삭제</button>`:''}
       </div>
       <div class="tw" style="margin-bottom:8px"><table style="min-width:100%" onmouseup="yMouseUp(event,${si})" onmouseleave="yMouseUp(event,${si})">
-        <thead><tr><th class="rn" style="background:var(--bg3)">#</th>${sh.cols.map((c,ci)=>`<th style="min-width:90px"><input type="text" value="${c.l||''}" oninput="yColLabel(${si},${ci},this.value)" style="background:none;border:none;width:100%;color:var(--t2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em"></th>`).join('')}</tr></thead>
-        <tbody>${(sh.rows||[]).map((row,ri)=>`<tr id="yr-${si}-${ri}"><td class="rn" style="background:var(--bg3);color:var(--t2);font-size:10px;text-align:center;padding:2px 4px;user-select:none">${ri+1}</td>${sh.cols.map((c,ci)=>{
+        <thead><tr><th class="rn" style="background:var(--bg3)">#</th>${sh.cols.map((c,ci)=>`<th style="min-width:90px"><input type="text" value="${c.l||''}" oninput="yColLabel(${si},${ci},this.value)" style="background:none;border:none;width:100%;color:var(--t2);font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.06em"></th>`).join('')}</tr></thead>
+        <tbody>${(sh.rows||[]).map((row,ri)=>`<tr id="yr-${si}-${ri}"><td class="rn" style="background:var(--bg3);color:var(--t2);font-size:16px;text-align:center;padding:2px 4px;user-select:none">${ri+1}</td>${sh.cols.map((c,ci)=>{
           const raw=(row||[])[ci]||'';
           const isF=raw.toString().startsWith('=');
           const disp=isF?evFY(raw,ri,ci,sh):raw;
@@ -2809,7 +2822,7 @@ function rYarnTab(s){
             <input type="text" value="${raw.toString().replace(/"/g,'&quot;')}"
               onfocus="ySelCell(${si},${ri},${ci},this)" oninput="yCI(${si},${ri},${ci},this)"
               onkeydown="yKey(event,${si},${ri},${ci})"
-              style="background:none;border:none;width:100%;color:${isF?'var(--al)':'var(--t0)'};font-family:var(--mono);font-size:12px">
+              style="background:none;border:none;width:100%;color:${isF?'var(--al)':'var(--t0)'};font-family:var(--mono);font-size:16px">
             ${isF?`<div style="position:absolute;bottom:1px;right:3px;font-size:9px;color:var(--t3);pointer-events:none">${disp}</div>`:''}
           </td>`;
         }).join('')}</tr>`).join('')}</tbody>
@@ -2885,7 +2898,7 @@ function rMemoTab(s){
   ];
   const tagBtns=MEMO_TAGS.map(t=>`
     <button onclick="selMemoTag('${t.k}')" id="mtag-${t.k}"
-      style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;
+      style="padding:3px 10px;border-radius:20px;font-size:17px;font-weight:600;border:none;cursor:pointer;
       background:${curMemoTag===t.k?t.bg:'var(--bg3)'};color:${curMemoTag===t.k?t.cl:'var(--t2)'}">
       ${t.l}
     </button>`).join('');
@@ -2901,8 +2914,8 @@ function rMemoTab(s){
       </div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
-          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${m.ts||''}</span>
-          ${m.author?`<span style="font-size:10px;font-weight:600;color:var(--t2)">${m.author}</span>`:''}
+          <span style="font-size:16px;color:var(--t3);font-family:var(--mono)">${m.ts||''}</span>
+          ${m.author?`<span style="font-size:16px;font-weight:600;color:var(--t2)">${m.author}</span>`:''}
           ${!isAuto?`<span style="padding:1px 6px;border-radius:10px;font-size:9px;font-weight:600;background:${tag.bg};color:${tag.cl}">${tag.l}</span>`:'<span style="padding:1px 6px;border-radius:10px;font-size:9px;background:var(--bg3);color:var(--t3)">자동</span>'}
         </div>
         ${m.type==='status'
@@ -2911,12 +2924,12 @@ function rMemoTab(s){
               <span style="color:var(--t3)">→</span>
               <span class="badge ${SC[m.to]||'bs'}" style="font-size:9px">${m.to||''}</span>
             </div>`
-          :`<div style="font-size:12px;color:var(--t1);line-height:1.55;margin-bottom:4px">${m.text||''}${m.edited?'<span style="font-size:10px;color:var(--t3);margin-left:5px">(수정됨)</span>':''}</div>
+          :`<div style="font-size:16px;color:var(--t1);line-height:1.55;margin-bottom:4px">${m.text||''}${m.edited?'<span style="font-size:16px;color:var(--t3);margin-left:5px">(수정됨)</span>':''}</div>
            <div style="display:flex;gap:5px;margin-top:5px">
              <button onclick="editMemo(this)" data-id="${m.id}"
-               style="padding:3px 10px;border-radius:5px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:11px;cursor:pointer">✏ 수정</button>
+               style="padding:3px 10px;border-radius:5px;background:var(--bg3);border:1px solid var(--b);color:var(--t2);font-size:17px;cursor:pointer">✏ 수정</button>
              <button onclick="deleteMemo(this)" data-id="${m.id}"
-               style="padding:3px 10px;border-radius:5px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:11px;cursor:pointer">🗑 삭제</button>
+               style="padding:3px 10px;border-radius:5px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.2);color:var(--red);font-size:17px;cursor:pointer">🗑 삭제</button>
            </div>`
         }
       </div>
@@ -2924,21 +2937,21 @@ function rMemoTab(s){
   }).join('');
   body.innerHTML=`
     <div class="ps">
-      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">새 메모</div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:8px">새 메모</div>
       <div style="display:flex;gap:8px;align-items:flex-end">
         <textarea id="memo-input" rows="3" placeholder="메모 입력..."
-          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:13px;line-height:1.5"></textarea>
-        <button class="btn p sm" onclick="addMemo()" style="padding:8px 12px;font-size:13px;align-self:flex-end">↑</button>
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:15px;line-height:1.5"></textarea>
+        <button class="btn p sm" onclick="addMemo()" style="padding:8px 12px;font-size:17px;align-self:flex-end">↑</button>
       </div>
       <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:10px;color:var(--t3)">태그:</span>${tagBtns}
+        <span style="font-size:16px;color:var(--t3)">태그:</span>${tagBtns}
       </div>
     </div>
-    <div style="padding:10px 16px 4px;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">
+    <div style="padding:10px 16px 4px;font-size:16px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">
       히스토리 (${s.memo.length}건)
     </div>
     <div style="padding:8px 16px 16px">
-      ${timeline||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">메모 없음</div>'}
+      ${timeline||'<div style="text-align:center;padding:20px;color:var(--t2);font-size:16px">메모 없음</div>'}
     </div>`;
 }
 function selMemoTag(k){curMemoTag=k;const s=gS(pSeas,pSid);if(s)rMemoTab(s);}
@@ -3177,16 +3190,16 @@ function openBackupModal(){renderBackupList();om('backupm');}
 function renderBackupList(){
   const el=document.getElementById('backup-list');if(!el)return;
   const backups=getBackups();
-  if(!backups.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:12px">백업 없음</div>';return;}
+  if(!backups.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2);font-size:16px">백업 없음</div>';return;}
   el.innerHTML=backups.map((b,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--b);border-radius:7px;margin-bottom:6px;background:var(--bg2)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:500;color:var(--t0)">${b.label}</div>
-        <div style="font-size:10px;color:var(--t2);margin-top:2px">${b.manual?'<span style="color:var(--al)">● 수동</span>':'<span style="color:var(--t3)">● 자동</span>'} · ${new Date(b.ts).toLocaleString('ko-KR')}</div>
+        <div style="font-size:16px;font-weight:500;color:var(--t0)">${b.label}</div>
+        <div style="font-size:16px;color:var(--t2);margin-top:2px">${b.manual?'<span style="color:var(--al)">● 수동</span>':'<span style="color:var(--t3)">● 자동</span>'} · ${new Date(b.ts).toLocaleString('ko-KR')}</div>
       </div>
-      <button class="btn sm" onclick="previewBackup(${i})" style="font-size:11px">미리보기</button>
-      <button class="btn p sm" onclick="restoreBackup(${i})" style="font-size:11px">복원</button>
-      <button class="btn d sm" onclick="deleteBackup(${i})" style="font-size:11px">삭제</button>
+      <button class="btn sm" onclick="previewBackup(${i})" style="font-size:17px">미리보기</button>
+      <button class="btn p sm" onclick="restoreBackup(${i})" style="font-size:17px">복원</button>
+      <button class="btn d sm" onclick="deleteBackup(${i})" style="font-size:17px">삭제</button>
     </div>`).join('');
 }
 function previewBackup(i){
@@ -3225,15 +3238,15 @@ function memberDropRender(q, inputId='pmember', dropId='member-drop'){
   if(!drop)return;
   const list=(DB.members||[]).filter(m=>!q||m.toLowerCase().includes(q.toLowerCase()));
   if(!list.length){
-    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">없음</div>';
+    drop.innerHTML='<div style="padding:10px 12px;font-size:16px;color:var(--t2);text-align:center">없음</div>';
     return;
   }
   drop.innerHTML='<div style="padding:6px">'+list.map(m=>`
     <div onclick="memberDropSelect('${m.replace(/'/g,"\'")}','${inputId}','${dropId}')"
-      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      style="padding:9px 12px;font-size:17px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
       onmouseout="this.style.background='';this.style.color='var(--t0)'">
-      <span style="font-size:13px">👤</span>${m}
+      <span style="font-size:17px">👤</span>${m}
     </div>`).join('')+'</div>';
 }
 function memberDropSelect(name, inputId='pmember', dropId='member-drop'){
@@ -3378,16 +3391,16 @@ function brandDropRender(q, inputId='pbr', dropId='brand-drop'){
   if(!drop)return;
   const list=(DB.brands||[]).filter(b=>!q||b.toLowerCase().includes(q.toLowerCase()));
   if(!list.length){
-    drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--t2);text-align:center">'+
+    drop.innerHTML='<div style="padding:10px 12px;font-size:16px;color:var(--t2);text-align:center">'+
       (q?'없음 — 직접 입력하세요':'등록된 브랜드 없음')+'</div>';
     return;
   }
   drop.innerHTML='<div style="padding:6px">'+list.map(b=>`
     <div onclick="brandDropSelect('${b.replace(/'/g,"\'")}','${inputId}','${dropId}')"
-      style="padding:9px 12px;font-size:13px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
+      style="padding:9px 12px;font-size:17px;font-weight:500;color:var(--t0);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)';this.style.color='var(--al)'"
       onmouseout="this.style.background='';this.style.color='var(--t0)'">
-      <span style="font-size:13px">🏷</span>${b}
+      <span style="font-size:17px">🏷</span>${b}
     </div>`).join('')+'</div>';
 }
 function brandDropSelect(name, inputId='pbr', dropId='brand-drop'){
@@ -3450,7 +3463,7 @@ function toggleStatusDrop(dropId, triggerEl){
     };
     // 배지 span 생성
     const sp=document.createElement('span');
-    sp.style.cssText='display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;background:'+(BG[cls]||BG.bs)+';color:'+(CL[cls]||CL.bs);
+    sp.style.cssText='display:inline-block;padding:2px 10px;border-radius:20px;font-size:17px;font-weight:500;white-space:nowrap;background:'+(BG[cls]||BG.bs)+';color:'+(CL[cls]||CL.bs);
     sp.textContent=st;
     d.appendChild(sp);
     drop.appendChild(d);
@@ -3520,6 +3533,29 @@ function setQcColor(qi,color){
   const s=gS(pSeas,pSid);if(!s||!s.qc[qi])return;
   s.qc[qi].color=color;sdb();rTab('qct');
 }
+
+// ── 다크/라이트 모드 전환 ──
+function toggleTheme(){
+  const body=document.body;
+  const btn=document.getElementById('theme-toggle-btn');
+  const isLight=body.classList.toggle('light-mode');
+  if(btn){
+    btn.textContent=isLight?'🌙 다크 모드':'☀️ 라이트 모드';
+  }
+  // 설정 저장
+  localStorage.setItem('ak_theme', isLight?'light':'dark');
+}
+// 저장된 테마 적용
+(function(){
+  const saved=localStorage.getItem('ak_theme');
+  if(saved==='light'){
+    document.body.classList.add('light-mode');
+    document.addEventListener('DOMContentLoaded',()=>{
+      const btn=document.getElementById('theme-toggle-btn');
+      if(btn)btn.textContent='🌙 다크 모드';
+    });
+  }
+})();
 </script>
 </body>
 </html>
