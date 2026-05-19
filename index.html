@@ -1258,12 +1258,21 @@ function renderSeason(){
         return`
           <tbody>
             <tr>
-              <td colspan="${visibleCols.length+1}" style="background:var(--bg2);padding:8px 12px;border-bottom:1px solid var(--b)">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;font-weight:700;color:var(--t0)">${sk==='factory'?`${(()=>{const f=DB.factories.find(x=>fn(x.id)===gv||x.name===gv);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:8px;margin-right:5px">🏭</span>`:''})()}`:''}<span>${gv}</span></span>
-                  <span style="font-size:16px;color:var(--t3);font-family:var(--mono)">${gRows.length}개</span>
-                  <span style="font-size:16px;color:var(--t3);font-family:var(--mono)">수량 합계 ${totalQty.toLocaleString()}</span>
-                  ${sk==='status'?`<span class="badge ${SC[gv]||'bs'}" style="font-size:16px">${gv}</span>`:''}
+              <td colspan="${visibleCols.length+1}" style="background:var(--bg2);padding:10px 16px;border-bottom:1px solid var(--b);border-top:2px solid var(--b2)">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <span style="font-size:20px;font-weight:800;color:var(--t0);letter-spacing:.01em;display:flex;align-items:center;gap:6px">
+                    ${sk==='factory'?`${(()=>{const f=DB.factories.find(x=>fn(x.id)===gv||x.name===gv);return f?`<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:${f.color||'#e74c3c'};font-size:9px">🏭</span>`:''})()}`:''}${gv}
+                  </span>
+                  <span style="color:var(--b2)">|</span>
+                  <span style="display:flex;align-items:center;gap:4px">
+                    <span style="font-size:16px;color:var(--t2);font-weight:600">스타일</span>
+                    <span style="font-size:16px;font-weight:700;color:var(--t0);font-family:var(--mono)">${gRows.length}개</span>
+                  </span>
+                  <span style="display:flex;align-items:center;gap:4px">
+                    <span style="font-size:16px;color:var(--t2);font-weight:600">수량</span>
+                    <span style="font-size:16px;font-weight:700;color:var(--al);font-family:var(--mono)">${totalQty.toLocaleString()}</span>
+                  </span>
+                  ${sk==='status'?`<span class="badge ${SC[gv]||'bs'}" style="font-size:13px">${gv}</span>`:''}
                 </div>
               </td>
             </tr>
@@ -2676,17 +2685,31 @@ function rmQCR(i){const s=gS(pSeas,pSid);if(!s||!confirm('삭제?'))return;s.qc.
 function rmQCP(qi,pi){const s=gS(pSeas,pSid);if(!s)return;s.qc[qi].p.splice(pi,1);sdb();renderQCM(s);}
 function qcAddPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
-  Array.from(e.target.files).forEach(f=>{
+  const files=Array.from(e.target.files);if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
-    r.onload=ev=>{(s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);sdb();renderQCM(s);};
+    r.onload=ev=>{
+      (s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);
+      done++;
+      if(done===files.length){sdb();rTab('qct');}
+    };
     r.readAsDataURL(f);
   });
+  e.target.value='';
 }
 function qcDropPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
-  Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(f=>{
+  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+  if(!files.length)return;
+  let done=0;
+  files.forEach(f=>{
     const r=new FileReader();
-    r.onload=ev=>{(s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);sdb();renderQCM(s);};
+    r.onload=ev=>{
+      (s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);
+      done++;
+      if(done===files.length){sdb();rTab('qct');}
+    };
     r.readAsDataURL(f);
   });
 }
