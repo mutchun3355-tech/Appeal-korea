@@ -272,7 +272,7 @@ select{color-scheme:dark}
 .mob-season-hdr{display:flex;align-items:center;padding:10px 14px 6px;border-bottom:1px solid var(--b);position:sticky;top:0;background:var(--bg1);z-index:5}
 .mob-season-hdr-style{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.08em;flex:1}
 .mob-season-hdr-qty{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.08em;min-width:52px;text-align:right}
-.mob-row{border-bottom:1px solid var(--b);overflow:hidden;transition:background .1s}
+.mob-row{border-bottom:1px solid var(--b);overflow:hidden;transition:background .1s;min-height:62px}
 .mob-row-main{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mob-row-main:active{background:var(--bg2)}
 .mob-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -345,7 +345,7 @@ select{color-scheme:dark}
       </div>
       <div class="mob-search">
         <span style="font-size:16px;color:var(--t3)">🔍</span>
-        <input type="text" id="mob-search-input" placeholder="스타일번호, 브랜드 검색..." oninput="mobRenderList()">
+        <input type="text" id="mob-search-input" placeholder="스타일번호, 브랜드, 담당자..." oninput="mobRenderSeason()">
       </div>
     </div>
     <!-- 리스트 -->
@@ -369,13 +369,22 @@ select{color-scheme:dark}
         <div class="mob-tab-icon" style="font-size:20px">🏠</div>
         <div class="mob-tab-lbl">홈</div>
       </div>
+      <!-- 스타일 등록 + 버튼 -->
+      <div onclick="openNSM()" style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0 8px">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;margin-top:-6px;box-shadow:0 3px 14px rgba(61,143,110,.5)">+</div>
+        <div class="mob-tab-lbl" style="margin-top:2px">등록</div>
+      </div>
     </div>
     <!-- 모바일 상세 패널 -->
     <div class="mob-panel" id="mob-panel">
       <div class="mob-panel-hdr">
         <span class="mob-panel-back" onclick="closeMobPanel()">← 뒤로</span>
         <span class="mob-panel-title" id="mob-panel-title">—</span>
-        <span class="mob-panel-save" onclick="mobSaveStyle()">저장</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span onclick="mobGoTabById('qct')" style="font-size:16px;cursor:pointer;color:var(--t2)">📷</span>
+          <span onclick="mobGoTabById('memo')" style="font-size:16px;cursor:pointer;color:var(--t2)">📝</span>
+          <span class="mob-panel-save" onclick="mobSaveStyle()">저장</span>
+        </div>
       </div>
       <div class="mob-ptabs" id="mob-ptabs">
         <button class="mob-ptab on" onclick="mobGoTab(this,'info')">기본정보</button>
@@ -1230,7 +1239,15 @@ function renderSeason(){
       if(c.k==='qty')return`<td style="font-family:var(--mono)">${(s.qty||0).toLocaleString()}</td>`;
       if(c.k==='cmt')return`<td style="font-family:var(--mono)">${s.cmt?'$'+(+s.cmt).toFixed(2):'-'}</td>`;
       if(c.k==='fob')return`<td style="font-family:var(--mono)">${s.fob?'$'+(+s.fob).toFixed(2):'-'}</td>`;
-      if(c.k==='status')return`<td><span class="badge ${SC[s.status]||'bs'}">${s.status||'-'}</span></td>`;
+      if(c.k==='status'){
+        const hist=(s.memo||[]).filter(m=>m.type==='status').slice(-3).reverse();
+        const tipHtml=hist.length
+          ?hist.map(m=>`${m.ts||''}: ${m.from||'?'}→${m.to||'?'}`).join('\n')
+          :'변경 이력 없음';
+        return`<td><span class="badge ${SC[s.status]||'bs'}" style="cursor:default"
+          onmouseenter="showStatusTip(event,'${tipHtml.replace(/'/g,'\\x27').replace(/\n/g,'|')}')"
+          onmouseleave="hideStatusTip()">${s.status||'-'}</span></td>`;
+      }
       if(c.k==='deadline'||c.k==='updated')return`<td style="font-size:17px">${s[c.k]||'-'}</td>`;
       if(c.k==='manager')return`<td style="font-size:17px;color:var(--t2)">${s.manager||'-'}</td>`;
       if(c.k==='member')return`<td style="font-size:17px;color:var(--al)">${s.member||'-'}</td>`;
@@ -1991,6 +2008,24 @@ function rTab(tab){
         <textarea id="pnt" rows="3" placeholder="특이사항 입력..."
           style="width:100%;background:none;border:none;color:var(--t1);resize:vertical;font-size:16px;line-height:1.7;padding:0;font-family:var(--sans)">${s.note||''}</textarea>
       </div>
+
+      <!-- 진행 이력 -->
+      ${(()=>{
+        const hist=(s.memo||[]).filter(m=>m.type==='status').slice(-5).reverse();
+        if(!hist.length)return '';
+        return '<div style="height:1px;background:var(--b)"></div>'
+          +'<div style="padding:14px 32px">'
+          +'<div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">진행 이력</div>'
+          +hist.map(m=>
+            '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b)">'
+            +'<span class="badge '+(SC[m.from]||'bs')+'" style="font-size:11px;flex-shrink:0">'+(m.from||'?')+'</span>'
+            +'<span style="color:var(--t3);font-size:12px">→</span>'
+            +'<span class="badge '+(SC[m.to]||'bs')+'" style="font-size:11px;flex-shrink:0">'+(m.to||'?')+'</span>'
+            +'<span style="font-size:12px;color:var(--t3);margin-left:auto">'+(m.ts||'')+'</span>'
+            +'</div>'
+          ).join('')
+          +'</div>';
+      })()}
     `;
 
 
@@ -2792,7 +2827,10 @@ function mobRenderSeason(){
   const el=document.getElementById('mob-content');if(!el)return;
   const all=DB.styles[mobSeason]||[];
   const q=(document.getElementById('mob-search-input')?.value||'').toLowerCase();
-  const rows=all.filter(s=>!q||(s.style||'').toLowerCase().includes(q)||(s.brand||'').toLowerCase().includes(q));
+  const rows=all.filter(s=>{
+    if(!q)return true;
+    return hangulMatch(s.style||'',q)||hangulMatch(s.brand||'',q)||hangulMatch(s.member||'',q)||hangulMatch(s.manager||'',q);
+  });
   document.getElementById('mob-title').textContent=mobSeason;
   document.getElementById('mob-sub').textContent=all.length+'개 스타일';
   const fn=id=>(DB.factories.find(f=>f.id===id)||{name:'-'}).name;
@@ -4150,6 +4188,31 @@ function saveAndExitQcEdit(){
   if(body)body.dataset.qcEdit='false';
   rTab('qct');
   toast('QC 저장됨 ✅');
+}
+
+// ── 진행상태 툴팁 ──
+function showStatusTip(e, raw){
+  const tip=document.getElementById('status-tip');if(!tip)return;
+  const text=raw.replace(/\|/g,'\n');
+  tip.textContent=text;
+  tip.style.display='block';
+  const x=e.clientX+12, y=e.clientY+12;
+  const tipW=tip.offsetWidth||200;
+  tip.style.left=(x+tipW>window.innerWidth?x-tipW-16:x)+'px';
+  tip.style.top=(y+tip.offsetHeight>window.innerHeight?y-tip.offsetHeight-16:y)+'px';
+}
+function hideStatusTip(){
+  const tip=document.getElementById('status-tip');
+  if(tip)tip.style.display='none';
+}
+
+function mobGoTabById(tab){
+  const tabs=document.querySelectorAll('.mob-ptab');
+  tabs.forEach(t=>{
+    if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+tab+"'")){
+      mobGoTab(t, tab);
+    }
+  });
 }
 </script>
 </body>
