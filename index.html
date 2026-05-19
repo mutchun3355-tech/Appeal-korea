@@ -1987,18 +1987,18 @@ function rTab(tab){
       <!-- ③ 작업지시서 -->
       <div style="padding:14px 32px">
         <div style="font-size:16px;font-weight:600;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;margin-bottom:10px">작업지시서</div>
-        ${!hasWop?`<div class="uz" id="wo-dropzone"
+        <div class="uz" id="wo-dropzone"
           onclick="document.getElementById('woi').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--ac)';this.style.background='rgba(61,143,110,.08)'"
           ondragleave="this.style.borderColor='';this.style.background=''"
           ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';addWOPDrop(event)">
           <div class="uzt">📋 작업지시서 파일 업로드</div>
           <div style="font-size:17px;color:var(--t3);margin-top:2px">클릭 또는 드래그 · 사진, PDF, 엑셀, 워드 등</div>
-        </div>`:''}
+        </div>
         <input type="file" id="woi" accept="image/*,.pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.zip,.hwp" multiple style="display:none" onchange="addWOP(event)">
         <div id="wog"></div>
 
-        ${hasWop?`<button class="btn g sm" style="margin-top:6px;font-size:16px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>`:''}
+        <button class="btn g sm" style="margin-top:6px;font-size:16px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>
       </div>
 
       <!-- ④ 특이사항 (맨 아래) -->
@@ -2695,10 +2695,11 @@ function sqC(i,v){const s=gS(pSeas,pSid);if(s&&s.qc&&s.qc[i])s.qc[i].c=v;}
 function addQCR(){
   const s=gS(pSeas,pSid);if(!s)return;
   const n=(s.qc||[]).length+1;
-  (s.qc=s.qc||[]).push({t:n+'차 QC',c:'',p:[]});renderQCM(s);
+  (s.qc=s.qc||[]).push({t:n+'차 QC',c:'',p:[]});
+  sdb();rTab('qct');
 }
-function rmQCR(i){const s=gS(pSeas,pSid);if(!s||!confirm('삭제?'))return;s.qc.splice(i,1);renderQCM(s);}
-function rmQCP(qi,pi){const s=gS(pSeas,pSid);if(!s)return;s.qc[qi].p.splice(pi,1);sdb();renderQCM(s);}
+function rmQCR(i){const s=gS(pSeas,pSid);if(!s||!confirm('삭제?'))return;s.qc.splice(i,1);sdb();rTab('qct');}
+function rmQCP(qi,pi){const s=gS(pSeas,pSid);if(!s)return;s.qc[qi].p.splice(pi,1);sdb();rTab('qct');}
 function qcAddPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.target.files);if(!files.length)return;
