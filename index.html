@@ -1979,27 +1979,8 @@ function rTab(tab){
           <div style="font-size:17px;color:var(--t3);margin-top:2px">클릭 또는 드래그 · 사진, PDF, 엑셀, 워드 등</div>
         </div>`:''}
         <input type="file" id="woi" accept="image/*,.pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.zip,.hwp" multiple style="display:none" onchange="addWOP(event)">
-        <div id="wog">${(s.wop||[]).map((item,i)=>{
-          const src=typeof item==='string'?item:(item.url||item.data||'');
-          const name=typeof item==='string'?'':item.name||'';
-          const type=typeof item==='string'?'image/jpeg':item.type||'';
-          const isPdf=type==='application/pdf'||name.toLowerCase().endsWith('.pdf');
-          const isImg=type.startsWith('image/');
-          const icon=isPdf?'📄':name.match(/\.xlsx?$/i)?'📊':name.match(/\.docx?$/i)?'📝':'📎';
-          const shortName=name.length>22?name.slice(0,20)+'..':name;
-          return`<div style="position:relative;margin-bottom:8px">
-            ${isImg?`<img src="${src}" class="wothumb" onclick="if(event.detail>=2)openPhotoViewer(this.src)" style="cursor:zoom-in;border-radius:8px" title="더블클릭 확대">`
-              :isPdf?`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;cursor:pointer" onclick="openPdfViewer('${src}','${name}')">
-                <div style="height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
-                  <span style="font-size:26px">📄</span><span style="font-size:17px;color:var(--t2)">${shortName}</span>
-                </div></div>`
-              :`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
-                <span style="font-size:20px">${icon}</span>
-                <div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
-                <div style="font-size:16px;color:var(--t3)">${Math.round((item.size||0)/1024)}KB</div></div></div>`}
-            <button class="pdel" style="top:6px;right:6px" onclick="rmWOP(${i})">✕</button>
-          </div>`;
-        }).join('')}
+        <div id="wog"></div>
+
         ${hasWop?`<button class="btn g sm" style="margin-top:6px;font-size:16px;color:var(--t3)" onclick="document.getElementById('woi').click()">+ 파일 추가</button>`:''}
       </div>
 
@@ -2046,10 +2027,11 @@ function rTab(tab){
 
     body.innerHTML=`<div class="ps">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-size:16px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
-        <button class="btn ${qcEditMode?'':'p'} sm" onclick="toggleQcEdit()" id="qc-edit-btn">
-          ${qcEditMode?'✅ 편집 완료':'✏️ QC 편집'}
-        </button>
+        <div style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t3);text-transform:uppercase">QC 및 수정사항</div>
+        ${qcEditMode
+          ?`<button class="btn p sm" onclick="saveAndExitQcEdit()">✅ 편집 완료</button>`
+          :`<button class="btn sm" onclick="toggleQcEdit()">✏️ QC 편집</button>`
+        }
       </div>
 
       ${(s.qc||[]).map((q,qi)=>`
@@ -2058,11 +2040,11 @@ function rTab(tab){
           <div style="background:var(--bg2);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)">
             ${qcEditMode
               ?`<input type="text" value="${(q.t||'').replace(/"/g,'&quot;')}" oninput="sqT(${qi},this.value)"
-                  style="font-size:16px;font-weight:700;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b2);flex:1;outline:none">`
-              :`<span style="font-size:16px;font-weight:700;color:var(--t0)">${q.t||((qi+1)+'차 QC')}</span>`
+                  style="font-size:15px;font-weight:700;color:var(--t0);background:none;border:none;border-bottom:1px solid var(--b2);flex:1;outline:none">`
+              :`<span style="font-size:15px;font-weight:700;color:var(--t0)">${q.t||((qi+1)+'차 QC')}</span>`
             }
-            ${q.p?.length?`<span style="font-size:17px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
-            ${qcEditMode?`<button onclick="rmQCR(${qi})" style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.3);border-radius:6px;color:var(--red);font-size:17px;padding:3px 8px;cursor:pointer;margin-left:4px">삭제</button>`:''}
+            ${q.p?.length?`<span style="font-size:12px;color:var(--t3);margin-left:auto">📷 ${q.p.length}장</span>`:''}
+            ${qcEditMode?`<button onclick="rmQCR(${qi})" style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.3);border-radius:6px;color:var(--red);font-size:12px;padding:3px 8px;cursor:pointer;margin-left:4px">삭제</button>`:''}
           </div>
 
           <!-- 사진 -->
@@ -2072,14 +2054,14 @@ function rTab(tab){
                 <img src="${src}" style="width:100%;display:block;object-fit:contain;max-height:400px;background:#000;cursor:zoom-in"
                   onclick="openPhotoViewer('${src}')">
                 ${qcEditMode?`<button onclick="rmQCP(${qi},${pi})"
-                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:17px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`:''}
+                  style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:12px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`:''}
               </div>`).join('')}
             ${qcEditMode?`<div style="border:1px dashed var(--b2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-top:4px"
               onclick="document.getElementById('qci${qi}').click()"
               ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
               ondragleave="this.style.borderColor='var(--b2)'"
               ondrop="event.preventDefault();this.style.borderColor='var(--b2)';qcDropPh(event,${qi})">
-              <span style="font-size:16px;color:var(--t3)">📷 사진 추가 (클릭 또는 드래그)</span>
+              <span style="font-size:13px;color:var(--t3)">📷 사진 추가 (클릭 또는 드래그)</span>
             </div>
             <input type="file" id="qci${qi}" accept="image/*" multiple style="display:none" onchange="qcAddPh(event,${qi})">`:''}
           </div>
@@ -2088,33 +2070,33 @@ function rTab(tab){
           <div style="padding:12px 16px">
             ${qcEditMode
               ?`<textarea oninput="sqC(${qi},this.value)" rows="3"
-                  style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:15px;line-height:1.6;font-family:var(--sans)"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:6px;padding:8px 10px;color:var(--t0);resize:vertical;font-size:14px;line-height:1.6;font-family:var(--sans)"
                   >${q.c||''}</textarea>`
               :`<div>
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                  <span style="font-size:16px;color:var(--t3)">색상:</span>
+                  <span style="font-size:12px;color:var(--t3)">색상:</span>
                   ${['#f0f1f3','#60a5fa','#4ade80','#fb923c','#f87171','#c084fc','#facc15'].map(c=>
                     `<div onclick="setQcColor(${qi},'${c}')"
                       style="width:16px;height:16px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(q.color||'#f0f1f3')===c?'#fff':'transparent'};flex-shrink:0"></div>`
                   ).join('')}
                 </div>
                 ${q.c
-                  ?`<div style="font-size:15px;line-height:1.7;color:${q.color||'var(--t1)'};white-space:pre-wrap">${q.c}</div>`
-                  :`<div style="font-size:16px;color:var(--t3);font-style:italic">코멘트 없음</div>`}
+                  ?`<div style="font-size:14px;line-height:1.7;color:${q.color||'var(--t1)'};white-space:pre-wrap">${q.c}</div>`
+                  :`<div style="font-size:13px;color:var(--t3);font-style:italic">코멘트 없음</div>`}
               </div>`
             }
           </div>
         </div>`).join('')}
 
-      ${!(s.qc||[]).length?`<div style="text-align:center;padding:32px;color:var(--t2);font-size:16px">
-        QC 내역 없음${qcEditMode?' — 아래 버튼으로 차수를 추가하세요':''}
+      ${!(s.qc||[]).length?`<div style="text-align:center;padding:32px;color:var(--t2);font-size:14px">
+        QC 내역 없음 — 아래 버튼으로 차수를 추가하세요
       </div>`:''}
 
-      <!-- + 차수 추가 버튼 - 편집 모드일 때만, 맨 아래 빨간색 -->
-      ${qcEditMode?`<button onclick="addQCR()"
-        style="width:100%;padding:12px;border:1px dashed var(--red);border-radius:8px;background:rgba(201,64,64,.06);color:var(--red);font-size:17px;font-weight:600;cursor:pointer;margin-top:4px">
+      <!-- + 차수 추가 버튼 - 항상 표시, 맨 아래 빨간색 -->
+      <button onclick="addQCR()"
+        style="width:100%;padding:12px;border:1px dashed var(--red);border-radius:8px;background:rgba(201,64,64,.06);color:var(--red);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">
         + 차수 추가
-      </button>`:''}
+      </button>
     </div>`;
 
 } else if(tab==='prod'){
@@ -2618,7 +2600,7 @@ function addWOP(e){
     r.onload=ev=>{
       (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
       done++;
-      if(done===files.length){sdb();rTab('info');}
+      if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
     };
     r.readAsDataURL(f);
   });
@@ -2633,7 +2615,7 @@ function addWOP(e){
     r.onload=ev=>{
       (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
       done++;
-      if(done===files.length){sdb();rTab('info');}
+      if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
     };
     r.readAsDataURL(f);
   });
@@ -4101,6 +4083,73 @@ function importSeasonJSON(e){
   };
   r.readAsText(file);
   e.target.value='';
+}
+
+// ── WOP 렌더링 (DOM API 방식 - base64 onclick 문제 방지) ──
+function renderWog(){
+  const el=document.getElementById('wog');if(!el)return;
+  const s=gS(pSeas,pSid);if(!s){el.innerHTML='';return;}
+  el.innerHTML='';
+  (s.wop||[]).forEach((item,i)=>{
+    const src=typeof item==='string'?item:(item.url||item.data||'');
+    const name=typeof item==='string'?'':item.name||'';
+    const type=typeof item==='string'?'image/jpeg':item.type||'';
+    const isPdf=type==='application/pdf'||name.toLowerCase().endsWith('.pdf');
+    const isImg=type.startsWith('image/');
+    const icon=isPdf?'📄':name.match(/\.xlsx?$/i)?'📊':name.match(/\.docx?$/i)?'📝':'📎';
+    const shortName=name.length>22?name.slice(0,20)+'..':name;
+
+    const wrap=document.createElement('div');
+    wrap.style.cssText='position:relative;margin-bottom:8px';
+
+    if(isImg){
+      const img=document.createElement('img');
+      img.src=src;
+      img.className='wothumb';
+      img.style.cssText='cursor:zoom-in;border-radius:8px';
+      img.title='더블클릭 확대';
+      img.ondblclick=function(){openPhotoViewer(src);};
+      wrap.appendChild(img);
+    } else if(isPdf){
+      const box=document.createElement('div');
+      box.style.cssText='background:var(--bg2);border:1px solid var(--b);border-radius:8px;cursor:pointer';
+      box.onclick=function(){openPdfViewer(src,name);};
+      box.innerHTML=`<div style="height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+        <span style="font-size:26px">📄</span>
+        <span style="font-size:14px;color:var(--t2)">${shortName}</span>
+      </div>`;
+      wrap.appendChild(box);
+    } else {
+      const box=document.createElement('div');
+      box.style.cssText='background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px';
+      box.innerHTML=`<span style="font-size:20px">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+          <div style="font-size:13px;color:var(--t3)">${Math.round((item.size||0)/1024)}KB</div>
+        </div>`;
+      wrap.appendChild(box);
+    }
+
+    // 삭제 버튼
+    const del=document.createElement('button');
+    del.className='pdel';
+    del.style.cssText='top:6px;right:6px';
+    del.textContent='✕';
+    del.onclick=function(){rmWOP(i);};
+    wrap.appendChild(del);
+
+    el.appendChild(wrap);
+  });
+}
+
+// QC 편집 완료 - 저장 후 보기 모드로 전환
+function saveAndExitQcEdit(){
+  const s=gS(pSeas,pSid);if(!s)return;
+  sdb();
+  const body=document.getElementById('pbody');
+  if(body)body.dataset.qcEdit='false';
+  rTab('qct');
+  toast('QC 저장됨 ✅');
 }
 </script>
 </body>
