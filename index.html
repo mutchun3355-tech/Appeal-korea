@@ -941,7 +941,13 @@ function tblCanRedo(type,si=''){const h=TABLE_UNDO[tblKey(type,si)];return h&&h.
 let _fbPushTimer=null;
 function sdb(skipFb=false){
   DB._savedAt=Date.now();
-  localStorage.setItem(LKEY,JSON.stringify(DB));
+  try{
+    localStorage.setItem(LKEY,JSON.stringify(DB));
+  }catch(e){
+    // localStorage 용량 초과 - 사진 데이터가 너무 클 수 있음
+    console.warn('localStorage 저장 실패:', e);
+    toast('⚠️ 로컬 저장 실패! Firebase에만 저장됩니다.');
+  }
   if(!skipFb){
     // 디바운스: 1초 후에 Firebase push (연속 입력 시 불필요한 push 방지)
     clearTimeout(_fbPushTimer);
@@ -993,15 +999,24 @@ function _fb(url,k,pid){
         const fbTime=r._savedAt||0;
         if(fbTime>=localTime){
           ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky]!==undefined)DB[ky]=r[ky];});
-          localStorage.setItem(LKEY,JSON.stringify(DB));
+          try{localStorage.setItem(LKEY,JSON.stringify(DB));}catch(e){}
           renderNav();renderContent();
           if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
-        }
-        // 패널 열려있으면 현재 탭 갱신
-        const pov=document.getElementById('pov');
-        if(pov&&pov.style.display!=='none'&&pSid&&pTab&&typeof rTab==='function'){
-          rTab(pTab);
-          if(pTab==='info')setTimeout(()=>renderWog(),0);
+          // 패널 열려있으면 현재 탭 갱신 (단, 로컬 저장 중이면 건드리지 않음)
+          const pov=document.getElementById('pov');
+          if(pov&&pov.classList.contains('open')&&pSid&&pTab&&typeof rTab==='function'){
+            rTab(pTab);
+            if(pTab==='info')setTimeout(()=>renderWog(),0);
+          }
+        } else {
+          // 로컬이 더 최신: 패널만 갱신 (메인 화면은 그대로)
+          const pov=document.getElementById('pov');
+          if(pov&&pov.classList.contains('open')&&pSid&&pTab&&typeof rTab==='function'){
+            // 현재 업로드 중인 경우 rTab 건드리지 않음
+            if(pTab!=='info'&&pTab!=='qct'){
+              rTab(pTab);
+            }
+          }
         }
       }
       if(!fbOk){
@@ -2106,7 +2121,7 @@ function rTab(tab){
               ondrop="event.preventDefault();this.style.borderColor='var(--b2)';qcDropPh(event,${qi})">
               <span style="font-size:13px;color:var(--t3)">📷 사진 / 📄 PDF 추가 (클릭 또는 드래그)</span>
             </div>
-            <input type="file" id="qci${qi}" accept="image/*" multiple style="display:none" onchange="qcAddPh(event,${qi})">`:''}
+            <input type="file" id="qci${qi}" accept="image/*,.pdf" multiple style="display:none" onchange="qcAddPh(event,${qi})">`:''}
           </div>
 
           <!-- 코멘트 -->
@@ -2726,7 +2741,7 @@ function qcAddPh(e,qi){
 }
 function qcDropPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
-  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
   if(!files.length)return;
   let done=0;
   files.forEach(f=>{
@@ -2973,7 +2988,7 @@ window.addEventListener('resize',()=>{
 });
 
 // ── rmWOP / rmPh ──
-function rmWOP(i){const s=gS(pSeas,pSid);if(s&&s.wop){s.wop.splice(i,1);sdb();rTab('info');}}
+function rmWOP(i){const s=gS(pSeas,pSid);if(s&&s.wop){s.wop.splice(i,1);sdb();renderWog();}}
 function rmPh(i){const s=gS(pSeas,pSid);if(s&&s.photos){s.photos.splice(i,1);sdb();rTab('photos');}}
 
 // ── YARN TAB ──
