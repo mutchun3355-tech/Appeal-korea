@@ -941,19 +941,52 @@ function tblCanRedo(type,si=''){const h=TABLE_UNDO[tblKey(type,si)];return h&&h.
 let _fbPushTimer=null;
 function sdb(skipFb=false){
   DB._savedAt=Date.now();
+  // localStorage에는 사진/파일 제외한 텍스트 데이터만 저장
   try{
-    localStorage.setItem(LKEY,JSON.stringify(DB));
+    const lite=makeLiteDB();
+    localStorage.setItem(LKEY,JSON.stringify(lite));
   }catch(e){
-    // localStorage 용량 초과 - 사진 데이터가 너무 클 수 있음
     console.warn('localStorage 저장 실패:', e);
-    toast('⚠️ 로컬 저장 실패! Firebase에만 저장됩니다.');
   }
   if(!skipFb){
-    // 디바운스: 1초 후에 Firebase push (연속 입력 시 불필요한 push 방지)
+    // Firebase에 전체 데이터 저장 (사진 포함)
     clearTimeout(_fbPushTimer);
     _fbPushTimer=setTimeout(()=>fbPush(),1000);
   }
   saveBackup(false);
+}
+
+// localStorage용 경량 DB (사진/파일 base64 제외)
+// Firebase 즉시 저장 (파일 업로드 완료 후 호출)
+function sdbFull(){
+  DB._savedAt=Date.now();
+  // localStorage에는 lite 버전 저장
+  try{
+    const lite=makeLiteDB();
+    localStorage.setItem(LKEY,JSON.stringify(lite));
+  }catch(e){}
+  // Firebase에 전체 데이터 즉시 push (디바운스 없음)
+  fbPush();
+  saveBackup(false);
+}
+
+function makeLiteDB(){
+  const lite=JSON.parse(JSON.stringify(DB));
+  Object.values(lite.styles||{}).flat().forEach(s=>{
+    // wop: URL은 유지, base64만 제거
+    if(s.wop)s.wop=s.wop.map(w=>{
+      if(typeof w==='string'&&w.startsWith('data:'))return null;
+      if(typeof w==='object'&&w.data&&!w.url)return null;
+      return w;
+    }).filter(Boolean);
+    // photos: base64만 제거 (URL은 유지)
+    if(s.photos)s.photos=s.photos.filter(p=>!(p&&p.startsWith&&p.startsWith('data:')));
+    // qc: base64만 제거
+    if(s.qc)s.qc.forEach(q=>{
+      if(q.p)q.p=q.p.filter(p=>!(p&&p.startsWith&&p.startsWith('data:')));
+    });
+  });
+  return lite;
 }
 function sdbImmediate(){
   DB._savedAt=Date.now();
@@ -1004,7 +1037,8 @@ function _fb(url,k,pid){
         const fbTime=r._savedAt||0;
         if(fbTime>=localTime){
           ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky]!==undefined)DB[ky]=r[ky];});
-          try{localStorage.setItem(LKEY,JSON.stringify(DB));}catch(e){}
+          // localStorage에는 lite 버전만 저장 (사진 base64 제외)
+          try{localStorage.setItem(LKEY,JSON.stringify(makeLiteDB()));}catch(e){}
           renderNav();renderContent();
           if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
           // 패널 열려있으면 현재 탭 갱신 (단, 로컬 저장 중이면 건드리지 않음)
@@ -2685,7 +2719,7 @@ function addWOP(e){
     uploadToStorage(f, path).then(item=>{
       (s.wop=s.wop||[]).push(item);
       done++;
-      if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
+      if(done===files.length){sdbFull();renderWog();toast('파일 추가됨 ✅');}
     }).catch(err=>{
       console.error('Upload failed:', err);
       toast('업로드 실패 ❌');
@@ -2703,7 +2737,7 @@ function addWOP(e){
     uploadToStorage(f, path).then(item=>{
       (s.wop=s.wop||[]).push(item);
       done++;
-      if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
+      if(done===files.length){sdbFull();renderWog();toast('파일 추가됨 ✅');}
     }).catch(()=>toast('업로드 실패 ❌'));
   });
 }
@@ -2764,7 +2798,7 @@ function qcAddPh(e,qi){
       // QC는 URL 또는 data 저장
       (s.qc[qi].p=s.qc[qi].p||[]).push(item.url||item.data);
       done++;
-      if(done===files.length){sdb();rTab('qct');toast('사진 추가됨 ✅');}
+      if(done===files.length){sdbFull();rTab('qct');toast('사진 추가됨 ✅');}
     }).catch(()=>toast('업로드 실패 ❌'));
   });
   e.target.value='';
@@ -3280,7 +3314,7 @@ function addPh(e){
     uploadToStorage(f, path).then(item=>{
       (s.photos=s.photos||[]).push(item.url||item.data);
       done++;
-      if(done===files.length){sdb();rTab('photos');toast('사진 추가됨 ✅');}
+      if(done===files.length){sdbFull();rTab('photos');toast('사진 추가됨 ✅');}
     }).catch(()=>toast('업로드 실패 ❌'));
   });
   e.target.value='';
