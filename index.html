@@ -983,13 +983,18 @@ function discFB(){DB.fb={url:'',k:'',pid:''};fbOk=false;fbRef=null;syncUI(false)
 function iFB(url,k,pid){
   const ld=(src,cb)=>{if(document.querySelector(`script[src="${src}"]`)){cb();return;}const s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s);};
   ld('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',()=>{
-    ld('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',()=>_fb(url,k,pid));
+    ld('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js',()=>{
+      ld('https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js',()=>_fb(url,k,pid));
+    });
   });
 }
+let fbStorage=null;
 function _fb(url,k,pid){
   try{
     if(!firebase.apps.length)firebase.initializeApp({apiKey:k,databaseURL:url,projectId:pid});
     fbRef=firebase.database().ref('ak');
+    // Firebase Storage 초기화
+    try{fbStorage=firebase.storage();}catch(e){console.warn('Storage init failed:',e);}
     fbRef.on('value',snap=>{
       const v=snap.val();
       if(v){
@@ -2648,34 +2653,58 @@ function uCF(k,i,f,v){const s=gS(pSeas,pSid);s[k][i][f]=v;sdb();}
 function rCF(k,i){const s=gS(pSeas,pSid);s[k].splice(i,1);sdb();rTab('info');}
 
 // ── PHOTOS ──
+// Firebase Storage에 파일 업로드 후 URL 저장
+function uploadToStorage(file, path){
+  return new Promise((resolve, reject)=>{
+    if(!fbStorage){
+      // Storage 없으면 base64 fallback
+      const r=new FileReader();
+      r.onload=ev=>resolve({url:null, data:ev.target.result, name:file.name, type:file.type, size:file.size});
+      r.onerror=reject;
+      r.readAsDataURL(file);
+      return;
+    }
+    const ref=fbStorage.ref(path);
+    const task=ref.put(file);
+    task.on('state_changed', null, reject, ()=>{
+      task.snapshot.ref.getDownloadURL().then(url=>{
+        resolve({url, name:file.name, type:file.type, size:file.size});
+      }).catch(reject);
+    });
+  });
+}
+
 function addWOP(e){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.target.files);
   if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
+    const path='wop/'+pSeas+'/'+pSid+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      (s.wop=s.wop||[]).push(item);
       done++;
       if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
-    };
-    r.readAsDataURL(f);
+    }).catch(err=>{
+      console.error('Upload failed:', err);
+      toast('업로드 실패 ❌');
+    });
   });
   e.target.value='';
 }function addWOPDrop(e){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.dataTransfer.files);
   if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.wop=s.wop||[]).push({data:ev.target.result,name:f.name,type:f.type,size:f.size});
+    const path='wop/'+pSeas+'/'+pSid+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      (s.wop=s.wop||[]).push(item);
       done++;
       if(done===files.length){sdb();renderWog();toast('파일 추가됨 ✅');}
-    };
-    r.readAsDataURL(f);
+    }).catch(()=>toast('업로드 실패 ❌'));
   });
 }
 
@@ -2727,15 +2756,16 @@ function rmQCP(qi,pi){const s=gS(pSeas,pSid);if(!s)return;s.qc[qi].p.splice(pi,1
 function qcAddPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.target.files);if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);
+    const path='qc/'+pSeas+'/'+pSid+'/'+qi+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      // QC는 URL 또는 data 저장
+      (s.qc[qi].p=s.qc[qi].p||[]).push(item.url||item.data);
       done++;
-      if(done===files.length){sdb();rTab('qct');}
-    };
-    r.readAsDataURL(f);
+      if(done===files.length){sdb();rTab('qct');toast('사진 추가됨 ✅');}
+    }).catch(()=>toast('업로드 실패 ❌'));
   });
   e.target.value='';
 }
@@ -2743,15 +2773,15 @@ function qcDropPh(e,qi){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
   if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.qc[qi].p=s.qc[qi].p||[]).push(ev.target.result);
+    const path='qc/'+pSeas+'/'+pSid+'/'+qi+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      (s.qc[qi].p=s.qc[qi].p||[]).push(item.url||item.data);
       done++;
       if(done===files.length){sdb();rTab('qct');}
-    };
-    r.readAsDataURL(f);
+    }).catch(()=>toast('업로드 실패 ❌'));
   });
 }
 function saveQC(){sdb();cm('qcm');rTab('qct');toast('QC 저장됨');}
@@ -3243,15 +3273,15 @@ function addPh(e){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.target.files);
   if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.photos=s.photos||[]).push(ev.target.result);
+    const path='photos/'+pSeas+'/'+pSid+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      (s.photos=s.photos||[]).push(item.url||item.data);
       done++;
-      if(done===files.length){sdb();rTab('photos');}
-    };
-    r.readAsDataURL(f);
+      if(done===files.length){sdb();rTab('photos');toast('사진 추가됨 ✅');}
+    }).catch(()=>toast('업로드 실패 ❌'));
   });
   e.target.value='';
 }
@@ -3259,15 +3289,15 @@ function addPhDrop(e){
   const s=gS(pSeas,pSid);if(!s)return;
   const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
   if(!files.length)return;
+  toast('업로드 중...');
   let done=0;
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      (s.photos=s.photos||[]).push(ev.target.result);
+    const path='photos/'+pSeas+'/'+pSid+'/'+Date.now()+'_'+f.name;
+    uploadToStorage(f, path).then(item=>{
+      (s.photos=s.photos||[]).push(item.url||item.data);
       done++;
       if(done===files.length){sdb();rTab('photos');}
-    };
-    r.readAsDataURL(f);
+    }).catch(()=>toast('업로드 실패 ❌'));
   });
 }
 
@@ -3392,9 +3422,30 @@ let MAX_BACKUPS=parseInt(localStorage.getItem('ak_backup_max')||'10');
 let BACKUP_INTERVAL=parseInt(localStorage.getItem('ak_backup_interval')||'0');
 let _lastAutoBackup=0;
 
+function makeBackupData(){
+  // 사진/파일 데이터(base64)를 제외하고 백업 (URL은 유지, base64만 제거)
+  const stripped=JSON.parse(JSON.stringify(DB));
+  Object.values(stripped.styles||{}).flat().forEach(s=>{
+    // wop: base64 data 제거, url은 유지
+    if(s.wop)s.wop=s.wop.map(w=>{
+      if(typeof w==='string'&&w.startsWith('data:'))return '[파일-base64생략]';
+      if(typeof w==='object'&&w.data&&!w.url){return {name:w.name,type:w.type,size:w.size,_skipped:true};}
+      return w;
+    });
+    // photos: base64 제거
+    if(s.photos)s.photos=s.photos.map(p=>p&&p.startsWith&&p.startsWith('data:')?'[사진-base64생략]':p);
+    // qc photos: base64 제거
+    if(s.qc)s.qc.forEach(q=>{
+      if(q.p)q.p=q.p.map(p=>p&&p.startsWith&&p.startsWith('data:')?'[사진-base64생략]':p);
+    });
+  });
+  return JSON.stringify(stripped);
+}
+
 function saveBackup(manual=false){
   try{
-    const backups=getBackups();const now=new Date();
+    const backups=getBackups();
+    const now=new Date();
     const label=manual?'수동 백업 — '+now.toLocaleString('ko-KR'):now.toLocaleString('ko-KR');
     // 주기 체크
     if(!manual){
@@ -3402,13 +3453,24 @@ function saveBackup(manual=false){
       if((now-_lastAutoBackup)<interval)return;
     }
     _lastAutoBackup=Date.now();
-    const snap={ts:now.toISOString(),label,manual,data:JSON.stringify(DB)};
+    // 사진 base64 제외하고 백업 (용량 절약)
+    const data=makeBackupData();
+    const snap={ts:now.toISOString(),label,manual,data};
     backups.unshift(snap);
     const m=backups.filter(b=>b.manual);
     const a=backups.filter(b=>!b.manual).slice(0,MAX_BACKUPS);
-    localStorage.setItem(BKEY,JSON.stringify([...m,...a].sort((a,b)=>new Date(b.ts)-new Date(a.ts))));
-    if(manual)toast('백업 완료 ✅');
-  }catch(e){}
+    const toSave=JSON.stringify([...m,...a].sort((a,b)=>new Date(b.ts)-new Date(a.ts)));
+    localStorage.setItem(BKEY,toSave);
+    if(manual){
+      toast('백업 완료 ✅');
+      // 백업 모달이 열려있으면 목록 갱신
+      renderBackupList();
+      updateStorageInfo();
+    }
+  }catch(e){
+    console.error('백업 실패:', e);
+    if(manual)toast('❌ 백업 실패 - 저장 공간 부족');
+  }
 }
 function getBackups(){try{return JSON.parse(localStorage.getItem(BKEY))||[];}catch{return[];}}
 
