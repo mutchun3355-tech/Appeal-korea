@@ -1040,32 +1040,26 @@ function _fb(url,k,pid){
       if(v){
         const r=JSON.parse(v);
         // 로컬이 더 최신이면 Firebase 데이터로 덮어쓰지 않음
-        const localTime=DB._savedAt||0;
         const fbTime=r._savedAt||0;
-        if(fbTime>=localTime){
-          ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky]!==undefined)DB[ky]=r[ky];});
-          // localStorage에는 lite 버전만 저장 (사진 base64 제외)
-          try{localStorage.setItem(LKEY,JSON.stringify(makeLiteDB()));}catch(e){}
-          renderNav();renderContent();
-          if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
-          // 패널 열려있으면 현재 탭 갱신
-          const pov=document.getElementById('pov');
-          if(pov&&pov.classList.contains('open')&&pSid&&pTab&&typeof rTab==='function'){
-            // info/qct 탭은 파일 업로드 중일 수 있으므로 wog만 갱신
-            if(pTab==='info'){
-              setTimeout(()=>renderWog(),0);
-            } else {
-              rTab(pTab);
-            }
-          }
-        } else {
-          // 로컬이 더 최신: 패널만 갱신 (메인 화면은 그대로)
-          const pov=document.getElementById('pov');
-          if(pov&&pov.classList.contains('open')&&pSid&&pTab&&typeof rTab==='function'){
-            // 현재 업로드 중인 경우 rTab 건드리지 않음
-            if(pTab!=='info'&&pTab!=='qct'){
-              rTab(pTab);
-            }
+        const localTime=DB._savedAt||0;
+        // Firebase 데이터가 있으면 항상 업데이트
+        ['styles','payments','incoming','factories','seasons','managers','members','brands','cols'].forEach(ky=>{if(r[ky]!==undefined)DB[ky]=r[ky];});
+        // DB._savedAt은 Firebase 시간으로 갱신
+        DB._savedAt=Math.max(fbTime,localTime);
+        // localStorage에는 lite 버전만 저장
+        try{localStorage.setItem(LKEY,JSON.stringify(makeLiteDB()));}catch(e){}
+        renderNav();renderContent();
+        if(typeof isMobile==='function'&&isMobile()&&typeof mobRenderContent==='function')mobRenderContent();
+        // 패널 열려있으면 wog만 갱신 (전체 rTab 재렌더링 방지)
+        const pov=document.getElementById('pov');
+        if(pov&&pov.classList.contains('open')&&pSid&&pTab&&typeof rTab==='function'){
+          if(pTab==='info'){
+            setTimeout(()=>renderWog(),50);
+          } else if(pTab==='qct'){
+            // QC 탭은 편집모드 유지하면서 재렌더링
+            rTab('qct');
+          } else {
+            rTab(pTab);
           }
         }
       }
@@ -2750,10 +2744,18 @@ function addWOP(e){
     uploadToStorage(f, path).then(item=>{
       (s.wop=s.wop||[]).push(item);
       done++;
-      if(done===files.length){sdbFull();renderWog();toast('파일 추가됨 ✅');}
+      if(done===files.length){
+        renderWog();
+        sdbFull();
+        toast('파일 추가됨 ✅');
+      }
     }).catch(err=>{
+      done++;
       console.error('Upload failed:', err);
-      toast('업로드 실패 ❌');
+      // 크기 초과가 아닌 경우에만 실패 토스트
+      if(err.message!=='파일 크기 초과'){
+        toast('업로드 실패 ❌ - 파일을 다시 시도해주세요');
+      }
     });
   });
   e.target.value='';
